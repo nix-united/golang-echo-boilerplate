@@ -10,10 +10,13 @@ type PostService struct {
 }
 
 func NewPostService(db *gorm.DB) *PostService {
-	return &PostService{Db : db}
+	return &PostService{Db: db}
 }
 
-func (postService *PostService) Create(post *models.Post){
+func (postService *PostService) Create(post *models.Post) {
 	postService.Db.Create(post)
 }
 
+func (postService *PostService) Delete(post *models.Post) {
+	postService.Db.Delete(post)
+}
