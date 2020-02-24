@@ -12,6 +12,8 @@ func ConfigureRoutes(server *server.Server) {
 	authHandler := handlers.NewAuthHandler(server)
 	registerHandler := handlers.NewRegisterHandler(server)
 
+	server.Echo.Use(middleware.Logger())
+
 	server.Echo.POST("/login", authHandler.Login())
 	server.Echo.POST("/register", registerHandler.Register())
 
