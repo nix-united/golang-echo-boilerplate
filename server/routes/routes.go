@@ -16,4 +16,5 @@ func ConfigureRoutes(server *server.Server) {
 	server.Echo.POST("/posts", postHandler.CreatePost())
 	server.Echo.GET("/posts", postHandler.GetPosts())
 	server.Echo.DELETE("/posts/:id", postHandler.DeletePost())
+	server.Echo.PUT("/posts/:id", postHandler.UpdatePost())
 }
