@@ -19,3 +19,7 @@ func (userRepository *UserRepository) GetUser(user *models.User, loginRequest *r
 		Where("password = ?", loginRequest.Password).
 		Find(user)
 }
+
+func (userRepository *UserRepository) GetUserByName(user *models.User, name string) {
+	userRepository.Db.Where("name = ?", name).Find(user)
+}

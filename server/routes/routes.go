@@ -10,8 +10,10 @@ import (
 func ConfigureRoutes(server *server.Server) {
 	postHandler := handlers.NewPostHandler(server)
 	authHandler := handlers.NewAuthHandler(server)
+	registerHandler := handlers.NewRegisterHandler(server)
 
 	server.Echo.POST("/login", authHandler.Login())
+	server.Echo.POST("/register", registerHandler.Register())
 
 	r := server.Echo.Group("/restricted")
 	config := middleware.JWTConfig{
