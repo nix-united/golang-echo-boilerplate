@@ -1,0 +1,20 @@
+version: "3.7"
+services:
+  demo-echo:
+    container_name: demo-echo
+    image: hub.gitlab.nixdev.co/golang-general/echo-demo-app:staging
+    ports:
+      - 12010:8080
+    env_file:
+      - .env
+    restart: on-failure
+  mysql:
+    container_name: demo-echo-mysql
+    image: mysql:8
+    ports:
+      - 33065:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
