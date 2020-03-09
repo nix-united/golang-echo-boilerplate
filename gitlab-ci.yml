@@ -32,6 +32,3 @@ build:
       --build-arg WEB_PRIVATE_KEY="$WEB_PRIVATE_KEY"
       --build-arg GIT_DOMAIN=$CI_SERVER_HOST
       -t $CI_REGISTRY_IMAGE:staging .
-  # point the branch (or branches mask) for triggering this pipeline
-  only:
-    - merge_requests
