@@ -5,7 +5,6 @@ image: docker:stable
 variables:
   DOCKER_DRIVER: overlay2
   IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  PROJECT_PATH: ~/projects/demo-echo
   DOCKER_TLS_CERTDIR: ""
 
 # use gitlab image
@@ -33,9 +32,6 @@ build:
       --build-arg WEB_PRIVATE_KEY="$WEB_PRIVATE_KEY"
       --build-arg GIT_DOMAIN=$CI_SERVER_HOST
       -t $CI_REGISTRY_IMAGE:staging .
-    # push him to docker hub
-    - docker push $CI_REGISTRY_IMAGE:staging
   # point the branch (or branches mask) for triggering this pipeline
   only:
-    refs:
-      - develop
+    - merge_requests

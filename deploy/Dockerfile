@@ -20,10 +20,8 @@ RUN mkdir ~/.ssh && \
 # copy project
 COPY . .
 
-# run some optional configs for git
-RUN git config --global http.sslVerify true &&\
-    # install project dependecies
-    go get -v ./... &&\
+# install project dependecies
+RUN go get -v ./... &&\
     # run tests
     go test -v ./... &&\
     # build application
