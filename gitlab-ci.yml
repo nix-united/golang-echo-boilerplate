@@ -19,7 +19,6 @@ before_script:
 # declare stages
 stages:
   - build
-  - deploy
 
 # stage of build
 build:
@@ -40,35 +39,3 @@ build:
   only:
     refs:
       - develop
-
-# stage of deploy
-deploy staging:
-  environment:
-    name: staging
-  # this pipline will be trigger only manually
-  when: manual
-  only:
-    refs:
-      - develop
-  tags:
-    - dind
-    - docker
-  stage: deploy
-  before_script:
-    # configuring our ssh client
-    - apk add --update openssh-client bash
-    - mkdir -p ~/.ssh
-    - echo "$STAGING_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - eval "$(ssh-agent -s)"
-    - ssh-add ~/.ssh/id_rsa
-    - ssh-keyscan -H $STAGING_IP >> ~/.ssh/known_hosts
-  script:
-    # put to server needed files by ssh
-    - ssh dev@${STAGING_IP} "mkdir -p ${PROJECT_PATH}"
-    - scp -r ${STAGING_ENV} dev@${STAGING_IP}:${PROJECT_PATH}/.env
-    - scp -r ./deploy/docker-compose.yml dev@${STAGING_IP}:${PROJECT_PATH}/docker-compose.yml
-    # next, pull our image and up the container
-    - ssh dev@$STAGING_IP "docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY};
-      docker pull ${CI_REGISTRY}/${CI_PROJECT_PATH}:staging;
-      docker-compose -f ${PROJECT_PATH}/docker-compose.yml up -d"
