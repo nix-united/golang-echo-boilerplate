@@ -1,0 +1,34 @@
+# base image
+image: docker:stable
+
+# declare variables for easy using
+variables:
+  DOCKER_DRIVER: overlay2
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  DOCKER_TLS_CERTDIR: ""
+
+# use gitlab image
+services:
+  - docker:dind
+
+# login in docker hub for future image push
+before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+# declare stages
+stages:
+  - build
+
+# stage of build
+build:
+  tags:
+    - dind
+    - docker
+  stage: build
+  script:
+    # build our image
+    - cp deploy/Dockerfile .
+    - docker build
+      --build-arg WEB_PRIVATE_KEY="$WEB_PRIVATE_KEY"
+      --build-arg GIT_DOMAIN=$CI_SERVER_HOST
+      -t $CI_REGISTRY_IMAGE:staging .
