@@ -19,28 +19,26 @@ func NewAuthHandler(server *server.Server) *AuthHandler {
 	return &AuthHandler{server: server}
 }
 
-func (authHandler *AuthHandler) Login() echo.HandlerFunc {
-	return func(c echo.Context) error {
-		loginRequest := new(requests.LoginRequest)
+func (authHandler *AuthHandler) Login(c echo.Context) error {
+	loginRequest := new(requests.LoginRequest)
 
-		if err := c.Bind(loginRequest); err != nil {
-			return err
-		}
-		user := models.User{}
-		userRepository := repositories.NewUserRepository(authHandler.server.Db)
-		userRepository.GetUser(&user, loginRequest)
-
-		if user.ID == 0 {
-			return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid credentials")
-		}
-		tokenService := services.NewTokenService()
-		token, err := tokenService.CreateToken(&user)
-
-		if err != nil {
-			return err
-		}
-		return responses.SuccessResponse(c, map[string]string{
-			"token": token,
-		})
+	if err := c.Bind(loginRequest); err != nil {
+		return err
 	}
+	user := models.User{}
+	userRepository := repositories.NewUserRepository(authHandler.server.Db)
+	userRepository.GetUser(&user, loginRequest)
+
+	if user.ID == 0 {
+		return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid credentials")
+	}
+	tokenService := services.NewTokenService()
+	token, err := tokenService.CreateToken(&user)
+
+	if err != nil {
+		return err
+	}
+	return responses.SuccessResponse(c, map[string]string{
+		"token": token,
+	})
 }

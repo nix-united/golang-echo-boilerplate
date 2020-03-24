@@ -8,14 +8,14 @@ import (
 )
 
 func ConfigureRoutes(server *server.Server) {
-	postHandler := handlers.NewPostHandler(server)
+	postHandler := handlers.NewPostHandlers(server)
 	authHandler := handlers.NewAuthHandler(server)
 	registerHandler := handlers.NewRegisterHandler(server)
 
 	server.Echo.Use(middleware.Logger())
 
-	server.Echo.POST("/login", authHandler.Login())
-	server.Echo.POST("/register", registerHandler.Register())
+	server.Echo.POST("/login", authHandler.Login)
+	server.Echo.POST("/register", registerHandler.Register)
 
 	r := server.Echo.Group("/restricted")
 	config := middleware.JWTConfig{
@@ -24,8 +24,8 @@ func ConfigureRoutes(server *server.Server) {
 	}
 	r.Use(middleware.JWTWithConfig(config))
 
-	r.GET("/posts", postHandler.GetPosts())
-	r.POST("/posts", postHandler.CreatePost())
-	r.DELETE("/posts/:id", postHandler.DeletePost())
-	r.PUT("/posts/:id", postHandler.UpdatePost())
+	r.GET("/posts", postHandler.GetPosts)
+	r.POST("/posts", postHandler.CreatePost)
+	r.DELETE("/posts/:id", postHandler.DeletePost)
+	r.PUT("/posts/:id", postHandler.UpdatePost)
 }
