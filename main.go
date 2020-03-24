@@ -13,12 +13,16 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Error loading .env file")
 	}
 	app := server.NewServer()
 	app.Echo.Validator = validation.NewCustomValidator(validator.New())
 
 
 	routes.ConfigureRoutes(app)
-	_ = app.Start(os.Getenv("PORT"))
+	err = app.Start(os.Getenv("PORT"))
+
+	if err != nil {
+		log.Fatal("Port already used")
+	}
 }
