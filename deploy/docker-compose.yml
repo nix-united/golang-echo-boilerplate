@@ -17,4 +17,4 @@ services:
     env_file:
       - ./.env
     ports:
-      - 3366:3306
+      - 9378:3306
