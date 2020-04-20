@@ -11,9 +11,27 @@ services:
   - docker:dind
 
 stages:
+  - migrations
   - test
   - build
   - deploy
+
+migrations:
+  image: golang:1.13.3-alpine3.10
+  services:
+    - name: mysql:latest
+      command: ["--default-authentication-plugin=mysql_native_password"]
+  tags:
+    - dind
+    - docker
+  stage: migrations
+  before_script:
+    - apk add --no-cache --update git build-base openssh-client
+    - cp .env.testing.gitlab-ci .env
+  script:
+    - go get -v ./...
+    - go run migrations/entry.go
+    - go run migrations/entry.go --rollback
 
 test:
   image: golang:1.13.3-alpine3.10
