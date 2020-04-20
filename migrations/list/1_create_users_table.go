@@ -1,7 +1,7 @@
 package list
 
 import (
-	mysql "github.com/ShkrutDenis/go-migrations/query_builders/mysql/table"
+	mysql "github.com/ShkrutDenis/go-migrations/builder"
 	"github.com/jmoiron/sqlx"
 )
 
