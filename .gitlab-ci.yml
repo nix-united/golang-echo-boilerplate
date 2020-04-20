@@ -65,18 +65,18 @@ build:
     - docker push $CI_REGISTRY_IMAGE:staging
 
 deploy staging:
+  image: golang:1.13.3-alpine3.10
   environment:
     name: staging
   when: manual
-  only:
-    refs:
-      - develop
+#  only:
+#    refs:
+#      - develop
   tags:
     - dind
     - docker
   stage: deploy
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - apk add --update openssh-client bash
     - mkdir -p ~/.ssh
     - echo "$STAGING_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
@@ -84,6 +84,7 @@ deploy staging:
     - eval "$(ssh-agent -s)"
     - ssh-add ~/.ssh/id_rsa
     - ssh-keyscan -H $STAGING_IP >> ~/.ssh/known_hosts
+    - GOOS=linux GOARCH=386 go build -o entry  migrations/entry.go
   script:
     - ssh dev@${STAGING_IP} "mkdir -p ${PROJECT_PATH}"
     - scp -r ${STAGING_ENV} dev@${STAGING_IP}:${PROJECT_PATH}/.env
@@ -91,3 +92,5 @@ deploy staging:
     - ssh dev@$STAGING_IP "docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY};
       docker pull ${CI_REGISTRY}/${CI_PROJECT_PATH}:staging;
       docker-compose -f ${PROJECT_PATH}/docker-compose.yml up -d"
+    - scp -r ./entry dev@${STAGING_IP}:${PROJECT_PATH}/entry
+    - ssh dev@${STAGING_IP} "${PROJECT_PATH}/entry"
