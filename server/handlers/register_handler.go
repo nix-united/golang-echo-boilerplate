@@ -1,22 +1,23 @@
 package handlers
 
 import (
-	"echo-demo-project/server"
+	s "echo-demo-project/server"
 	"echo-demo-project/server/builders"
 	"echo-demo-project/server/models"
 	"echo-demo-project/server/repositories"
 	"echo-demo-project/server/requests"
 	"echo-demo-project/server/responses"
 	"echo-demo-project/server/services"
-	"github.com/labstack/echo"
 	"net/http"
+
+	"github.com/labstack/echo"
 )
 
 type RegisterHandler struct {
-	server *server.Server
+	server *s.Server
 }
 
-func NewRegisterHandler(server *server.Server) *RegisterHandler {
+func NewRegisterHandler(server *s.Server) *RegisterHandler {
 	return &RegisterHandler{server: server}
 }
 

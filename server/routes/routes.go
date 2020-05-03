@@ -1,13 +1,14 @@
 package routes
 
 import (
-	"echo-demo-project/server"
+	s "echo-demo-project/server"
 	"echo-demo-project/server/handlers"
 	"echo-demo-project/server/services"
+
 	"github.com/labstack/echo/middleware"
 )
 
-func ConfigureRoutes(server *server.Server) {
+func ConfigureRoutes(server *s.Server) {
 	postHandler := handlers.NewPostHandlers(server)
 	authHandler := handlers.NewAuthHandler(server)
 	registerHandler := handlers.NewRegisterHandler(server)

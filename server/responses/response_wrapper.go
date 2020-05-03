@@ -1,14 +1,15 @@
 package responses
 
 import (
-	"github.com/labstack/echo"
 	"net/http"
+
+	"github.com/labstack/echo"
 )
 
 func Response(c echo.Context, statusCode int, data interface{}) error {
-	//context.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-	//context.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
-	//context.Writer.Header().Set("Access-Control-Allow-Headers", "Authorization")
+	// nolint // context.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	// nolint // context.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
+	// nolint // context.Writer.Header().Set("Access-Control-Allow-Headers", "Authorization")
 	return c.JSON(statusCode, data)
 }
 
@@ -20,5 +21,8 @@ func ErrorResponse(c echo.Context, statusCode int, message string) error {
 	return Response(c, statusCode, struct {
 		Code  int
 		Error string
-	}{Code: statusCode, Error: message})
+	}{
+		Code:  statusCode,
+		Error: message,
+	})
 }

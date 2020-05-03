@@ -1,24 +1,25 @@
 package handlers
 
 import (
-	"echo-demo-project/server"
+	s "echo-demo-project/server"
 	"echo-demo-project/server/builders"
 	"echo-demo-project/server/models"
 	"echo-demo-project/server/repositories"
 	"echo-demo-project/server/requests"
 	"echo-demo-project/server/responses"
 	"echo-demo-project/server/services"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/labstack/echo"
 	"net/http"
 	"strconv"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/labstack/echo"
 )
 
 type PostHandlers struct {
-	server *server.Server
+	server *s.Server
 }
 
-func NewPostHandlers(server *server.Server) *PostHandlers {
+func NewPostHandlers(server *s.Server) *PostHandlers {
 	return &PostHandlers{server: server}
 }
 
@@ -40,13 +41,12 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 	post := builders.NewPostBuilder().
 		SetTitle(createPostRequest.Title).
 		SetContent(createPostRequest.Content).
-		SetUserId(id).
+		SetUserID(id).
 		Build()
 	postService := services.NewPostService(p.server.Db)
 	postService.Create(&post)
 
 	return responses.SuccessResponse(c, "Post successfully create")
-
 }
 
 func (p *PostHandlers) DeletePost(c echo.Context) error {
