@@ -1,14 +1,14 @@
 package validation
 
 import (
-	"gopkg.in/go-playground/validator.v9"
+	v "gopkg.in/go-playground/validator.v9"
 )
 
 type CustomValidator struct {
-	validator *validator.Validate
+	validator *v.Validate
 }
 
-func NewCustomValidator(validator *validator.Validate) *CustomValidator {
+func NewCustomValidator(validator *v.Validate) *CustomValidator {
 	return &CustomValidator{validator: validator}
 }
 

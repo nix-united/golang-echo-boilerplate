@@ -4,9 +4,10 @@ import (
 	"echo-demo-project/server/db/seeders"
 	"echo-demo-project/server/models"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
 	"os"
+
+	_ "github.com/go-sql-driver/mysql" // nolint
+	"github.com/jinzhu/gorm"
 )
 
 func Init() *gorm.DB {

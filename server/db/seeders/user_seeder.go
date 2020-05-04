@@ -2,6 +2,7 @@ package seeders
 
 import (
 	"echo-demo-project/server/models"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -14,13 +15,12 @@ func NewUserSeeder(db *gorm.DB) *UserSeeder {
 }
 
 func (userSeeder *UserSeeder) SetUsers() {
-
 	users := map[int]map[string]string{
-		1: map[string]string{
+		1: {
 			"name":     "user1",
 			"password": "password1",
 		},
-		2: map[string]string{
+		2: {
 			"name":     "user2",
 			"password": "password2",
 		},

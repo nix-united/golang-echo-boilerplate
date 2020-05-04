@@ -1,21 +1,22 @@
 package handlers
 
 import (
-	"echo-demo-project/server"
+	s "echo-demo-project/server"
 	"echo-demo-project/server/models"
 	"echo-demo-project/server/repositories"
 	"echo-demo-project/server/requests"
 	"echo-demo-project/server/responses"
 	"echo-demo-project/server/services"
-	"github.com/labstack/echo"
 	"net/http"
+
+	"github.com/labstack/echo"
 )
 
 type AuthHandler struct {
-	server *server.Server
+	server *s.Server
 }
 
-func NewAuthHandler(server *server.Server) *AuthHandler {
+func NewAuthHandler(server *s.Server) *AuthHandler {
 	return &AuthHandler{server: server}
 }
 

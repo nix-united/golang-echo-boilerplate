@@ -15,6 +15,13 @@ stages:
   - build
   - deploy
 
+lint:
+  image: golangci/golangci-lint:v1.25.0
+  stage: test
+  script:
+    - golangci-lint run -v
+  allow_failure: true
+
 test:
   image: golang:1.13.3-alpine3.10
   services:

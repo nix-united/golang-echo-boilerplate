@@ -2,9 +2,12 @@ package services
 
 import (
 	"echo-demo-project/server/models"
-	"github.com/dgrijalva/jwt-go"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
+
+const ExpireCount = 72
 
 type JwtCustomClaims struct {
 	Name string `json:"name"`
@@ -24,7 +27,7 @@ func (tokenService *TokenService) CreateToken(user *models.User) (string, error)
 		user.Name,
 		user.ID,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
+			ExpiresAt: time.Now().Add(time.Hour * ExpireCount).Unix(),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
