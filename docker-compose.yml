@@ -1,10 +1,10 @@
-version: '3'
+version: '3.7'
 services:
   echo_app:
     container_name: echo_demo
     build: .
     ports:
-      - 8080:8080
+      - 8080:${PORT}
     restart: on-failure
     volumes:
       - ./:/app/
@@ -12,6 +12,10 @@ services:
       - echo_mysql
     env_file:
       - .env
+    environment:
+      WAIT_HOSTS: echo_mysql:3306
+      WAIT_BEFORE_HOSTS: 15
+      WAIT_SLEEP_INTERVAL: 3
     networks:
       - echo-demo-stack
 
@@ -19,7 +23,7 @@ services:
     image: mysql:5.7
     container_name: echo_db
     ports:
-      - 3306:3306
+      - 3306:${DB_PORT}
     environment:
       - MYSQL_ROOT_HOST=${DB_HOST}
       - MYSQL_USER=${DB_USER}
