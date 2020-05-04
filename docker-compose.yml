@@ -4,7 +4,7 @@ services:
     container_name: echo_demo
     build: .
     ports:
-      - 8080:${PORT}
+      - ${EXPOSE_PORT}:${PORT}
     restart: on-failure
     volumes:
       - ./:/app/
@@ -23,7 +23,7 @@ services:
     image: mysql:5.7
     container_name: echo_db
     ports:
-      - 3306:${DB_PORT}
+      - ${EXPOSE_DB_PORT}:${DB_PORT}
     environment:
       - MYSQL_ROOT_HOST=${DB_HOST}
       - MYSQL_USER=${DB_USER}
