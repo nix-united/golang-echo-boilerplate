@@ -1,0 +1,43 @@
+version: '3.7'
+services:
+  echo_app:
+    container_name: echo_demo
+    build: .
+    ports:
+      - ${EXPOSE_PORT}:${PORT}
+    restart: on-failure
+    volumes:
+      - ./:/app/
+    depends_on:
+      - echo_mysql
+    env_file:
+      - .env
+    environment:
+      WAIT_HOSTS: echo_mysql:3306
+      WAIT_BEFORE_HOSTS: 15
+      WAIT_SLEEP_INTERVAL: 3
+    networks:
+      - echo-demo-stack
+
+  echo_mysql:
+    image: mysql:5.7
+    container_name: echo_db
+    ports:
+      - ${EXPOSE_DB_PORT}:${DB_PORT}
+    environment:
+      - MYSQL_ROOT_HOST=${DB_HOST}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - database_mysql:/var/lib/mysql
+    networks:
+      - echo-demo-stack
+
+volumes:
+  database_mysql:
+
+networks:
+  echo-demo-stack:
+    driver: bridge
