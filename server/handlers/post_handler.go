@@ -23,6 +23,18 @@ func NewPostHandlers(server *s.Server) *PostHandlers {
 	return &PostHandlers{server: server}
 }
 
+// CreatePost godoc
+// @Summary Create post
+// @Description Create post
+// @ID posts-create
+// @Tags Posts Actions
+// @Accept json
+// @Produce json
+// @Param params body requests.CreatePostRequest true "Post title and content"
+// @Success 200 {string} string "Post successfully created"
+// @Failure 400 {string} string "Bad request"
+// @Security ApiKeyAuth
+// @Router /restricted/posts [post]
 func (p *PostHandlers) CreatePost(c echo.Context) error {
 	createPostRequest := new(requests.CreatePostRequest)
 
@@ -46,7 +58,7 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 	postService := services.NewPostService(p.server.Db)
 	postService.Create(&post)
 
-	return responses.SuccessResponse(c, "Post successfully create")
+	return responses.SuccessResponse(c, "Post successfully created")
 }
 
 func (p *PostHandlers) DeletePost(c echo.Context) error {
