@@ -10,7 +10,7 @@ Why we use linters? Linters help us:
 violations of generally accepted code style
 5. The quality of the code is guaranteed at a fairly high level.
 
-###How to use
+### How to use
 Linter tool wrapped to docker-compose and first of all need to build container with linters
 
 - `make lint-build`
