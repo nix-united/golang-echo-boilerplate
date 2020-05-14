@@ -7,8 +7,6 @@ import (
 
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/swaggo/echo-swagger"
-
-	_ "echo-demo-project/docs"
 )
 
 func ConfigureRoutes(server *s.Server) {
