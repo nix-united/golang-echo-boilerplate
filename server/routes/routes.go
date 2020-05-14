@@ -6,7 +6,7 @@ import (
 	"echo-demo-project/server/services"
 
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/swaggo/echo-swagger"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 func ConfigureRoutes(server *s.Server) {
