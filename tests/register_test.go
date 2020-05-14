@@ -28,6 +28,6 @@ func TestCreateUser(t *testing.T)  {
 	h := handlers.NewRegisterHandler(s)
 	if assert.NoError(t, h.Register(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "\"User successfully create\"", strings.TrimSpace(rec.Body.String()))
+		assert.Equal(t, "\"User successfully created\"", strings.TrimSpace(rec.Body.String()))
 	}
 }
