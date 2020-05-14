@@ -3,7 +3,7 @@ package helpers
 import (
 	"echo-demo-project/server"
 	"echo-demo-project/server/validation"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"gopkg.in/go-playground/validator.v9"
 )
 

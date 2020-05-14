@@ -3,7 +3,7 @@ package responses
 import (
 	"net/http"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
 func Response(c echo.Context, statusCode int, data interface{}) error {

@@ -10,7 +10,7 @@ import (
 	"echo-demo-project/server/services"
 	"net/http"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
 type RegisterHandler struct {

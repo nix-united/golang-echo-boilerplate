@@ -5,7 +5,7 @@ import (
 	"echo-demo-project/server/handlers"
 	"echo-demo-project/server/services"
 
-	"github.com/labstack/echo/middleware"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func ConfigureRoutes(server *s.Server) {

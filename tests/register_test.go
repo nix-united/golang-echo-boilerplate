@@ -3,7 +3,7 @@ package tests
 import (
 	"echo-demo-project/server/handlers"
 	"echo-demo-project/tests/helpers"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
