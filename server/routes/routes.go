@@ -6,6 +6,9 @@ import (
 	"echo-demo-project/server/services"
 
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/swaggo/echo-swagger"
+
+	_ "echo-demo-project/docs"
 )
 
 func ConfigureRoutes(server *s.Server) {
@@ -14,6 +17,8 @@ func ConfigureRoutes(server *s.Server) {
 	registerHandler := handlers.NewRegisterHandler(server)
 
 	server.Echo.Use(middleware.Logger())
+
+	server.Echo.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	server.Echo.POST("/login", authHandler.Login)
 	server.Echo.POST("/register", registerHandler.Register)
