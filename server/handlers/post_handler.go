@@ -61,6 +61,17 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 	return responses.SuccessResponse(c, "Post successfully created")
 }
 
+// DeletePost godoc
+// @Summary Delete post
+// @Description Delete post
+// @ID posts-delete
+// @Tags Posts Actions
+// @Param id path int true "Post ID"
+// @Success 200 {string} string "Post deleted successfully"
+// @Failure 400 {string} string "Post not found"
+// @Failure 404 {object} responses.Error
+// @Security ApiKeyAuth
+// @Router /restricted/posts/{id} [delete]
 func (p *PostHandlers) DeletePost(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -76,7 +87,7 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 	postService := services.NewPostService(p.server.Db)
 	postService.Delete(&post)
 
-	return responses.SuccessResponse(c, "Post delete successfully")
+	return responses.SuccessResponse(c, "Post deleted successfully")
 }
 
 func (p *PostHandlers) GetPosts(c echo.Context) error {
