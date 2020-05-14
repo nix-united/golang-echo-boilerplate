@@ -90,6 +90,16 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 	return responses.SuccessResponse(c, "Post deleted successfully")
 }
 
+// GetPosts godoc
+// @Summary Get posts
+// @Description Get the list of all posts
+// @ID posts-get
+// @Tags Posts Actions
+// @Produce json
+// @Success 200 {array} responses.PostResponse
+// @Failure 400 {string} string "Bad request"
+// @Security ApiKeyAuth
+// @Router /restricted/posts [get]
 func (p *PostHandlers) GetPosts(c echo.Context) error {
 	var posts []models.Post
 
