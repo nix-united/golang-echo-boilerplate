@@ -114,6 +114,20 @@ func (p *PostHandlers) GetPosts(c echo.Context) error {
 	return responses.SuccessResponse(c, response)
 }
 
+// UpdatePost godoc
+// @Summary Update post
+// @Description Update post
+// @ID posts-update
+// @Tags Posts Actions
+// @Accept json
+// @Produce json
+// @Param id path int true "Post ID"
+// @Param params body requests.UpdatePostRequest true "Post title and content"
+// @Success 200 {string} string "Post successfully updated"
+// @Failure 400 {string} string "Bad request"
+// @Failure 404 {object} responses.Error
+// @Security ApiKeyAuth
+// @Router /restricted/posts/{id} [put]
 func (p *PostHandlers) UpdatePost(c echo.Context) error {
 	updatePostRequest := new(requests.UpdatePostRequest)
 	id, _ := strconv.Atoi(c.Param("id"))
@@ -138,5 +152,5 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 	postService := services.NewPostService(p.server.Db)
 	postService.Update(&post, updatePostRequest)
 
-	return responses.SuccessResponse(c, "Post successfully update")
+	return responses.SuccessResponse(c, "Post successfully updated")
 }
