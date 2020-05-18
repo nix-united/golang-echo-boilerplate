@@ -2,3 +2,4 @@
 .env.staging
 .env.testing
 /.idea
+docs

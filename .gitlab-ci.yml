@@ -18,6 +18,9 @@ stages:
 lint:
   image: golangci/golangci-lint:v1.25.0
   stage: test
+  before_script:
+    - go get -v github.com/swaggo/swag/cmd/swag
+    - $GOPATH/bin/swag init
   script:
     - golangci-lint run -v
   allow_failure: true
@@ -34,6 +37,8 @@ test:
   before_script:
     - apk add --no-cache --update git build-base openssh-client
     - cp .env.testing.gitlab-ci .env.testing
+    - go get -v github.com/swaggo/swag/cmd/swag
+    - $GOPATH/bin/swag init
   script:
     - go get -v ./...
     - go test -v ./...

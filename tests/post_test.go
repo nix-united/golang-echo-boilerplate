@@ -5,7 +5,7 @@ import (
 	"echo-demo-project/server/services"
 	"echo-demo-project/tests/helpers"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	mocket "github.com/selvatico/go-mocket"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -38,7 +38,7 @@ func TestCreatePost(t *testing.T)  {
 	h := handlers.NewPostHandlers(s)
 	if assert.NoError(t, h.CreatePost(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "\"Post successfully create\"", strings.TrimSpace(rec.Body.String()))
+		assert.Equal(t, "\"Post successfully created\"", strings.TrimSpace(rec.Body.String()))
 	}
 }
 
@@ -56,7 +56,7 @@ func TestDeletePost(t *testing.T)  {
 	h := handlers.NewPostHandlers(s)
 	if assert.NoError(t, h.DeletePost(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "\"Post delete successfully\"", strings.TrimSpace(rec.Body.String()))
+		assert.Equal(t, "\"Post deleted successfully\"", strings.TrimSpace(rec.Body.String()))
 	}
 }
 
@@ -73,7 +73,7 @@ func TestGetPosts(t *testing.T)  {
 	h := handlers.NewPostHandlers(s)
 	if assert.NoError(t, h.GetPosts(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "[{\"Title\":\"title\",\"Content\":\"content\",\"Username\":\"\",\"ID\":1}]", strings.TrimSpace(rec.Body.String()))
+		assert.Equal(t, "[{\"title\":\"title\",\"content\":\"content\",\"username\":\"\",\"id\":1}]", strings.TrimSpace(rec.Body.String()))
 	}
 }
 
@@ -94,6 +94,6 @@ func TestUpdatePost(t *testing.T)  {
 	h := handlers.NewPostHandlers(s)
 	if assert.NoError(t, h.UpdatePost(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "\"Post successfully update\"", strings.TrimSpace(rec.Body.String()))
+		assert.Equal(t, "\"Post successfully updated\"", strings.TrimSpace(rec.Body.String()))
 	}
 }

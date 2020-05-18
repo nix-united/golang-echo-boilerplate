@@ -3,8 +3,13 @@ package responses
 import (
 	"net/http"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
+
+type Error struct {
+	Code  int    `json:"code"`
+	Error string `json:"error"`
+}
 
 func Response(c echo.Context, statusCode int, data interface{}) error {
 	// nolint // context.Writer.Header().Set("Access-Control-Allow-Origin", "*")
@@ -18,10 +23,7 @@ func SuccessResponse(c echo.Context, data interface{}) error {
 }
 
 func ErrorResponse(c echo.Context, statusCode int, message string) error {
-	return Response(c, statusCode, struct {
-		Code  int
-		Error string
-	}{
+	return Response(c, statusCode, Error{
 		Code:  statusCode,
 		Error: message,
 	})

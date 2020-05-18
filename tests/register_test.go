@@ -3,7 +3,7 @@ package tests
 import (
 	"echo-demo-project/server/handlers"
 	"echo-demo-project/tests/helpers"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -28,6 +28,6 @@ func TestCreateUser(t *testing.T)  {
 	h := handlers.NewRegisterHandler(s)
 	if assert.NoError(t, h.Register(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "\"User successfully create\"", strings.TrimSpace(rec.Body.String()))
+		assert.Equal(t, "\"User successfully created\"", strings.TrimSpace(rec.Body.String()))
 	}
 }
