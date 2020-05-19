@@ -11,6 +11,7 @@ services:
   - docker:dind
 
 stages:
+  - migrations
   - test
   - build
   - deploy
@@ -25,11 +26,28 @@ lint:
     - golangci-lint run -v
   allow_failure: true
 
+migrations:
+  image: golang:1.13.3-alpine3.10
+  services:
+    - mysql:5.7
+  tags:
+    - dind
+    - docker
+  stage: migrations
+  before_script:
+    - apk add --no-cache --update git build-base openssh-client
+    - cp .env.testing.gitlab-ci .env
+    - go get -v github.com/swaggo/swag/cmd/swag
+    - $GOPATH/bin/swag init
+  script:
+    - go get -v ./...
+    - go run migrations/entry.go --env-path=./ --verbose
+    - go run migrations/entry.go --rollback --env-path=./ --verbose
+
 test:
   image: golang:1.13.3-alpine3.10
   services:
-    - name: mysql:latest
-      command: ["--default-authentication-plugin=mysql_native_password"]
+    - mysql:5.7
   tags:
     - dind
     - docker
@@ -59,6 +77,7 @@ build:
     - docker push $CI_REGISTRY_IMAGE:staging
 
 deploy staging:
+  image: golang:1.13.3-alpine3.10
   environment:
     name: staging
   when: manual
@@ -70,7 +89,6 @@ deploy staging:
     - docker
   stage: deploy
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - apk add --update openssh-client bash
     - mkdir -p ~/.ssh
     - echo "$STAGING_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
@@ -78,10 +96,14 @@ deploy staging:
     - eval "$(ssh-agent -s)"
     - ssh-add ~/.ssh/id_rsa
     - ssh-keyscan -H $STAGING_IP >> ~/.ssh/known_hosts
+    - GOOS=linux GOARCH=386 go build -o entry  migrations/entry.go
   script:
     - ssh dev@${STAGING_IP} "mkdir -p ${PROJECT_PATH}"
     - scp -r ${STAGING_ENV} dev@${STAGING_IP}:${PROJECT_PATH}/.env
+    - scp -r ${MIGRATION_ENV} dev@${STAGING_IP}:${PROJECT_PATH}/.env.migration
     - scp -r ./deploy/docker-compose.yml dev@${STAGING_IP}:${PROJECT_PATH}/docker-compose.yml
     - ssh dev@$STAGING_IP "docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY};
       docker pull ${CI_REGISTRY}/${CI_PROJECT_PATH}:staging;
       docker-compose -f ${PROJECT_PATH}/docker-compose.yml up -d"
+    - scp -r ./entry dev@${STAGING_IP}:${PROJECT_PATH}/entry
+    - ssh dev@${STAGING_IP} "${PROJECT_PATH}/entry --env-path=${PROJECT_PATH} --env-file=.env.migration --verbose"
