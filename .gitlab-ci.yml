@@ -29,8 +29,7 @@ lint:
 migrations:
   image: golang:1.13.3-alpine3.10
   services:
-    - name: mysql:5.7
-      command: ["--default-authentication-plugin=mysql_native_password"]
+    - mysql:5.7
   tags:
     - dind
     - docker
@@ -46,8 +45,7 @@ migrations:
 test:
   image: golang:1.13.3-alpine3.10
   services:
-    - name: mysql:5.7
-      command: ["--default-authentication-plugin=mysql_native_password"]
+    - mysql:5.7
   tags:
     - dind
     - docker
