@@ -37,6 +37,8 @@ migrations:
   before_script:
     - apk add --no-cache --update git build-base openssh-client
     - cp .env.testing.gitlab-ci .env
+    - go get -v github.com/swaggo/swag/cmd/swag
+    - $GOPATH/bin/swag init
   script:
     - go get -v ./...
     - go run migrations/entry.go --env-path=./ --verbose

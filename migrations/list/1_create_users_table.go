@@ -5,7 +5,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type CreateUserTable struct {}
+type CreateUserTable struct{}
 
 func (m *CreateUserTable) GetName() string {
 	return "CreateUserTable"

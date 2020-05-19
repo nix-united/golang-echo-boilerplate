@@ -2,6 +2,7 @@ package main
 
 import (
 	"echo-demo-project/migrations/list"
+
 	gm "github.com/ShkrutDenis/go-migrations"
 	gmStore "github.com/ShkrutDenis/go-migrations/store"
 )

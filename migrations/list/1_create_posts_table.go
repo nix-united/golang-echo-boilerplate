@@ -5,7 +5,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type CreatePostTable struct {}
+type CreatePostTable struct{}
 
 func (m *CreatePostTable) GetName() string {
 	return "CreatePostTable"
@@ -32,4 +32,3 @@ func (m *CreatePostTable) Up(con *sqlx.DB) {
 func (m *CreatePostTable) Down(con *sqlx.DB) {
 	mysql.DropTable("posts", con).MustExec()
 }
-
