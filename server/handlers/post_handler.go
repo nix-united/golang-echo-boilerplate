@@ -1,27 +1,40 @@
 package handlers
 
 import (
-	"echo-demo-project/server"
+	s "echo-demo-project/server"
 	"echo-demo-project/server/builders"
 	"echo-demo-project/server/models"
 	"echo-demo-project/server/repositories"
 	"echo-demo-project/server/requests"
 	"echo-demo-project/server/responses"
 	"echo-demo-project/server/services"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/labstack/echo"
 	"net/http"
 	"strconv"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/labstack/echo/v4"
 )
 
 type PostHandlers struct {
-	server *server.Server
+	server *s.Server
 }
 
-func NewPostHandlers(server *server.Server) *PostHandlers {
+func NewPostHandlers(server *s.Server) *PostHandlers {
 	return &PostHandlers{server: server}
 }
 
+// CreatePost godoc
+// @Summary Create post
+// @Description Create post
+// @ID posts-create
+// @Tags Posts Actions
+// @Accept json
+// @Produce json
+// @Param params body requests.CreatePostRequest true "Post title and content"
+// @Success 200 {string} string "Post successfully created"
+// @Failure 400 {string} string "Bad request"
+// @Security ApiKeyAuth
+// @Router /restricted/posts [post]
 func (p *PostHandlers) CreatePost(c echo.Context) error {
 	createPostRequest := new(requests.CreatePostRequest)
 
@@ -40,15 +53,25 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 	post := builders.NewPostBuilder().
 		SetTitle(createPostRequest.Title).
 		SetContent(createPostRequest.Content).
-		SetUserId(id).
+		SetUserID(id).
 		Build()
 	postService := services.NewPostService(p.server.Db)
 	postService.Create(&post)
 
-	return responses.SuccessResponse(c, "Post successfully create")
-
+	return responses.SuccessResponse(c, "Post successfully created")
 }
 
+// DeletePost godoc
+// @Summary Delete post
+// @Description Delete post
+// @ID posts-delete
+// @Tags Posts Actions
+// @Param id path int true "Post ID"
+// @Success 200 {string} string "Post deleted successfully"
+// @Failure 400 {string} string "Post not found"
+// @Failure 404 {object} responses.Error
+// @Security ApiKeyAuth
+// @Router /restricted/posts/{id} [delete]
 func (p *PostHandlers) DeletePost(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -64,9 +87,19 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 	postService := services.NewPostService(p.server.Db)
 	postService.Delete(&post)
 
-	return responses.SuccessResponse(c, "Post delete successfully")
+	return responses.SuccessResponse(c, "Post deleted successfully")
 }
 
+// GetPosts godoc
+// @Summary Get posts
+// @Description Get the list of all posts
+// @ID posts-get
+// @Tags Posts Actions
+// @Produce json
+// @Success 200 {array} responses.PostResponse
+// @Failure 400 {string} string "Bad request"
+// @Security ApiKeyAuth
+// @Router /restricted/posts [get]
 func (p *PostHandlers) GetPosts(c echo.Context) error {
 	var posts []models.Post
 
@@ -81,6 +114,20 @@ func (p *PostHandlers) GetPosts(c echo.Context) error {
 	return responses.SuccessResponse(c, response)
 }
 
+// UpdatePost godoc
+// @Summary Update post
+// @Description Update post
+// @ID posts-update
+// @Tags Posts Actions
+// @Accept json
+// @Produce json
+// @Param id path int true "Post ID"
+// @Param params body requests.UpdatePostRequest true "Post title and content"
+// @Success 200 {string} string "Post successfully updated"
+// @Failure 400 {string} string "Bad request"
+// @Failure 404 {object} responses.Error
+// @Security ApiKeyAuth
+// @Router /restricted/posts/{id} [put]
 func (p *PostHandlers) UpdatePost(c echo.Context) error {
 	updatePostRequest := new(requests.UpdatePostRequest)
 	id, _ := strconv.Atoi(c.Param("id"))
@@ -105,5 +152,5 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 	postService := services.NewPostService(p.server.Db)
 	postService.Update(&post, updatePostRequest)
 
-	return responses.SuccessResponse(c, "Post successfully update")
+	return responses.SuccessResponse(c, "Post successfully updated")
 }

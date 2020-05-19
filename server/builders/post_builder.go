@@ -7,7 +7,7 @@ import (
 type PostBuilder struct {
 	title   string
 	content string
-	userId  uint
+	userID  uint
 }
 
 func NewPostBuilder() *PostBuilder {
@@ -23,8 +23,8 @@ func (postBuilder *PostBuilder) SetContent(content string) (p *PostBuilder) {
 	return postBuilder
 }
 
-func (postBuilder *PostBuilder) SetUserId(userId uint) (p *PostBuilder) {
-	postBuilder.userId = userId
+func (postBuilder *PostBuilder) SetUserID(userID uint) (p *PostBuilder) {
+	postBuilder.userID = userID
 	return postBuilder
 }
 
@@ -32,7 +32,7 @@ func (postBuilder *PostBuilder) Build() models.Post {
 	post := models.Post{
 		Title:   postBuilder.title,
 		Content: postBuilder.content,
-		UserId:  postBuilder.userId,
+		UserID:  postBuilder.userID,
 	}
 
 	return post

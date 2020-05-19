@@ -1,0 +1,12 @@
+version: '3.7'
+services:
+  echo-golinter:
+    build:
+      dockerfile: Dockerfile
+      context: .
+      args:
+        COMPOSE_USER_ID: ${COMPOSE_USER_ID}
+        COMPOSE_GROUP_ID: ${COMPOSE_GROUP_ID}
+    volumes:
+      - ../../:/app
+    working_dir: /app
