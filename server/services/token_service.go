@@ -2,16 +2,23 @@ package services
 
 import (
 	"echo-demo-project/server/models"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
-const ExpireCount = 72
+const ExpireCount = 2
+const ExpireRefreshCount = 168
 
 type JwtCustomClaims struct {
 	Name string `json:"name"`
 	ID   uint   `json:"id"`
+	jwt.StandardClaims
+}
+
+type JwtCustomRefreshClaims struct {
+	ID uint `json:"id"`
 	jwt.StandardClaims
 }
 
@@ -22,18 +29,36 @@ func NewTokenService() *TokenService {
 	return &TokenService{}
 }
 
-func (tokenService *TokenService) CreateToken(user *models.User) (string, error) {
+func (tokenService *TokenService) CreateAccessToken(user *models.User) (string, int64, error) {
+	exp := time.Now().Add(time.Hour * ExpireCount).Unix()
 	claims := &JwtCustomClaims{
 		user.Name,
 		user.ID,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * ExpireCount).Unix(),
+			ExpiresAt: exp,
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	t, err := token.SignedString([]byte("secret"))
+	t, err := token.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
+	if err != nil {
+		return "", 0, err
+	}
+
+	return t, exp, err
+}
+
+func (tokenService *TokenService) CreateRefreshToken(user *models.User) (string, error) {
+	claimsRefresh := &JwtCustomRefreshClaims{
+		ID: user.ID,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * ExpireRefreshCount).Unix(),
+		},
+	}
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsRefresh)
+
+	rt, err := refreshToken.SignedString([]byte(os.Getenv("REFRESH_SECRET")))
 	if err != nil {
 		return "", err
 	}
-	return t, err
+	return rt, err
 }
