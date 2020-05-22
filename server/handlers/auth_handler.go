@@ -2,13 +2,15 @@ package handlers
 
 import (
 	s "echo-demo-project/server"
+
+	jwtGo "github.com/dgrijalva/jwt-go"
+
 	"echo-demo-project/server/models"
 	"echo-demo-project/server/repositories"
 	"echo-demo-project/server/requests"
 	"echo-demo-project/server/responses"
 	"echo-demo-project/server/services"
 	"fmt"
-	jwtGo "github.com/dgrijalva/jwt-go"
 	"net/http"
 	"os"
 
