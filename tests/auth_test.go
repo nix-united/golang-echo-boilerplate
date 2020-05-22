@@ -2,6 +2,7 @@ package tests
 
 import (
 	"echo-demo-project/server/handlers"
+	"echo-demo-project/server/responses"
 	"echo-demo-project/tests/helpers"
 	"encoding/json"
 	"fmt"
@@ -16,9 +17,6 @@ import (
 	"testing"
 )
 
-type AuthResponse struct {
-	Token string
-}
 
 func TestAuth(t *testing.T) {
 	s := helpers.NewServer()
@@ -35,14 +33,14 @@ func TestAuth(t *testing.T) {
 	commonReply := []map[string]interface{}{{"id": 1, "name": "name", "password": "password"}}
 	mocket.Catcher.Reset().NewMock().WithArgs("name", "password").WithReply(commonReply)
 
-	var authResponse AuthResponse
+	var authResponse responses.LoginResponse
 
 	h := handlers.NewAuthHandler(s)
 	if assert.NoError(t, h.Login(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 		_ = json.Unmarshal([]byte(rec.Body.String()), &authResponse)
 
-		token, _ := jwt.Parse(authResponse.Token, func(token *jwt.Token) (interface{}, error) {
+		token, _ := jwt.Parse(authResponse.AccessToken, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 			}
