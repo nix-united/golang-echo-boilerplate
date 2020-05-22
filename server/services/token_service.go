@@ -29,8 +29,8 @@ func NewTokenService() *TokenService {
 	return &TokenService{}
 }
 
-func (tokenService *TokenService) CreateAccessToken(user *models.User) (string, int64, error) {
-	exp := time.Now().Add(time.Hour * ExpireCount).Unix()
+func (tokenService *TokenService) CreateAccessToken(user *models.User) (accessToken string, exp int64, err error) {
+	exp = time.Now().Add(time.Hour * ExpireCount).Unix()
 	claims := &JwtCustomClaims{
 		user.Name,
 		user.ID,
@@ -47,7 +47,7 @@ func (tokenService *TokenService) CreateAccessToken(user *models.User) (string, 
 	return t, exp, err
 }
 
-func (tokenService *TokenService) CreateRefreshToken(user *models.User) (string, error) {
+func (tokenService *TokenService) CreateRefreshToken(user *models.User) (t string, err error) {
 	claimsRefresh := &JwtCustomRefreshClaims{
 		ID: user.ID,
 		StandardClaims: jwt.StandardClaims{

@@ -5,6 +5,7 @@ import (
 	"echo-demo-project/server/responses"
 	"echo-demo-project/tests/helpers"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
@@ -42,7 +43,7 @@ func TestAuth(t *testing.T) {
 
 		token, _ := jwt.Parse(authResponse.AccessToken, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+				return nil, errors.New(fmt.Sprintf("Unexpected signing method: %v", token.Header["alg"]))
 			}
 			var hmacSampleSecret []byte
 			return hmacSampleSecret, nil

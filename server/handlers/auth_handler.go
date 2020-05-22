@@ -8,7 +8,7 @@ import (
 	"echo-demo-project/server/responses"
 	"echo-demo-project/server/services"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	jwtGo "github.com/dgrijalva/jwt-go"
 	"net/http"
 	"os"
 
@@ -78,9 +78,9 @@ func (authHandler *AuthHandler) RefreshToken(c echo.Context) error {
 		return err
 	}
 
-	token, err := jwt.Parse(refreshRequest.Token, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+	token, err := jwtGo.Parse(refreshRequest.Token, func(token *jwtGo.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwtGo.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(os.Getenv("REFRESH_SECRET")), nil
 	})
@@ -89,7 +89,7 @@ func (authHandler *AuthHandler) RefreshToken(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, err.Error())
 	}
 
-	claims, ok := token.Claims.(jwt.MapClaims)
+	claims, ok := token.Claims.(jwtGo.MapClaims)
 	if !ok && !token.Valid {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid token")
 	}

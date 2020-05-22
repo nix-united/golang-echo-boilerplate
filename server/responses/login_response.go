@@ -6,7 +6,7 @@ type LoginResponse struct {
 	Exp          int64  `json:"exp"`
 }
 
-func NewLoginResponse(token string, refreshToken string, exp int64) *LoginResponse {
+func NewLoginResponse(token, refreshToken string, exp int64) *LoginResponse {
 	return &LoginResponse{
 		AccessToken:  token,
 		RefreshToken: refreshToken,
