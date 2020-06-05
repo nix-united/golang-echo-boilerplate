@@ -1,3 +1,60 @@
+# Overview
+This is an example of demo application based on the echo framework.
+The application has a basic functional, it does register and authenticate with jwt users, create, 
+update and delete posts, create and run migrations, validate requests, also have tests and swagger docs.
+
+## Usage
+1. Copy .env.dist to .env and set the environment variables.
+2. Run your application using the command in the terminal:
+
+    `docker-compose up -d`
+3. Build the Swagger documentation using these commands in the terminal:
+    
+    `go get -v github.com/swaggo/swag/cmd/swag`
+    
+    `$GOPATH/bin/swag init`
+4. Browse to {HOST}:{PORT}/swagger/index.html. You will see Swagger 2.0 API documents.
+5. Using the API documentation, make requests to register a user (if necessary) and login.
+6. After the successful login, copy a token from the response, then click "Authorize" and in a popup that opened, enter the value for "apiKey" in a form:
+"Bearer {token}". For example:
+
+
+    Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODk0NDA5NjYsIm9yaWdfaWF0IjoxNTg5NDM5OTY2LCJ1c2VyX2lkIjo1fQ.f8dSG3NxFLHwyA5-XIYALT5GtXm4eiH-motqtqAUBOI 
+
+   
+Then, click "Authorize" and close the popup.
+
+## Directories
+1. **/deploy** contains the container (Docker) package configuration and template(docker-compose) for project deployment.
+
+2. **/development** includes Docker and docker-compose files for setup linter.
+
+3. **/migrations** has files for run migrations.
+
+4. **/server** is the main project folder. This folder contains the executable server.go.
+
+5. **/server/builders** contains builders for initializing entities.
+
+6. **/server/db** has seeders and method for connecting to the database.
+
+7. **/server/handlers** contains request handlers.
+
+8. **/server/models** includes structures describing data models.
+
+9. **/server/repositories** contains methods for selecting entities from the database.
+
+10. **/server/requests** has structures describing the parameters of incoming requests.
+
+11. **/server/responses** includes structures describing the parameters of outgoing response.
+
+12. **/server/routes** has a file for configuring routes.
+
+13. **/server/services** contains methods for creating entities.
+
+14. **/server/validation** contains the request validator.
+
+15. **/tests**  includes tests and test data.
+
 ## Code quality
 For control code quality we are use [golangci-lint](https://github.com/golangci/golangci-lint).
 Golangci-lint is a linters aggregator.
@@ -47,16 +104,16 @@ Finally, you need to fix all problems manually or using autofixing (if it's supp
      $GOPATH/bin/swag init 
 
     
-### Usage
 
-1. Run your app, and browse to {HOST}:{PORT}/swagger/index.html. You will see Swagger 2.0 API documents.
-2. Using the API documentation, make requests to register a user (if necessary) and login.
-3. After the successful login, copy a token from the response, then click "Authorize" and in a popup that opened, enter the value for "apiKey" in a form:
-"Bearer {token}". For example:
-
-
-    Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODk0NDA5NjYsIm9yaWdfaWF0IjoxNTg5NDM5OTY2LCJ1c2VyX2lkIjo1fQ.f8dSG3NxFLHwyA5-XIYALT5GtXm4eiH-motqtqAUBOI 
-
-   
-Then, click "Authorize" and close the popup.
 Now, you are able to make requests which require authentication.
+
+## Libraries
+Migrations - https://github.com/ShkrutDenis/go-migrations
+
+Jwt - https://github.com/dgrijalva/jwt-go
+
+Swagger - https://github.com/swaggo/echo-swagger
+
+Mocking db - https://github.com/selvatico/go-mocket
+
+Orm - https://github.com/jinzhu/gorm
