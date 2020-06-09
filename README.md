@@ -1,7 +1,18 @@
 # Overview
-This is an example of demo application based on the echo framework.
-The application has a basic functional, it does register and authenticate with jwt users, create, 
-update and delete posts, create and run migrations, validate requests, also have tests and swagger docs.
+It's an API Skeleton project based on Echo framework.
+Our aim is reducing development time on default features that you can meet very often when your work on API.
+There is a useful set of tools that described below. Feel free to contribute!
+
+## What's inside:
+
+- Registration
+- Authentication with JWT
+- CRUD API for posts
+- Migrations
+- Request validation
+- Swagger docs
+- Environment configuration
+- Docker development environment
 
 ## Usage
 1. Copy .env.dist to .env and set the environment variables.
