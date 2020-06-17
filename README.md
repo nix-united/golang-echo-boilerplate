@@ -19,14 +19,9 @@ There is a useful set of tools that described below. Feel free to contribute!
 2. Run your application using the command in the terminal:
 
     `docker-compose up -d`
-3. Build the Swagger documentation using these commands in the terminal:
-    
-    `go get -v github.com/swaggo/swag/cmd/swag`
-    
-    `$GOPATH/bin/swag init`
-4. Browse to {HOST}:{PORT}/swagger/index.html. You will see Swagger 2.0 API documents.
-5. Using the API documentation, make requests to register a user (if necessary) and login.
-6. After the successful login, copy a token from the response, then click "Authorize" and in a popup that opened, enter the value for "apiKey" in a form:
+3. Browse to {HOST}:{PORT}/swagger/index.html. You will see Swagger 2.0 API documents.
+4. Using the API documentation, make requests to register a user (if necessary) and login.
+5. After the successful login, copy a token from the response, then click "Authorize" and in a popup that opened, enter the value for "apiKey" in a form:
 "Bearer {token}". For example:
 
 
@@ -34,6 +29,7 @@ There is a useful set of tools that described below. Feel free to contribute!
 
    
 Then, click "Authorize" and close the popup.
+Now, you are able to make requests which require authentication.
 
 ## Directories
 1. **/deploy** contains the container (Docker) package configuration and template(docker-compose) for project deployment.
@@ -91,32 +87,6 @@ Finally, you need to fix all problems manually or using autofixing (if it's supp
 
 - `make lint-fix` 
 
-
-## Swagger documentation
-
-
-### Installation
-
-1 Get the binary for github.com/swaggo/swag/cmd/swag:
-
-
-    go get github.com/swaggo/swag/cmd/swag
-
-
-2 In .env file set the value for the "HOST" variable. This is a host to which Swagger will make API requests. For example, for local development:
-
-
-    HOST=localhost 
-  
-    
-3 Run "swag init" in the project's root folder which contains the main.go file. This will parse your comments and generate the required files (docs folder and docs/docs.go).
-
-
-     $GOPATH/bin/swag init 
-
-    
-
-Now, you are able to make requests which require authentication.
 
 ## Libraries
 Migrations - https://github.com/ShkrutDenis/go-migrations
