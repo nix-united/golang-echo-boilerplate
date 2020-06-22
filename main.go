@@ -33,7 +33,7 @@ func main() {
 		log.Println("Error loading .env file")
 	}
 
-	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT"))
+	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("EXPOSE_PORT"))
 
 	app := server.NewServer()
 	app.Echo.Validator = validation.NewCustomValidator(validator.New())

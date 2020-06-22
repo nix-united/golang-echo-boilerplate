@@ -13,9 +13,10 @@ services:
     env_file:
       - .env
     environment:
-      WAIT_HOSTS: echo_mysql:3306
-      WAIT_BEFORE_HOSTS: 15
-      WAIT_SLEEP_INTERVAL: 3
+      - DB_CONNECTION=${DB_HOST}:${DB_PORT}
+      - WAIT_HOSTS=${DB_HOST}:${DB_PORT}
+      - WAIT_BEFORE_HOSTS=15
+      - WAIT_SLEEP_INTERVAL=3
     networks:
       - echo-demo-stack
 
