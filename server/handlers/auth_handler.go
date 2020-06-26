@@ -2,6 +2,7 @@ package handlers
 
 import (
 	s "echo-demo-project/server"
+	"golang.org/x/crypto/bcrypt"
 
 	jwtGo "github.com/dgrijalva/jwt-go"
 
@@ -44,11 +45,12 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 	}
 	user := models.User{}
 	userRepository := repositories.NewUserRepository(authHandler.server.Db)
-	userRepository.GetUser(&user, loginRequest)
+	userRepository.GetUserByName(&user, loginRequest.Name)
 
-	if user.ID == 0 {
+	if user.ID == 0 || (bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password)) != nil) {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid credentials")
 	}
+
 	tokenService := services.NewTokenService()
 	accessToken, exp, err := tokenService.CreateAccessToken(&user)
 	if err != nil {
