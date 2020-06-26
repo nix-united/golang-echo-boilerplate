@@ -2,10 +2,6 @@ package handlers
 
 import (
 	s "echo-demo-project/server"
-	"golang.org/x/crypto/bcrypt"
-
-	jwtGo "github.com/dgrijalva/jwt-go"
-
 	"echo-demo-project/server/models"
 	"echo-demo-project/server/repositories"
 	"echo-demo-project/server/requests"
@@ -15,7 +11,9 @@ import (
 	"net/http"
 	"os"
 
+	jwtGo "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthHandler struct {
