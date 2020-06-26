@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	mocket "github.com/selvatico/go-mocket"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -31,8 +32,11 @@ func TestAuth(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := s.Echo.NewContext(req, rec)
 
-	commonReply := []map[string]interface{}{{"id": 1, "name": "name", "password": "password"}}
-	mocket.Catcher.Reset().NewMock().WithArgs("name", "password").WithReply(commonReply)
+	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
+	commonReply := []map[string]interface{}{
+		{"id": 1, "name": "name", "password": string(encryptedPassword)},
+	}
+	mocket.Catcher.Reset().NewMock().WithArgs("name").WithReply(commonReply)
 
 	var authResponse responses.LoginResponse
 
