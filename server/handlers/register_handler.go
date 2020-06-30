@@ -46,7 +46,7 @@ func (registerHandler *RegisterHandler) Register(c echo.Context) error {
 	userRepository.GetUserByName(&existUser, registerRequest.Name)
 
 	if existUser.ID != 0 {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "User already exist")
+		return responses.ErrorResponse(c, http.StatusBadRequest, "User already exists")
 	}
 
 	userService := services.NewUserService(registerHandler.server.Db)
