@@ -14,25 +14,8 @@ import (
 	"testing"
 )
 
-type ExpectedResponse struct {
-	StatusCode int
-	BodyPart   string
-}
-
-type QueryMock struct {
-	Query string
-	Reply []map[string]interface{}
-}
-
-type TestCase struct{
-	TestName  string
-	Request   requests.RegisterRequest
-	QueryMock *QueryMock
-	Expected  ExpectedResponse
-}
-
-func TestWalk(t *testing.T) {
-	cases := []TestCase {
+func TestWalkRegister(t *testing.T) {
+	cases := []helpers.TestCase {
 		{
 			"Register user success",
 			requests.RegisterRequest{
@@ -40,7 +23,7 @@ func TestWalk(t *testing.T) {
 				Password: "password",
 			},
 			nil,
-			ExpectedResponse{
+			helpers.ExpectedResponse{
 				StatusCode: 200,
 				BodyPart:   "User successfully created",
 			},
@@ -52,7 +35,7 @@ func TestWalk(t *testing.T) {
 				Password: "password",
 			},
 			nil,
-			ExpectedResponse{
+			helpers.ExpectedResponse{
 				StatusCode: 400,
 				BodyPart:   "error",
 			},
@@ -64,7 +47,7 @@ func TestWalk(t *testing.T) {
 				Password: "passw",
 			},
 			nil,
-			ExpectedResponse{
+			helpers.ExpectedResponse{
 				StatusCode: 400,
 				BodyPart:   "error",
 			},
@@ -75,11 +58,11 @@ func TestWalk(t *testing.T) {
 				Name:     "Duplicated Name",
 				Password: "password",
 			},
-			&QueryMock{
+			&helpers.QueryMock{
 				Query: `SELECT * FROM "users"  WHERE "users"."deleted_at" IS NULL AND ((name = Duplicated Name))`,
-				Reply: []map[string]interface{}{{"id": 1, "name": "Duplicated Name", "password": "EncryptedPassword"}},
+				Reply: helpers.MockReply{{"id": 1, "name": "Duplicated Name", "password": "EncryptedPassword"}},
 			},
-			ExpectedResponse{
+			helpers.ExpectedResponse{
 				StatusCode: 400,
 				BodyPart:   "User already exists",
 			},
