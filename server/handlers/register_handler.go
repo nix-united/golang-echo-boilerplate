@@ -2,7 +2,6 @@ package handlers
 
 import (
 	s "echo-demo-project/server"
-	"echo-demo-project/server/builders"
 	"echo-demo-project/server/models"
 	"echo-demo-project/server/repositories"
 	"echo-demo-project/server/requests"
@@ -11,7 +10,6 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type RegisterHandler struct {
@@ -51,21 +49,10 @@ func (registerHandler *RegisterHandler) Register(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "User already exist")
 	}
 
-	encryptedPassword, err := bcrypt.GenerateFromPassword(
-		[]byte(registerRequest.Password),
-		bcrypt.DefaultCost,
-	)
-
-	if err != nil {
+	userService := services.NewUserService(registerHandler.server.Db)
+	if err := userService.Register(registerRequest); err != nil {
 		return responses.ErrorResponse(c, http.StatusInternalServerError, "Server error")
 	}
-
-	user := builders.NewUserBuilder().SetName(registerRequest.Name).
-		SetPassword(string(encryptedPassword)).
-		Build()
-
-	userService := services.NewUserService(registerHandler.server.Db)
-	userService.Create(&user)
 
 	return responses.SuccessResponse(c, "User successfully created")
 }
