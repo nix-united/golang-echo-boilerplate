@@ -2,32 +2,67 @@ package tests
 
 import (
 	"echo-demo-project/server/handlers"
+	"echo-demo-project/server/requests"
 	"echo-demo-project/tests/helpers"
+	"encoding/json"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"strings"
 	"testing"
 )
 
+type Response struct {
+	StatusCode int
+	BodyPart   string
+}
 
-func TestCreateUser(t *testing.T)  {
-	s := helpers.NewServer()
+func TestWalk(t *testing.T) {
+	cases := []struct{
+		Name	 string
+		Request  requests.RegisterRequest
+		Expected Response
+	} {
+		{
+			"Register user success",
+			requests.RegisterRequest{
+				Name:     "name",
+				Password: "password",
+			},
+			Response{
+				StatusCode: 200,
+				BodyPart:   "User successfully created",
+			},
+		},
+		{
+			"Register user with empty name",
+			requests.RegisterRequest{
+				Name:     "",
+				Password: "password",
+			},
+			Response{
+				StatusCode: 400,
+				BodyPart:   "error",
+			},
+		},
+	}
 
-	f := make(url.Values)
-	f.Set("name", "name")
-	f.Set("password", "password")
+	for _, test := range cases {
+		t.Run(test.Name, func(t *testing.T) {
+			s := helpers.NewServer()
 
-	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(f.Encode()))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationForm)
-	rec := httptest.NewRecorder()
-	c := s.Echo.NewContext(req, rec)
+			requestJson, _ := json.Marshal(test.Request)
+			request := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(string(requestJson)))
+			request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+			recorder := httptest.NewRecorder()
+			c := s.Echo.NewContext(request, recorder)
 
-	h := handlers.NewRegisterHandler(s)
-	if assert.NoError(t, h.Register(c)) {
-		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "\"User successfully created\"", strings.TrimSpace(rec.Body.String()))
+			h := handlers.NewRegisterHandler(s)
+			if assert.NoError(t, h.Register(c)) {
+				assert.Equal(t, test.Expected.StatusCode, recorder.Code)
+				assert.Contains(t, recorder.Body.String(), test.Expected.BodyPart)
+			}
+		})
 	}
 }
