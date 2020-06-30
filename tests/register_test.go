@@ -46,6 +46,17 @@ func TestWalk(t *testing.T) {
 				BodyPart:   "error",
 			},
 		},
+		{
+			"Register user with too short password",
+			requests.RegisterRequest{
+				Name:     "name",
+				Password:  "passw",
+			},
+			Response{
+				StatusCode: 400,
+				BodyPart:   "error",
+			},
+		},
 	}
 
 	for _, test := range cases {
