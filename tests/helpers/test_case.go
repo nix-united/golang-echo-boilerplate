@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"github.com/labstack/echo/v4"
 	mocket "github.com/selvatico/go-mocket"
-	"net/http"
 	"net/http/httptest"
 	"strings"
 )
@@ -13,6 +12,11 @@ import (
 const UserId = 1
 
 type MockReply []map[string]interface{}
+
+type Request struct {
+	Method string
+	Url    string
+}
 
 type QueryMock struct {
 	Query string
@@ -25,15 +29,17 @@ type ExpectedResponse struct {
 }
 
 type TestCase struct{
-	TestName  string
-	Request   interface{}
-	QueryMock *QueryMock
-	Expected  ExpectedResponse
+	TestName    string
+	Request     Request
+	RequestBody interface{}
+	HandlerFunc func(s *server.Server, c echo.Context) error
+	QueryMock   *QueryMock
+	Expected    ExpectedResponse
 }
 
-func PrepareContextFromTestCase(s *server.Server, test TestCase, requestTarget string) (c echo.Context, recorder *httptest.ResponseRecorder) {
-	requestJson, _ := json.Marshal(test.Request)
-	request := httptest.NewRequest(http.MethodPost, requestTarget, strings.NewReader(string(requestJson)))
+func PrepareContextFromTestCase(s *server.Server, test TestCase) (c echo.Context, recorder *httptest.ResponseRecorder) {
+	requestJson, _ := json.Marshal(test.RequestBody)
+	request := httptest.NewRequest(test.Request.Method, test.Request.Url, strings.NewReader(string(requestJson)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	recorder = httptest.NewRecorder()
 	c = s.Echo.NewContext(request, recorder)

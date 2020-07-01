@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"echo-demo-project/server"
 	"echo-demo-project/server/handlers"
 	"echo-demo-project/server/models"
 	"echo-demo-project/server/requests"
@@ -11,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
@@ -19,6 +21,14 @@ import (
 )
 
 func TestWalkAuth(t *testing.T) {
+	request := helpers.Request{
+		Method: http.MethodPost,
+		Url:    "/login",
+	}
+	handlerFunc := func(s *server.Server, c echo.Context) error {
+		return handlers.NewAuthHandler(s).Login(c)
+	}
+
 	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
 	commonMock := &helpers.QueryMock{
 		Query: `SELECT * FROM "users"  WHERE "users"."deleted_at" IS NULL AND ((name = User Name))`,
@@ -28,10 +38,12 @@ func TestWalkAuth(t *testing.T) {
 	cases := []helpers.TestCase {
 		{
 			"Auth success",
+			request,
 			requests.LoginRequest{
 				Name:     "User Name",
 				Password: "password",
 			},
+			handlerFunc,
 			commonMock,
 			helpers.ExpectedResponse{
 				StatusCode: 200,
@@ -40,10 +52,12 @@ func TestWalkAuth(t *testing.T) {
 		},
 		{
 			"Login attempt with incorrect password",
+			request,
 			requests.LoginRequest{
 				Name:     "User Name",
 				Password: "incorrectPassword",
 			},
+			handlerFunc,
 			commonMock,
 			helpers.ExpectedResponse{
 				StatusCode: 401,
@@ -52,10 +66,12 @@ func TestWalkAuth(t *testing.T) {
 		},
 		{
 			"Login attempt as non-existent user",
+			request,
 			requests.LoginRequest{
 				Name:     "User Not Exists",
 				Password: "password",
 			},
+			handlerFunc,
 			commonMock,
 			helpers.ExpectedResponse{
 				StatusCode: 401,
@@ -68,10 +84,9 @@ func TestWalkAuth(t *testing.T) {
 
 	for _, test := range cases {
 		t.Run(test.TestName, func(t *testing.T) {
-			c, recorder := helpers.PrepareContextFromTestCase(s, test, "/login")
-			h := handlers.NewAuthHandler(s)
+			c, recorder := helpers.PrepareContextFromTestCase(s, test)
 
-			if assert.NoError(t, h.Login(c)) {
+			if assert.NoError(t, test.HandlerFunc(s, c)) {
 				assert.Contains(t, recorder.Body.String(), test.Expected.BodyPart)
 				if assert.Equal(t, test.Expected.StatusCode, recorder.Code) {
 					if recorder.Code == http.StatusOK {
@@ -84,6 +99,14 @@ func TestWalkAuth(t *testing.T) {
 }
 
 func TestWalkRefresh(t *testing.T) {
+	request := helpers.Request{
+		Method: http.MethodPost,
+		Url:    "/refresh",
+	}
+	handlerFunc := func(s *server.Server, c echo.Context) error {
+		return handlers.NewAuthHandler(s).RefreshToken(c)
+	}
+
 	tokenService := services.NewTokenService()
 
 	validUser := models.User{Name: "User Name"}
@@ -104,9 +127,11 @@ func TestWalkRefresh(t *testing.T) {
 	cases := []helpers.TestCase {
 		{
 			"Refresh success",
+			request,
 			requests.RefreshRequest{
 				Token: validToken,
 			},
+			handlerFunc,
 			commonMock,
 			helpers.ExpectedResponse{
 				StatusCode: 200,
@@ -115,9 +140,11 @@ func TestWalkRefresh(t *testing.T) {
 		},
 		{
 			"Refresh token of non-existent user",
+			request,
 			requests.RefreshRequest{
 				Token: notExistToken,
 			},
+			handlerFunc,
 			commonMock,
 			helpers.ExpectedResponse{
 				StatusCode: 401,
@@ -126,9 +153,11 @@ func TestWalkRefresh(t *testing.T) {
 		},
 		{
 			"Refresh invalid token",
+			request,
 			requests.RefreshRequest{
 				Token: invalidToken,
 			},
+			handlerFunc,
 			commonMock,
 			helpers.ExpectedResponse{
 				StatusCode: 401,
@@ -141,10 +170,9 @@ func TestWalkRefresh(t *testing.T) {
 
 	for _, test := range cases {
 		t.Run(test.TestName, func(t *testing.T) {
-			c, recorder := helpers.PrepareContextFromTestCase(s, test, "/refresh")
-			h := handlers.NewAuthHandler(s)
+			c, recorder := helpers.PrepareContextFromTestCase(s, test)
 
-			if assert.NoError(t, h.RefreshToken(c)) {
+			if assert.NoError(t, test.HandlerFunc(s, c)) {
 				assert.Contains(t, recorder.Body.String(), test.Expected.BodyPart)
 				if assert.Equal(t, test.Expected.StatusCode, recorder.Code) {
 					if recorder.Code == http.StatusOK {

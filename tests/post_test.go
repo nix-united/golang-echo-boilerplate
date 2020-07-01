@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"echo-demo-project/server"
 	"echo-demo-project/server/handlers"
 	"echo-demo-project/server/requests"
 	"echo-demo-project/server/services"
@@ -17,6 +18,14 @@ import (
 )
 
 func TestWalkCreatePost(t *testing.T) {
+	request := helpers.Request{
+		Method: http.MethodPost,
+		Url:    "/posts",
+	}
+	handlerFunc := func(s *server.Server, c echo.Context) error {
+		return handlers.NewPostHandlers(s).CreatePost(c)
+	}
+
 	claims := &services.JwtCustomClaims{
 		Name: "user",
 		ID:   helpers.UserId,
@@ -26,10 +35,12 @@ func TestWalkCreatePost(t *testing.T) {
 	cases := []helpers.TestCase {
 		{
 			"Create post success",
+			request,
 			requests.CreatePostRequest{
 				Title:   "title",
 				Content: "content",
 			},
+			handlerFunc,
 			nil,
 			helpers.ExpectedResponse{
 				StatusCode: 200,
@@ -38,10 +49,12 @@ func TestWalkCreatePost(t *testing.T) {
 		},
 		{
 			"Create post with empty title",
+			request,
 			requests.CreatePostRequest{
 				Title:   "",
 				Content: "content",
 			},
+			handlerFunc,
 			nil,
 			helpers.ExpectedResponse{
 				StatusCode: 400,
@@ -54,11 +67,10 @@ func TestWalkCreatePost(t *testing.T) {
 
 	for _, test := range cases {
 		t.Run(test.TestName, func(t *testing.T) {
-			c, recorder := helpers.PrepareContextFromTestCase(s, test, "/posts")
+			c, recorder := helpers.PrepareContextFromTestCase(s, test)
 			c.Set("user", validToken)
-			h := handlers.NewPostHandlers(s)
 
-			if assert.NoError(t, h.CreatePost(c)) {
+			if assert.NoError(t, test.HandlerFunc(s, c)) {
 				assert.Contains(t, recorder.Body.String(), test.Expected.BodyPart)
 				assert.Equal(t, test.Expected.StatusCode, recorder.Code)
 			}
