@@ -13,6 +13,9 @@ import (
 	"testing"
 )
 
+const postId = "1"
+const postIdNotExists = "2"
+
 func TestWalkPostsCrud(t *testing.T) {
 	requestCreate := helpers.Request{
 		Method: http.MethodPost,
@@ -24,11 +27,19 @@ func TestWalkPostsCrud(t *testing.T) {
 	}
 	requestUpdate := helpers.Request{
 		Method: http.MethodPut,
-		Url:    "/posts/",
+		Url:    "/posts/" + postId,
+		PathParam: &helpers.PathParam{
+			Name:  "id",
+			Value: postId,
+		},
 	}
 	requestDelete := helpers.Request{
 		Method: http.MethodDelete,
-		Url:    "/posts/",
+		Url:    "/posts/" + postId,
+		PathParam: &helpers.PathParam{
+			Name:  "id",
+			Value: postId,
+		},
 	}
 	handlerFuncCreate := func(s *server.Server, c echo.Context) error {
 		return handlers.NewPostHandlers(s).CreatePost(c)
@@ -50,7 +61,7 @@ func TestWalkPostsCrud(t *testing.T) {
 	validToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	commonMock := &helpers.QueryMock{
-		Query: `SELECT * FROM "posts"  WHERE `,
+		Query: `SELECT * FROM "posts"  WHERE "posts"."deleted_at" IS NULL AND ((id = 1 ))`,
 		Reply: helpers.MockReply{{"id": 1, "title": "title", "content": "content", "username": "Username"}},
 	}
 
@@ -88,7 +99,10 @@ func TestWalkPostsCrud(t *testing.T) {
 			requestGet,
 			"",
 			handlerFuncGet,
-			commonMock,
+			&helpers.QueryMock{
+				Query: `SELECT * FROM "posts"  WHERE `,
+				Reply: helpers.MockReply{{"id": 1, "title": "title", "content": "content", "username": "Username"}},
+			},
 			helpers.ExpectedResponse{
 				StatusCode: 200,
 				BodyPart:   "[{\"title\":\"title\",\"content\":\"content\",\"username\":\"\",\"id\":1}]",
@@ -123,6 +137,27 @@ func TestWalkPostsCrud(t *testing.T) {
 			},
 		},
 		{
+			"Update non-existent post",
+			helpers.Request{
+				Method: http.MethodPut,
+				Url:    "/posts/" + postIdNotExists,
+				PathParam: &helpers.PathParam{
+					Name:  "id",
+					Value: postIdNotExists,
+				},
+			},
+			requests.UpdatePostRequest{
+				Title:   "new title",
+				Content: "new content",
+			},
+			handlerFuncUpdate,
+			commonMock,
+			helpers.ExpectedResponse{
+				StatusCode: 404,
+				BodyPart:   "Post not found",
+			},
+		},
+		{
 			"Delete post success",
 			requestDelete,
 			"",
@@ -131,6 +166,24 @@ func TestWalkPostsCrud(t *testing.T) {
 			helpers.ExpectedResponse{
 				StatusCode: 200,
 				BodyPart:   "Post deleted successfully",
+			},
+		},
+		{
+			"Delete non-existent post",
+			helpers.Request{
+				Method: http.MethodDelete,
+				Url:    "/posts/" + postIdNotExists,
+				PathParam: &helpers.PathParam{
+					Name:  "id",
+					Value: postIdNotExists,
+				},
+			},
+			"",
+			handlerFuncDelete,
+			commonMock,
+			helpers.ExpectedResponse{
+				StatusCode: 404,
+				BodyPart:   "Post not found",
 			},
 		},
 	}
