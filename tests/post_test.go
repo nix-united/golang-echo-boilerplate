@@ -8,22 +8,39 @@ import (
 	"echo-demo-project/tests/helpers"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
-	mocket "github.com/selvatico/go-mocket"
 	"github.com/stretchr/testify/assert"
 	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"strings"
 	"testing"
 )
 
-func TestWalkCreatePost(t *testing.T) {
-	request := helpers.Request{
+func TestWalkPostsCrud(t *testing.T) {
+	requestCreate := helpers.Request{
 		Method: http.MethodPost,
 		Url:    "/posts",
 	}
-	handlerFunc := func(s *server.Server, c echo.Context) error {
+	requestGet := helpers.Request{
+		Method: http.MethodGet,
+		Url:    "/posts",
+	}
+	requestUpdate := helpers.Request{
+		Method: http.MethodPut,
+		Url:    "/posts/",
+	}
+	requestDelete := helpers.Request{
+		Method: http.MethodDelete,
+		Url:    "/posts/",
+	}
+	handlerFuncCreate := func(s *server.Server, c echo.Context) error {
 		return handlers.NewPostHandlers(s).CreatePost(c)
+	}
+	handlerFuncGet := func(s *server.Server, c echo.Context) error {
+		return handlers.NewPostHandlers(s).GetPosts(c)
+	}
+	handlerFuncUpdate := func(s *server.Server, c echo.Context) error {
+		return handlers.NewPostHandlers(s).UpdatePost(c)
+	}
+	handlerFuncDelete := func(s *server.Server, c echo.Context) error {
+		return handlers.NewPostHandlers(s).DeletePost(c)
 	}
 
 	claims := &services.JwtCustomClaims{
@@ -32,15 +49,20 @@ func TestWalkCreatePost(t *testing.T) {
 	}
 	validToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
+	commonMock := &helpers.QueryMock{
+		Query: `SELECT * FROM "posts"  WHERE `,
+		Reply: helpers.MockReply{{"id": 1, "title": "title", "content": "content", "username": "Username"}},
+	}
+
 	cases := []helpers.TestCase {
 		{
 			"Create post success",
-			request,
+			requestCreate,
 			requests.CreatePostRequest{
 				Title:   "title",
 				Content: "content",
 			},
-			handlerFunc,
+			handlerFuncCreate,
 			nil,
 			helpers.ExpectedResponse{
 				StatusCode: 200,
@@ -49,16 +71,66 @@ func TestWalkCreatePost(t *testing.T) {
 		},
 		{
 			"Create post with empty title",
-			request,
+			requestCreate,
 			requests.CreatePostRequest{
 				Title:   "",
 				Content: "content",
 			},
-			handlerFunc,
+			handlerFuncCreate,
 			nil,
 			helpers.ExpectedResponse{
 				StatusCode: 400,
 				BodyPart:   "Required fields are empty",
+			},
+		},
+		{
+			"Get posts success",
+			requestGet,
+			"",
+			handlerFuncGet,
+			commonMock,
+			helpers.ExpectedResponse{
+				StatusCode: 200,
+				BodyPart:   "[{\"title\":\"title\",\"content\":\"content\",\"username\":\"\",\"id\":1}]",
+			},
+		},
+		{
+			"Update post success",
+			requestUpdate,
+			requests.UpdatePostRequest{
+				Title:   "new title",
+				Content: "new content",
+			},
+			handlerFuncUpdate,
+			commonMock,
+			helpers.ExpectedResponse{
+				StatusCode: 200,
+				BodyPart:   "Post successfully updated",
+			},
+		},
+		{
+			"Update post with empty title",
+			requestUpdate,
+			requests.UpdatePostRequest{
+				Title:   "",
+				Content: "new content",
+			},
+			handlerFuncUpdate,
+			commonMock,
+			helpers.ExpectedResponse{
+				StatusCode: 400,
+				BodyPart:   "Required fields are empty",
+			},
+		},
+		{
+			"Delete post success",
+			requestDelete,
+			"",
+			handlerFuncDelete,
+			commonMock,
+			helpers.ExpectedResponse{
+				StatusCode: 200,
+				BodyPart:   "Post deleted successfully",
 			},
 		},
 	}
@@ -75,61 +147,5 @@ func TestWalkCreatePost(t *testing.T) {
 				assert.Equal(t, test.Expected.StatusCode, recorder.Code)
 			}
 		})
-	}
-}
-
-func TestDeletePost(t *testing.T)  {
-	s := helpers.NewServer()
-
-	req := httptest.NewRequest(http.MethodDelete, "/posts", nil)
-	rec := httptest.NewRecorder()
-	c := s.Echo.NewContext(req, rec)
-
-	c.Set("id", 1)
-	commonReply := []map[string]interface{}{{"id": 1, "title": "title", "content": "content"}}
-	mocket.Catcher.Reset().NewMock().WithQuery(`SELECT * FROM "posts"  WHERE `).WithReply(commonReply)
-
-	h := handlers.NewPostHandlers(s)
-	if assert.NoError(t, h.DeletePost(c)) {
-		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "\"Post deleted successfully\"", strings.TrimSpace(rec.Body.String()))
-	}
-}
-
-func TestGetPosts(t *testing.T)  {
-	s := helpers.NewServer()
-
-	req := httptest.NewRequest(http.MethodGet, "/posts", nil)
-	rec := httptest.NewRecorder()
-	c := s.Echo.NewContext(req, rec)
-
-	commonReply := []map[string]interface{}{{"id": 1, "title": "title", "content": "content", "username": "Username"}}
-	mocket.Catcher.Reset().NewMock().WithQuery(`SELECT * FROM "posts"  WHERE `).WithReply(commonReply)
-
-	h := handlers.NewPostHandlers(s)
-	if assert.NoError(t, h.GetPosts(c)) {
-		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "[{\"title\":\"title\",\"content\":\"content\",\"username\":\"\",\"id\":1}]", strings.TrimSpace(rec.Body.String()))
-	}
-}
-
-func TestUpdatePost(t *testing.T)  {
-	s := helpers.NewServer()
-	f := make(url.Values)
-	f.Set("title", "title")
-	f.Set("content", "content")
-
-	req := httptest.NewRequest(http.MethodPut, "/posts", strings.NewReader(f.Encode()))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationForm)
-	rec := httptest.NewRecorder()
-	c := s.Echo.NewContext(req, rec)
-
-	commonReply := []map[string]interface{}{{"id": 1, "title": "title", "content": "content", "username": "Username"}}
-	mocket.Catcher.Reset().NewMock().WithQuery(`SELECT * FROM "posts"  WHERE `).WithReply(commonReply)
-
-	h := handlers.NewPostHandlers(s)
-	if assert.NoError(t, h.UpdatePost(c)) {
-		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "\"Post successfully updated\"", strings.TrimSpace(rec.Body.String()))
 	}
 }
