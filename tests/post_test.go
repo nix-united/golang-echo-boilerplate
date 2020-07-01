@@ -2,6 +2,7 @@ package tests
 
 import (
 	"echo-demo-project/server/handlers"
+	"echo-demo-project/server/requests"
 	"echo-demo-project/server/services"
 	"echo-demo-project/tests/helpers"
 	"github.com/dgrijalva/jwt-go"
@@ -15,30 +16,53 @@ import (
 	"testing"
 )
 
-func TestCreatePost(t *testing.T)  {
-	s := helpers.NewServer()
-
-	f := make(url.Values)
-	f.Set("title", "title")
-	f.Set("content", "content")
-
-	req := httptest.NewRequest(http.MethodPost, "/posts", strings.NewReader(f.Encode()))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationForm)
-	rec := httptest.NewRecorder()
-	c := s.Echo.NewContext(req, rec)
-
+func TestWalkCreatePost(t *testing.T) {
 	claims := &services.JwtCustomClaims{
 		Name: "user",
-		ID:    1,
+		ID:   helpers.UserId,
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	validToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	c.Set("user", token)
+	cases := []helpers.TestCase {
+		{
+			"Create post success",
+			requests.CreatePostRequest{
+				Title:   "title",
+				Content: "content",
+			},
+			nil,
+			helpers.ExpectedResponse{
+				StatusCode: 200,
+				BodyPart:   "Post successfully created",
+			},
+		},
+		{
+			"Create post with empty title",
+			requests.CreatePostRequest{
+				Title:   "",
+				Content: "content",
+			},
+			nil,
+			helpers.ExpectedResponse{
+				StatusCode: 400,
+				BodyPart:   "Required fields are empty",
+			},
+		},
+	}
 
-	h := handlers.NewPostHandlers(s)
-	if assert.NoError(t, h.CreatePost(c)) {
-		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "\"Post successfully created\"", strings.TrimSpace(rec.Body.String()))
+	s := helpers.NewServer()
+
+	for _, test := range cases {
+		t.Run(test.TestName, func(t *testing.T) {
+			c, recorder := helpers.PrepareContextFromTestCase(s, test, "/posts")
+			c.Set("user", validToken)
+			h := handlers.NewPostHandlers(s)
+
+			if assert.NoError(t, h.CreatePost(c)) {
+				assert.Contains(t, recorder.Body.String(), test.Expected.BodyPart)
+				assert.Equal(t, test.Expected.StatusCode, recorder.Code)
+			}
+		})
 	}
 }
 
