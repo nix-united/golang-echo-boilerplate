@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+const UserId = 1
+
 type MockReply []map[string]interface{}
 
 type QueryMock struct {
