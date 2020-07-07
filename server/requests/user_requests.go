@@ -7,7 +7,7 @@ type LoginRequest struct {
 
 type RegisterRequest struct {
 	Name     string `json:"name" validate:"required" example:"John Doe"`
-	Password string `json:"password" validate:"required" example:"11111111"`
+	Password string `json:"password" validate:"required,password" example:"11111111"`
 }
 
 type RefreshRequest struct {
