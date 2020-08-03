@@ -60,7 +60,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 	}
 	res := responses.NewLoginResponse(accessToken, refreshToken, exp)
 
-	return responses.SuccessResponse(c, res)
+	return responses.Response(c, http.StatusOK, res)
 }
 
 // Refresh godoc
@@ -114,5 +114,5 @@ func (authHandler *AuthHandler) RefreshToken(c echo.Context) error {
 	}
 	res := responses.NewLoginResponse(accessToken, refreshToken, exp)
 
-	return responses.SuccessResponse(c, res)
+	return responses.Response(c, http.StatusOK, res)
 }

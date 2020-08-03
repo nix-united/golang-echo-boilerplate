@@ -31,7 +31,7 @@ func TestWalkRegister(t *testing.T) {
 			handlerFunc,
 			nil,
 			helpers.ExpectedResponse{
-				StatusCode: 200,
+				StatusCode: 201,
 				BodyPart:   "User successfully created",
 			},
 		},

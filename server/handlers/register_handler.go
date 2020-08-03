@@ -28,7 +28,7 @@ func NewRegisterHandler(server *s.Server) *RegisterHandler {
 // @Accept json
 // @Produce json
 // @Param params body requests.RegisterRequest true "User's email, user's password"
-// @Success 200 {string} string "User successfully created"
+// @Success 201 {object} responses.Data
 // @Failure 400 {object} responses.Error
 // @Router /register [post]
 func (registerHandler *RegisterHandler) Register(c echo.Context) error {
@@ -54,5 +54,5 @@ func (registerHandler *RegisterHandler) Register(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusInternalServerError, "Server error")
 	}
 
-	return responses.SuccessResponse(c, "User successfully created")
+	return responses.MessageResponse(c, http.StatusCreated, "User successfully created")
 }
