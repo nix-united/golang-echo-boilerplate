@@ -34,7 +34,7 @@ func NewPostHandlers(server *s.Server) *PostHandlers {
 // @Success 201 {object} responses.Data
 // @Failure 400 {object} responses.Error
 // @Security ApiKeyAuth
-// @Router /restricted/posts [post]
+// @Router /posts [post]
 func (p *PostHandlers) CreatePost(c echo.Context) error {
 	createPostRequest := new(requests.CreatePostRequest)
 
@@ -70,7 +70,7 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 // @Success 204 {object} responses.Data
 // @Failure 404 {object} responses.Error
 // @Security ApiKeyAuth
-// @Router /restricted/posts/{id} [delete]
+// @Router /posts/{id} [delete]
 func (p *PostHandlers) DeletePost(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -97,7 +97,7 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 // @Produce json
 // @Success 200 {array} responses.PostResponse
 // @Security ApiKeyAuth
-// @Router /restricted/posts [get]
+// @Router /posts [get]
 func (p *PostHandlers) GetPosts(c echo.Context) error {
 	var posts []models.Post
 
@@ -125,7 +125,7 @@ func (p *PostHandlers) GetPosts(c echo.Context) error {
 // @Failure 400 {object} responses.Error
 // @Failure 404 {object} responses.Error
 // @Security ApiKeyAuth
-// @Router /restricted/posts/{id} [put]
+// @Router /posts/{id} [put]
 func (p *PostHandlers) UpdatePost(c echo.Context) error {
 	updatePostRequest := new(requests.UpdatePostRequest)
 	id, _ := strconv.Atoi(c.Param("id"))
