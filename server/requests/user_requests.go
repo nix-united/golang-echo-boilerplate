@@ -12,5 +12,5 @@ type RegisterRequest struct {
 }
 
 type RefreshRequest struct {
-	Token string `json:"token" validate:"required" example:"access_token"`
+	Token string `json:"token" validate:"required" example:"refresh_token"`
 }

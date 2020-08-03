@@ -70,7 +70,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 // @Tags User Actions
 // @Accept json
 // @Produce json
-// @Param params body requests.RefreshRequest true "Access token"
+// @Param params body requests.RefreshRequest true "Refresh token"
 // @Success 200 {object} responses.LoginResponse
 // @Failure 401 {object} responses.Error
 // @Router /refresh [post]
