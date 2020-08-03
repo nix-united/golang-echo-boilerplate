@@ -38,12 +38,12 @@ func (registerHandler *RegisterHandler) Register(c echo.Context) error {
 		return err
 	}
 	if err := c.Validate(registerRequest); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty")
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty or not valid")
 	}
 
 	existUser := models.User{}
 	userRepository := repositories.NewUserRepository(registerHandler.server.Db)
-	userRepository.GetUserByName(&existUser, registerRequest.Name)
+	userRepository.GetUserByEmail(&existUser, registerRequest.Email)
 
 	if existUser.ID != 0 {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "User already exists")

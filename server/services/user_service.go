@@ -25,7 +25,8 @@ func (userService *UserService) Register(request *requests.RegisterRequest) erro
 		return err
 	}
 
-	user := builders.NewUserBuilder().SetName(request.Name).
+	user := builders.NewUserBuilder().SetEmail(request.Email).
+		SetName(request.Name).
 		SetPassword(string(encryptedPassword)).
 		Build()
 

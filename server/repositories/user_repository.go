@@ -14,6 +14,6 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{Db: db}
 }
 
-func (userRepository *UserRepository) GetUserByName(user *models.User, name string) {
-	userRepository.Db.Where("name = ?", name).Find(user)
+func (userRepository *UserRepository) GetUserByEmail(user *models.User, email string) {
+	userRepository.Db.Where("email = ?", email).Find(user)
 }
