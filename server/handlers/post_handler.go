@@ -2,7 +2,6 @@ package handlers
 
 import (
 	s "echo-demo-project/server"
-	"echo-demo-project/server/builders"
 	"echo-demo-project/server/models"
 	"echo-demo-project/server/repositories"
 	"echo-demo-project/server/requests"
@@ -50,11 +49,11 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 	claims := user.Claims.(*services.JwtCustomClaims)
 	id := claims.ID
 
-	post := builders.NewPostBuilder().
-		SetTitle(createPostRequest.Title).
-		SetContent(createPostRequest.Content).
-		SetUserID(id).
-		Build()
+	post := models.Post{
+		Title:   createPostRequest.Title,
+		Content: createPostRequest.Content,
+		UserID:  id,
+	}
 	postService := services.NewPostService(p.server.Db)
 	postService.Create(&post)
 
