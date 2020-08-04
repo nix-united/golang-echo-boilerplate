@@ -25,13 +25,14 @@ func TestWalkRegister(t *testing.T) {
 			"Register user success",
 			request,
 			requests.RegisterRequest{
+				Email:    "name@test.com",
 				Name:     "name",
 				Password: "password",
 			},
 			handlerFunc,
 			nil,
 			helpers.ExpectedResponse{
-				StatusCode: 200,
+				StatusCode: 201,
 				BodyPart:   "User successfully created",
 			},
 		},
@@ -39,6 +40,7 @@ func TestWalkRegister(t *testing.T) {
 			"Register user with empty name",
 			request,
 			requests.RegisterRequest{
+				Email:    "name@test.com",
 				Name:     "",
 				Password: "password",
 			},
@@ -53,6 +55,7 @@ func TestWalkRegister(t *testing.T) {
 			"Register user with too short password",
 			request,
 			requests.RegisterRequest{
+				Email:    "name@test.com",
 				Name:     "name",
 				Password: "passw",
 			},
@@ -64,16 +67,17 @@ func TestWalkRegister(t *testing.T) {
 			},
 		},
 		{
-			"Register user with duplicated name",
+			"Register user with duplicated email",
 			request,
 			requests.RegisterRequest{
-				Name:     "Duplicated Name",
+				Email:    "duplicated@test.com",
+				Name:     "Another Name",
 				Password: "password",
 			},
 			handlerFunc,
 			&helpers.QueryMock{
-				Query: `SELECT * FROM "users"  WHERE "users"."deleted_at" IS NULL AND ((name = Duplicated Name))`,
-				Reply: helpers.MockReply{{"id": 1, "name": "Duplicated Name", "password": "EncryptedPassword"}},
+				Query: `SELECT * FROM "users"  WHERE "users"."deleted_at" IS NULL AND ((email = duplicated@test.com))`,
+				Reply: helpers.MockReply{{"id": 1, "email": "duplicated@test.com", "password": "EncryptedPassword"}},
 			},
 			helpers.ExpectedResponse{
 				StatusCode: 400,

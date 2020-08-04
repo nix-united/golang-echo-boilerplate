@@ -76,7 +76,7 @@ func TestWalkPostsCrud(t *testing.T) {
 			handlerFuncCreate,
 			nil,
 			helpers.ExpectedResponse{
-				StatusCode: 200,
+				StatusCode: 201,
 				BodyPart:   "Post successfully created",
 			},
 		},
@@ -164,7 +164,7 @@ func TestWalkPostsCrud(t *testing.T) {
 			handlerFuncDelete,
 			commonMock,
 			helpers.ExpectedResponse{
-				StatusCode: 200,
+				StatusCode: 204,
 				BodyPart:   "Post deleted successfully",
 			},
 		},

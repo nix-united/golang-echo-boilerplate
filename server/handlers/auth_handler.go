@@ -43,7 +43,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 	}
 	user := models.User{}
 	userRepository := repositories.NewUserRepository(authHandler.server.Db)
-	userRepository.GetUserByName(&user, loginRequest.Name)
+	userRepository.GetUserByEmail(&user, loginRequest.Email)
 
 	if user.ID == 0 || (bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password)) != nil) {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid credentials")
@@ -60,7 +60,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 	}
 	res := responses.NewLoginResponse(accessToken, refreshToken, exp)
 
-	return responses.SuccessResponse(c, res)
+	return responses.Response(c, http.StatusOK, res)
 }
 
 // Refresh godoc
@@ -70,7 +70,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 // @Tags User Actions
 // @Accept json
 // @Produce json
-// @Param params body requests.RefreshRequest true "Access token"
+// @Param params body requests.RefreshRequest true "Refresh token"
 // @Success 200 {object} responses.LoginResponse
 // @Failure 401 {object} responses.Error
 // @Router /refresh [post]
@@ -114,5 +114,5 @@ func (authHandler *AuthHandler) RefreshToken(c echo.Context) error {
 	}
 	res := responses.NewLoginResponse(accessToken, refreshToken, exp)
 
-	return responses.SuccessResponse(c, res)
+	return responses.Response(c, http.StatusOK, res)
 }

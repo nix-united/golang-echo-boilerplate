@@ -23,7 +23,7 @@ func ConfigureRoutes(server *s.Server) {
 	server.Echo.POST("/register", registerHandler.Register)
 	server.Echo.POST("/refresh", authHandler.RefreshToken)
 
-	r := server.Echo.Group("/restricted")
+	r := server.Echo.Group("")
 	config := middleware.JWTConfig{
 		Claims:     &services.JwtCustomClaims{},
 		SigningKey: []byte(os.Getenv("ACCESS_SECRET")),

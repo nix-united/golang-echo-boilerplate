@@ -28,7 +28,7 @@ func NewRegisterHandler(server *s.Server) *RegisterHandler {
 // @Accept json
 // @Produce json
 // @Param params body requests.RegisterRequest true "User's email, user's password"
-// @Success 200 {string} string "User successfully created"
+// @Success 201 {object} responses.Data
 // @Failure 400 {object} responses.Error
 // @Router /register [post]
 func (registerHandler *RegisterHandler) Register(c echo.Context) error {
@@ -38,12 +38,12 @@ func (registerHandler *RegisterHandler) Register(c echo.Context) error {
 		return err
 	}
 	if err := c.Validate(registerRequest); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty")
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty or not valid")
 	}
 
 	existUser := models.User{}
 	userRepository := repositories.NewUserRepository(registerHandler.server.Db)
-	userRepository.GetUserByName(&existUser, registerRequest.Name)
+	userRepository.GetUserByEmail(&existUser, registerRequest.Email)
 
 	if existUser.ID != 0 {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "User already exists")
@@ -54,5 +54,5 @@ func (registerHandler *RegisterHandler) Register(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusInternalServerError, "Server error")
 	}
 
-	return responses.SuccessResponse(c, "User successfully created")
+	return responses.MessageResponse(c, http.StatusCreated, "User successfully created")
 }

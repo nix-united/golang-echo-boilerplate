@@ -31,8 +31,8 @@ func TestWalkAuth(t *testing.T) {
 
 	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
 	commonMock := &helpers.QueryMock{
-		Query: `SELECT * FROM "users"  WHERE "users"."deleted_at" IS NULL AND ((name = User Name))`,
-		Reply: helpers.MockReply{{"id": helpers.UserId, "name": "User Name", "password": encryptedPassword}},
+		Query: `SELECT * FROM "users"  WHERE "users"."deleted_at" IS NULL AND ((email = name@test.com))`,
+		Reply: helpers.MockReply{{"id": helpers.UserId, "email": "name@test.com", "name": "User Name", "password": encryptedPassword}},
 	}
 
 	cases := []helpers.TestCase {
@@ -40,7 +40,7 @@ func TestWalkAuth(t *testing.T) {
 			"Auth success",
 			request,
 			requests.LoginRequest{
-				Name:     "User Name",
+				Email:    "name@test.com",
 				Password: "password",
 			},
 			handlerFunc,
@@ -54,7 +54,7 @@ func TestWalkAuth(t *testing.T) {
 			"Login attempt with incorrect password",
 			request,
 			requests.LoginRequest{
-				Name:     "User Name",
+				Email:    "name@test.com",
 				Password: "incorrectPassword",
 			},
 			handlerFunc,
@@ -68,7 +68,7 @@ func TestWalkAuth(t *testing.T) {
 			"Login attempt as non-existent user",
 			request,
 			requests.LoginRequest{
-				Name:     "User Not Exists",
+				Email:    "user.not.exists@test.com",
 				Password: "password",
 			},
 			handlerFunc,
@@ -109,11 +109,11 @@ func TestWalkRefresh(t *testing.T) {
 
 	tokenService := services.NewTokenService()
 
-	validUser := models.User{Name: "User Name"}
+	validUser := models.User{Email: "name@test.com"}
 	validUser.ID = helpers.UserId
 	validToken, _ := tokenService.CreateRefreshToken(&validUser)
 
-	notExistUser := models.User{Name: "User Not Exists"}
+	notExistUser := models.User{Email: "user.not.exists@test.com"}
 	notExistUser.ID = helpers.UserId + 1
 	notExistToken, _ := tokenService.CreateRefreshToken(&notExistUser)
 
