@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"echo-demo-project/config"
 	"echo-demo-project/models"
 	"echo-demo-project/requests"
 	"echo-demo-project/responses"
@@ -113,7 +114,7 @@ func TestWalkRefresh(t *testing.T) {
 		return handlers.NewAuthHandler(s).RefreshToken(c)
 	}
 
-	tokenService := token.NewTokenService()
+	tokenService := token.NewTokenService(config.NewConfig())
 
 	validUser := models.User{Email: "name@test.com"}
 	validUser.ID = helpers.UserId
