@@ -53,7 +53,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid credentials")
 	}
 
-	tokenService := tokenservice.NewTokenService()
+	tokenService := tokenservice.NewTokenService(authHandler.server.Config)
 	accessToken, exp, err := tokenService.CreateAccessToken(&user)
 	if err != nil {
 		return err
@@ -107,7 +107,7 @@ func (authHandler *AuthHandler) RefreshToken(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "User not found")
 	}
 
-	tokenService := tokenservice.NewTokenService()
+	tokenService := tokenservice.NewTokenService(authHandler.server.Config)
 	accessToken, exp, err := tokenService.CreateAccessToken(user)
 	if err != nil {
 		return err

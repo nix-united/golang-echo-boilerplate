@@ -4,6 +4,7 @@ import (
 	s "echo-demo-project/server"
 	"echo-demo-project/server/handlers"
 	"echo-demo-project/services/token"
+	"fmt"
 
 	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
@@ -21,6 +22,8 @@ func ConfigureRoutes(server *s.Server) {
 	server.Echo.POST("/login", authHandler.Login)
 	server.Echo.POST("/register", registerHandler.Register)
 	server.Echo.POST("/refresh", authHandler.RefreshToken)
+
+	fmt.Println(server.Config.Auth.AccessSecret)
 
 	r := server.Echo.Group("")
 	config := middleware.JWTConfig{

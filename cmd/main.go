@@ -3,13 +3,8 @@ package main
 import (
 	application "echo-demo-project"
 	"echo-demo-project/config"
-	"echo-demo-project/server"
-	"echo-demo-project/server/routes"
-	"fmt"
-	"log"
-	"os"
-
 	"echo-demo-project/docs"
+	"fmt"
 )
 
 // @title Echo Demo App
@@ -29,15 +24,6 @@ func main() {
 	cfg := config.NewConfig()
 
 	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.ExposePort)
-
-	app := server.NewServer(cfg)
-
-	routes.ConfigureRoutes(app)
-	err := app.Start(os.Getenv("PORT"))
-
-	if err != nil {
-		log.Fatal("Port already used")
-	}
 
 	application.Start(cfg)
 }

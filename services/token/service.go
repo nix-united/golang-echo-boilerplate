@@ -27,9 +27,11 @@ type ServiceWrapper interface {
 }
 
 type Service struct {
-	config config.Config
+	config *config.Config
 }
 
-func NewTokenService() ServiceWrapper {
-	return &Service{}
+func NewTokenService(cfg *config.Config) ServiceWrapper {
+	return &Service{
+		config: cfg,
+	}
 }
