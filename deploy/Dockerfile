@@ -17,7 +17,7 @@ COPY . .
 
 RUN git config --global http.sslVerify true &&\
     go get -v github.com/swaggo/swag/cmd/swag &&\
-    $GOPATH/bin/swag init &&\
+    $GOPATH/bin/swag init -g cmd/main.go &&\
     go get -v ./... &&\
     go build -o demo-echo .
 
