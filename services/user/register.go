@@ -1,22 +1,12 @@
-package services
+package user
 
 import (
+	"echo-demo-project/requests"
 	"echo-demo-project/server/builders"
-	"echo-demo-project/server/requests"
-
-	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserService struct {
-	Db *gorm.DB
-}
-
-func NewUserService(db *gorm.DB) *UserService {
-	return &UserService{Db: db}
-}
-
-func (userService *UserService) Register(request *requests.RegisterRequest) error {
+func (userService *Service) Register(request *requests.RegisterRequest) error {
 	encryptedPassword, err := bcrypt.GenerateFromPassword(
 		[]byte(request.Password),
 		bcrypt.DefaultCost,

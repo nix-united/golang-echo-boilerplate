@@ -1,12 +1,12 @@
 package tests
 
 import (
+	"echo-demo-project/models"
+	"echo-demo-project/requests"
+	"echo-demo-project/responses"
 	"echo-demo-project/server"
 	"echo-demo-project/server/handlers"
-	"echo-demo-project/server/models"
-	"echo-demo-project/server/requests"
-	"echo-demo-project/server/responses"
-	"echo-demo-project/server/services"
+	"echo-demo-project/services/token"
 	"echo-demo-project/tests/helpers"
 	"encoding/json"
 	"errors"
@@ -40,8 +40,10 @@ func TestWalkAuth(t *testing.T) {
 			"Auth success",
 			request,
 			requests.LoginRequest{
-				Email:    "name@test.com",
-				Password: "password",
+				BasicAuth: requests.BasicAuth{
+					Email:    "name@test.com",
+					Password: "password",
+				},
 			},
 			handlerFunc,
 			commonMock,
@@ -54,8 +56,10 @@ func TestWalkAuth(t *testing.T) {
 			"Login attempt with incorrect password",
 			request,
 			requests.LoginRequest{
-				Email:    "name@test.com",
-				Password: "incorrectPassword",
+				BasicAuth: requests.BasicAuth{
+					Email:    "name@test.com",
+					Password: "incorrectPassword",
+				},
 			},
 			handlerFunc,
 			commonMock,
@@ -68,8 +72,10 @@ func TestWalkAuth(t *testing.T) {
 			"Login attempt as non-existent user",
 			request,
 			requests.LoginRequest{
-				Email:    "user.not.exists@test.com",
-				Password: "password",
+				BasicAuth: requests.BasicAuth{
+					Email:    "user.not.exists@test.com",
+					Password: "password",
+				},
 			},
 			handlerFunc,
 			commonMock,
@@ -107,7 +113,7 @@ func TestWalkRefresh(t *testing.T) {
 		return handlers.NewAuthHandler(s).RefreshToken(c)
 	}
 
-	tokenService := services.NewTokenService()
+	tokenService := token.NewTokenService()
 
 	validUser := models.User{Email: "name@test.com"}
 	validUser.ID = helpers.UserId

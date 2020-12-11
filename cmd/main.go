@@ -1,15 +1,13 @@
 package main
 
 import (
+	application "echo-demo-project"
+	"echo-demo-project/config"
 	"echo-demo-project/server"
 	"echo-demo-project/server/routes"
-	"echo-demo-project/server/validation"
 	"fmt"
 	"log"
 	"os"
-
-	"github.com/joho/godotenv"
-	"gopkg.in/go-playground/validator.v9"
 
 	"echo-demo-project/docs"
 )
@@ -28,20 +26,18 @@ import (
 
 // @BasePath /
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Error loading .env file")
-	}
+	cfg := config.NewConfig()
 
-	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("EXPOSE_PORT"))
+	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.ExposePort)
 
-	app := server.NewServer()
-	app.Echo.Validator = validation.NewCustomValidator(validator.New())
+	app := server.NewServer(cfg)
 
 	routes.ConfigureRoutes(app)
-	err = app.Start(os.Getenv("PORT"))
+	err := app.Start(os.Getenv("PORT"))
 
 	if err != nil {
 		log.Fatal("Port already used")
 	}
+
+	application.Start(cfg)
 }

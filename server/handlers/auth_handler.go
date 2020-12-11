@@ -1,19 +1,17 @@
 package handlers
 
 import (
+	"echo-demo-project/models"
+	"echo-demo-project/repositories"
+	"echo-demo-project/requests"
+	"echo-demo-project/responses"
 	s "echo-demo-project/server"
-	"echo-demo-project/server/models"
-	"echo-demo-project/server/repositories"
-	"echo-demo-project/server/requests"
-	"echo-demo-project/server/responses"
-	"echo-demo-project/server/services"
+	tokenservice "echo-demo-project/services/token"
 	"fmt"
-	"net/http"
-	"os"
-
 	jwtGo "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
+	"net/http"
 )
 
 type AuthHandler struct {
@@ -49,7 +47,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid credentials")
 	}
 
-	tokenService := services.NewTokenService()
+	tokenService := tokenservice.NewTokenService()
 	accessToken, exp, err := tokenService.CreateAccessToken(&user)
 	if err != nil {
 		return err
@@ -84,7 +82,7 @@ func (authHandler *AuthHandler) RefreshToken(c echo.Context) error {
 		if _, ok := token.Method.(*jwtGo.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(os.Getenv("REFRESH_SECRET")), nil
+		return []byte(authHandler.server.Config.Auth.RefreshSecret), nil
 	})
 
 	if err != nil {
@@ -103,7 +101,7 @@ func (authHandler *AuthHandler) RefreshToken(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "User not found")
 	}
 
-	tokenService := services.NewTokenService()
+	tokenService := tokenservice.NewTokenService()
 	accessToken, exp, err := tokenService.CreateAccessToken(user)
 	if err != nil {
 		return err

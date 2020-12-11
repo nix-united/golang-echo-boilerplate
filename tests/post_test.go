@@ -1,10 +1,10 @@
 package tests
 
 import (
+	"echo-demo-project/requests"
 	"echo-demo-project/server"
 	"echo-demo-project/server/handlers"
-	"echo-demo-project/server/requests"
-	"echo-demo-project/server/services"
+	"echo-demo-project/services/token"
 	"echo-demo-project/tests/helpers"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
@@ -54,7 +54,7 @@ func TestWalkPostsCrud(t *testing.T) {
 		return handlers.NewPostHandlers(s).DeletePost(c)
 	}
 
-	claims := &services.JwtCustomClaims{
+	claims := &token.JwtCustomClaims{
 		Name: "user",
 		ID:   helpers.UserId,
 	}

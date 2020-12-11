@@ -1,7 +1,7 @@
 package seeders
 
 import (
-	"echo-demo-project/server/models"
+	"echo-demo-project/models"
 
 	"github.com/jinzhu/gorm"
 )

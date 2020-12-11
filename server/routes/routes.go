@@ -3,9 +3,7 @@ package routes
 import (
 	s "echo-demo-project/server"
 	"echo-demo-project/server/handlers"
-	"echo-demo-project/server/services"
-	"os"
-
+	"echo-demo-project/services/token"
 	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
@@ -25,8 +23,8 @@ func ConfigureRoutes(server *s.Server) {
 
 	r := server.Echo.Group("")
 	config := middleware.JWTConfig{
-		Claims:     &services.JwtCustomClaims{},
-		SigningKey: []byte(os.Getenv("ACCESS_SECRET")),
+		Claims:     &token.JwtCustomClaims{},
+		SigningKey: []byte(server.Config.Auth.AccessSecret),
 	}
 	r.Use(middleware.JWTWithConfig(config))
 
