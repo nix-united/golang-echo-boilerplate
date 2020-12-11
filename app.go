@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func Start(cfg config.Config){
+func Start(cfg *config.Config) {
 	app := server.NewServer(cfg)
 
 	routes.ConfigureRoutes(app)

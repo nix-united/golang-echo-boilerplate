@@ -11,10 +11,10 @@ import (
 type Server struct {
 	Echo   *echo.Echo
 	Db     *gorm.DB
-	Config config.Config
+	Config *config.Config
 }
 
-func NewServer(cfg config.Config) *Server {
+func NewServer(cfg *config.Config) *Server {
 	return &Server{
 		Echo:   echo.New(),
 		Db:     db.Init(cfg),

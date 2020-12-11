@@ -8,10 +8,11 @@ import (
 	s "echo-demo-project/server"
 	tokenservice "echo-demo-project/services/token"
 	"fmt"
+	"net/http"
+
 	jwtGo "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
 )
 
 type AuthHandler struct {
@@ -39,6 +40,11 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 	if err := c.Bind(loginRequest); err != nil {
 		return err
 	}
+
+	if err := loginRequest.Validate(); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty or not valid")
+	}
+
 	user := models.User{}
 	userRepository := repositories.NewUserRepository(authHandler.server.Db)
 	userRepository.GetUserByEmail(&user, loginRequest.Email)

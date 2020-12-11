@@ -2,6 +2,7 @@ package user
 
 import (
 	"echo-demo-project/requests"
+
 	"github.com/jinzhu/gorm"
 )
 

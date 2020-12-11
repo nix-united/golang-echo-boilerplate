@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
 	"log"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -11,13 +12,13 @@ type Config struct {
 	HTTP HTTPConfig
 }
 
-func NewConfig() Config {
+func NewConfig() *Config {
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("Error loading .env file")
 	}
 
-	return Config{
+	return &Config{
 		Auth: LoadAuthConfig(),
 		DB:   LoadDBConfig(),
 		HTTP: LoadHTTPConfig(),

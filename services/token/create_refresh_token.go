@@ -2,8 +2,9 @@ package token
 
 import (
 	"echo-demo-project/models"
-	"github.com/dgrijalva/jwt-go"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 func (tokenService *Service) CreateRefreshToken(user *models.User) (t string, err error) {

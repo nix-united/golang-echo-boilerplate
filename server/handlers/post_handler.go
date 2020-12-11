@@ -42,7 +42,7 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 		return err
 	}
 
-	if err := c.Validate(createPostRequest); err != nil {
+	if err := createPostRequest.Validate(); err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty")
 	}
 
@@ -134,7 +134,7 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 		return err
 	}
 
-	if err := c.Validate(updatePostRequest); err != nil {
+	if err := updatePostRequest.Validate(); err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty")
 	}
 

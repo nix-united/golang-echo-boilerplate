@@ -3,6 +3,7 @@ package post
 import (
 	"echo-demo-project/models"
 	"echo-demo-project/requests"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -19,4 +20,3 @@ type Service struct {
 func NewPostService(db *gorm.DB) ServiceWrapper {
 	return &Service{Db: db}
 }
-

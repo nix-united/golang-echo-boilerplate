@@ -4,6 +4,7 @@ import (
 	s "echo-demo-project/server"
 	"echo-demo-project/server/handlers"
 	"echo-demo-project/services/token"
+
 	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
