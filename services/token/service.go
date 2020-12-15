@@ -30,7 +30,7 @@ type Service struct {
 	config *config.Config
 }
 
-func NewTokenService(cfg *config.Config) ServiceWrapper {
+func NewTokenService(cfg *config.Config) *Service {
 	return &Service{
 		config: cfg,
 	}

@@ -17,6 +17,6 @@ type Service struct {
 	Db *gorm.DB
 }
 
-func NewPostService(db *gorm.DB) ServiceWrapper {
+func NewPostService(db *gorm.DB) *Service {
 	return &Service{Db: db}
 }
