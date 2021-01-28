@@ -10,7 +10,7 @@ import (
 func NewServer() *server.Server {
 	s := &server.Server{
 		Echo: echo.New(),
-		Db:   Init(),
+		DB:   Init(),
 	}
 	s.Echo.Validator = validation.NewCustomValidator(validator.New())
 

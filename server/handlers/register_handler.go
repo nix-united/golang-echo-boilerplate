@@ -42,14 +42,14 @@ func (registerHandler *RegisterHandler) Register(c echo.Context) error {
 	}
 
 	existUser := models.User{}
-	userRepository := repositories.NewUserRepository(registerHandler.server.Db)
+	userRepository := repositories.NewUserRepository(registerHandler.server.DB)
 	userRepository.GetUserByEmail(&existUser, registerRequest.Email)
 
 	if existUser.ID != 0 {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "User already exists")
 	}
 
-	userService := services.NewUserService(registerHandler.server.Db)
+	userService := services.NewUserService(registerHandler.server.DB)
 	if err := userService.Register(registerRequest); err != nil {
 		return responses.ErrorResponse(c, http.StatusInternalServerError, "Server error")
 	}

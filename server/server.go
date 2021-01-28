@@ -9,13 +9,13 @@ import (
 
 type Server struct {
 	Echo *echo.Echo
-	Db   *gorm.DB
+	DB   *gorm.DB
 }
 
 func NewServer() *Server {
 	return &Server{
 		Echo: echo.New(),
-		Db:   db.Init(),
+		DB:   db.Init(),
 	}
 }
 
