@@ -1,12 +1,12 @@
 package handlers
 
 import (
+	"echo-demo-project/models"
+	"echo-demo-project/repositories"
+	"echo-demo-project/requests"
+	"echo-demo-project/responses"
 	s "echo-demo-project/server"
-	"echo-demo-project/server/models"
-	"echo-demo-project/server/repositories"
-	"echo-demo-project/server/requests"
-	"echo-demo-project/server/responses"
-	"echo-demo-project/server/services"
+	"echo-demo-project/services/user"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -37,19 +37,20 @@ func (registerHandler *RegisterHandler) Register(c echo.Context) error {
 	if err := c.Bind(registerRequest); err != nil {
 		return err
 	}
-	if err := c.Validate(registerRequest); err != nil {
+
+	if err := registerRequest.Validate(); err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty or not valid")
 	}
 
 	existUser := models.User{}
-	userRepository := repositories.NewUserRepository(registerHandler.server.Db)
+	userRepository := repositories.NewUserRepository(registerHandler.server.DB)
 	userRepository.GetUserByEmail(&existUser, registerRequest.Email)
 
 	if existUser.ID != 0 {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "User already exists")
 	}
 
-	userService := services.NewUserService(registerHandler.server.Db)
+	userService := user.NewUserService(registerHandler.server.DB)
 	if err := userService.Register(registerRequest); err != nil {
 		return responses.ErrorResponse(c, http.StatusInternalServerError, "Server error")
 	}

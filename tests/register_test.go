@@ -1,9 +1,9 @@
 package tests
 
 import (
+	"echo-demo-project/requests"
 	"echo-demo-project/server"
 	"echo-demo-project/server/handlers"
-	"echo-demo-project/server/requests"
 	"echo-demo-project/tests/helpers"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -20,14 +20,16 @@ func TestWalkRegister(t *testing.T) {
 		return handlers.NewRegisterHandler(s).Register(c)
 	}
 
-	cases := []helpers.TestCase {
+	cases := []helpers.TestCase{
 		{
 			"Register user success",
 			request,
 			requests.RegisterRequest{
-				Email:    "name@test.com",
-				Name:     "name",
-				Password: "password",
+				BasicAuth: requests.BasicAuth{
+					Email:    "name@test.com",
+					Password: "password",
+				},
+				Name: "name",
 			},
 			handlerFunc,
 			nil,
@@ -40,9 +42,11 @@ func TestWalkRegister(t *testing.T) {
 			"Register user with empty name",
 			request,
 			requests.RegisterRequest{
-				Email:    "name@test.com",
+				BasicAuth: requests.BasicAuth{
+					Email:    "name@test.com",
+					Password: "password",
+				},
 				Name:     "",
-				Password: "password",
 			},
 			handlerFunc,
 			nil,
@@ -55,9 +59,11 @@ func TestWalkRegister(t *testing.T) {
 			"Register user with too short password",
 			request,
 			requests.RegisterRequest{
-				Email:    "name@test.com",
+				BasicAuth: requests.BasicAuth{
+					Email:    "name@test.com",
+					Password: "passw",
+				},
 				Name:     "name",
-				Password: "passw",
 			},
 			handlerFunc,
 			nil,
@@ -70,9 +76,11 @@ func TestWalkRegister(t *testing.T) {
 			"Register user with duplicated email",
 			request,
 			requests.RegisterRequest{
-				Email:    "duplicated@test.com",
+				BasicAuth: requests.BasicAuth{
+					Email:    "duplicated@test.com",
+					Password: "password",
+				},
 				Name:     "Another Name",
-				Password: "password",
 			},
 			handlerFunc,
 			&helpers.QueryMock{

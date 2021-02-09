@@ -21,7 +21,7 @@ lint:
   stage: test
   before_script:
     - go get -v github.com/swaggo/swag/cmd/swag
-    - $GOPATH/bin/swag init
+    - $GOPATH/bin/swag init -g cmd/main.go
   script:
     - golangci-lint run -v
   allow_failure: true
@@ -38,7 +38,7 @@ migrations:
     - apk add --no-cache --update git build-base openssh-client
     - cp .env.testing.gitlab-ci .env
     - go get -v github.com/swaggo/swag/cmd/swag
-    - $GOPATH/bin/swag init
+    - $GOPATH/bin/swag init -g cmd/main.go
   script:
     - go get -v ./...
     - go run migrations/entry.go --env-path=./ --verbose
@@ -56,7 +56,7 @@ test:
     - apk add --no-cache --update git build-base openssh-client
     - cp .env.testing.gitlab-ci .env.testing
     - go get -v github.com/swaggo/swag/cmd/swag
-    - $GOPATH/bin/swag init
+    - $GOPATH/bin/swag init -g cmd/main.go
   script:
     - go get -v ./...
     - go test -v ./...

@@ -1,19 +1,23 @@
 package repositories
 
 import (
-	"echo-demo-project/server/models"
+	"echo-demo-project/models"
 
 	"github.com/jinzhu/gorm"
 )
 
+type UserRepositoryQ interface {
+	GetUserByEmail(user *models.User, email string)
+}
+
 type UserRepository struct {
-	Db *gorm.DB
+	DB *gorm.DB
 }
 
 func NewUserRepository(db *gorm.DB) *UserRepository {
-	return &UserRepository{Db: db}
+	return &UserRepository{DB: db}
 }
 
 func (userRepository *UserRepository) GetUserByEmail(user *models.User, email string) {
-	userRepository.Db.Where("email = ?", email).Find(user)
+	userRepository.DB.Where("email = ?", email).Find(user)
 }
