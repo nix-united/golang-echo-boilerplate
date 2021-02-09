@@ -46,7 +46,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 	}
 
 	user := models.User{}
-	userRepository := repositories.NewUserRepository(authHandler.server.Db)
+	userRepository := repositories.NewUserRepository(authHandler.server.DB)
 	userRepository.GetUserByEmail(&user, loginRequest.Email)
 
 	if user.ID == 0 || (bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password)) != nil) {
@@ -101,7 +101,7 @@ func (authHandler *AuthHandler) RefreshToken(c echo.Context) error {
 	}
 
 	user := new(models.User)
-	authHandler.server.Db.First(&user, int(claims["id"].(float64)))
+	authHandler.server.DB.First(&user, int(claims["id"].(float64)))
 
 	if user.ID == 0 {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "User not found")

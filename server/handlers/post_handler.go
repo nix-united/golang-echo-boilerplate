@@ -55,7 +55,7 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 		Content: createPostRequest.Content,
 		UserID:  id,
 	}
-	postService := postservice.NewPostService(p.server.Db)
+	postService := postservice.NewPostService(p.server.DB)
 	postService.Create(&post)
 
 	return responses.MessageResponse(c, http.StatusCreated, "Post successfully created")
@@ -76,14 +76,14 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 
 	post := models.Post{}
 
-	postRepository := repositories.NewPostRepository(p.server.Db)
+	postRepository := repositories.NewPostRepository(p.server.DB)
 	postRepository.GetPost(&post, id)
 
 	if post.ID == 0 {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
-	postService := postservice.NewPostService(p.server.Db)
+	postService := postservice.NewPostService(p.server.DB)
 	postService.Delete(&post)
 
 	return responses.MessageResponse(c, http.StatusNoContent, "Post deleted successfully")
@@ -101,11 +101,11 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 func (p *PostHandlers) GetPosts(c echo.Context) error {
 	var posts []models.Post
 
-	postRepository := repositories.NewPostRepository(p.server.Db)
+	postRepository := repositories.NewPostRepository(p.server.DB)
 	postRepository.GetPosts(&posts)
 
 	for i := 0; i < len(posts); i++ {
-		p.server.Db.Model(&posts[i]).Related(&posts[i].User)
+		p.server.DB.Model(&posts[i]).Related(&posts[i].User)
 	}
 
 	response := responses.NewPostResponse(posts)
@@ -140,14 +140,14 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 
 	post := models.Post{}
 
-	postRepository := repositories.NewPostRepository(p.server.Db)
+	postRepository := repositories.NewPostRepository(p.server.DB)
 	postRepository.GetPost(&post, id)
 
 	if post.ID == 0 {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
-	postService := postservice.NewPostService(p.server.Db)
+	postService := postservice.NewPostService(p.server.DB)
 	postService.Update(&post, updatePostRequest)
 
 	return responses.MessageResponse(c, http.StatusOK, "Post successfully updated")

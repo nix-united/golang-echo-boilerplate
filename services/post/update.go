@@ -8,5 +8,5 @@ import (
 func (postService *Service) Update(post *models.Post, updatePostRequest *requests.UpdatePostRequest) {
 	post.Content = updatePostRequest.Content
 	post.Title = updatePostRequest.Title
-	postService.Db.Save(post)
+	postService.DB.Save(post)
 }

@@ -14,9 +14,9 @@ type ServiceWrapper interface {
 }
 
 type Service struct {
-	Db *gorm.DB
+	DB *gorm.DB
 }
 
 func NewPostService(db *gorm.DB) *Service {
-	return &Service{Db: db}
+	return &Service{DB: db}
 }

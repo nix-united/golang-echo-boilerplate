@@ -11,13 +11,13 @@ type UserRepositoryQ interface {
 }
 
 type UserRepository struct {
-	Db *gorm.DB
+	DB *gorm.DB
 }
 
 func NewUserRepository(db *gorm.DB) *UserRepository {
-	return &UserRepository{Db: db}
+	return &UserRepository{DB: db}
 }
 
 func (userRepository *UserRepository) GetUserByEmail(user *models.User, email string) {
-	userRepository.Db.Where("email = ?", email).Find(user)
+	userRepository.DB.Where("email = ?", email).Find(user)
 }

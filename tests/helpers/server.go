@@ -9,7 +9,7 @@ import (
 func NewServer() *server.Server {
 	s := &server.Server{
 		Echo: echo.New(),
-		Db:   Init(),
+		DB:   Init(),
 		Config: config.NewConfig(),
 	}
 
