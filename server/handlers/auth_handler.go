@@ -7,20 +7,24 @@ import (
 	"echo-demo-project/responses"
 	s "echo-demo-project/server"
 	tokenservice "echo-demo-project/services/token"
-	"fmt"
 	"net/http"
 
-	jwtGo "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthHandler struct {
-	server *s.Server
+	server         *s.Server
+	userRepository *repositories.UserRepository
+	tokenService   *tokenservice.Service
 }
 
 func NewAuthHandler(server *s.Server) *AuthHandler {
-	return &AuthHandler{server: server}
+	return &AuthHandler{
+		server:         server,
+		userRepository: repositories.NewUserRepository(server.DB),
+		tokenService:   tokenservice.NewTokenService(server.Config),
+	}
 }
 
 // Login godoc
@@ -46,19 +50,12 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 	}
 
 	user := models.User{}
-	userRepository := repositories.NewUserRepository(authHandler.server.DB)
-	userRepository.GetUserByEmail(&user, loginRequest.Email)
-
+	authHandler.userRepository.GetUserByEmail(&user, loginRequest.Email)
 	if user.ID == 0 || (bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password)) != nil) {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid credentials")
 	}
 
-	tokenService := tokenservice.NewTokenService(authHandler.server.Config)
-	accessToken, exp, err := tokenService.CreateAccessToken(&user)
-	if err != nil {
-		return err
-	}
-	refreshToken, err := tokenService.CreateRefreshToken(&user)
+	accessToken, refreshToken, exp, err := authHandler.tokenService.GenerateTokenPair(&user)
 	if err != nil {
 		return err
 	}
@@ -84,35 +81,18 @@ func (authHandler *AuthHandler) RefreshToken(c echo.Context) error {
 		return err
 	}
 
-	token, err := jwtGo.Parse(refreshRequest.Token, func(token *jwtGo.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwtGo.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(authHandler.server.Config.Auth.RefreshSecret), nil
-	})
-
+	claims, err := authHandler.tokenService.ParseToken(refreshRequest.Token, authHandler.server.Config.Auth.RefreshSecret)
 	if err != nil {
-		return responses.ErrorResponse(c, http.StatusUnauthorized, err.Error())
-	}
-
-	claims, ok := token.Claims.(jwtGo.MapClaims)
-	if !ok && !token.Valid {
-		return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid token")
+		return responses.ErrorResponse(c, http.StatusUnauthorized, "Not authorized")
 	}
 
 	user := new(models.User)
-	authHandler.server.DB.First(&user, int(claims["id"].(float64)))
-
+	authHandler.userRepository.GetUser(user, int((*claims)["id"].(float64)))
 	if user.ID == 0 {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "User not found")
 	}
 
-	tokenService := tokenservice.NewTokenService(authHandler.server.Config)
-	accessToken, exp, err := tokenService.CreateAccessToken(user)
-	if err != nil {
-		return err
-	}
-	refreshToken, err := tokenService.CreateRefreshToken(user)
+	accessToken, refreshToken, exp, err := authHandler.tokenService.GenerateTokenPair(user)
 	if err != nil {
 		return err
 	}

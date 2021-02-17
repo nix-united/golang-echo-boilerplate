@@ -2,7 +2,6 @@ package db
 
 import (
 	"echo-demo-project/config"
-	"echo-demo-project/db/seeders"
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql" // nolint
@@ -23,9 +22,6 @@ func Init(cfg *config.Config) *gorm.DB {
 	if err != nil {
 		panic(err.Error())
 	}
-
-	userSeeder := seeders.NewUserSeeder(db)
-	userSeeder.SetUsers()
 
 	return db
 }

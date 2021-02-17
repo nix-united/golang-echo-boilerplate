@@ -1,12 +1,11 @@
 package routes
 
 import (
+	"echo-demo-project/middleware"
 	s "echo-demo-project/server"
 	"echo-demo-project/server/handlers"
-	"echo-demo-project/services/token"
-	"fmt"
 
-	"github.com/labstack/echo/v4/middleware"
+	echoMW "github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
@@ -15,7 +14,7 @@ func ConfigureRoutes(server *s.Server) {
 	authHandler := handlers.NewAuthHandler(server)
 	registerHandler := handlers.NewRegisterHandler(server)
 
-	server.Echo.Use(middleware.Logger())
+	server.Echo.Use(echoMW.Logger())
 
 	server.Echo.GET("/swagger/*", echoSwagger.WrapHandler)
 
@@ -23,17 +22,12 @@ func ConfigureRoutes(server *s.Server) {
 	server.Echo.POST("/register", registerHandler.Register)
 	server.Echo.POST("/refresh", authHandler.RefreshToken)
 
-	fmt.Println(server.Config.Auth.AccessSecret)
+	authMW := middleware.JWT(server.Config.Auth.AccessSecret)
+	apiProtected := server.Echo.Group("")
+	apiProtected.Use(authMW)
 
-	r := server.Echo.Group("")
-	config := middleware.JWTConfig{
-		Claims:     &token.JwtCustomClaims{},
-		SigningKey: []byte(server.Config.Auth.AccessSecret),
-	}
-	r.Use(middleware.JWTWithConfig(config))
-
-	r.GET("/posts", postHandler.GetPosts)
-	r.POST("/posts", postHandler.CreatePost)
-	r.DELETE("/posts/:id", postHandler.DeletePost)
-	r.PUT("/posts/:id", postHandler.UpdatePost)
+	apiProtected.GET("/posts", postHandler.GetPosts)
+	apiProtected.POST("/posts", postHandler.CreatePost)
+	apiProtected.DELETE("/posts/:id", postHandler.DeletePost)
+	apiProtected.PUT("/posts/:id", postHandler.UpdatePost)
 }
