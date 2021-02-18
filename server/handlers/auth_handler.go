@@ -7,8 +7,10 @@ import (
 	"echo-demo-project/responses"
 	s "echo-demo-project/server"
 	tokenservice "echo-demo-project/services/token"
+	"fmt"
 	"net/http"
 
+	jwtGo "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -104,4 +106,24 @@ func (authHandler *AuthHandler) RefreshToken(c echo.Context) error {
 	res := responses.NewLoginResponse(accessToken, refreshToken, exp)
 
 	return responses.Response(c, http.StatusOK, res)
+}
+
+// Logout godoc
+// @Summary Logout
+// @Description Perform the user's logout
+// @ID user-logout
+// @Tags User Actions
+// @Accept json
+// @Produce json
+// @Success 200 {object} responses.Data
+// @Failure 401 {object} responses.Data
+// @Security ApiKeyAuth
+// @Router /logout [post]
+func (authHandler *AuthHandler) Logout(c echo.Context) error {
+	user := c.Get("user").(*jwtGo.Token)
+	claims := user.Claims.(*tokenservice.JwtCustomClaims)
+
+	authHandler.server.Redis.Del(fmt.Sprintf("token-%d", claims.ID))
+
+	return responses.MessageResponse(c, http.StatusOK, "User logged out")
 }
