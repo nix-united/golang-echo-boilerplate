@@ -7,9 +7,10 @@ import (
 )
 
 type Config struct {
-	Auth AuthConfig
-	DB   DBConfig
-	HTTP HTTPConfig
+	Auth  AuthConfig
+	DB    DBConfig
+	HTTP  HTTPConfig
+	Redis RedisConfig
 }
 
 func NewConfig() *Config {
@@ -19,8 +20,9 @@ func NewConfig() *Config {
 	}
 
 	return &Config{
-		Auth: LoadAuthConfig(),
-		DB:   LoadDBConfig(),
-		HTTP: LoadHTTPConfig(),
+		Auth:  LoadAuthConfig(),
+		DB:    LoadDBConfig(),
+		HTTP:  LoadHTTPConfig(),
+		Redis: LoadRedisConfig(),
 	}
 }

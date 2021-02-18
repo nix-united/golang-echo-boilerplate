@@ -36,6 +36,15 @@ services:
     networks:
       - echo-demo-stack
 
+  echo_redis:
+    image: redis
+    container_name: ${REDIS_HOST}
+    restart: unless-stopped
+    ports:
+      - ${REDIS_EXPOSE_PORT}:${REDIS_PORT}
+    networks:
+      - echo-demo-stack
+
 volumes:
   database_mysql:
 

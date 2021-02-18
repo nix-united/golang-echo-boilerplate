@@ -4,6 +4,7 @@ import (
 	"echo-demo-project/config"
 	"fmt"
 
+	"github.com/go-redis/redis/v7"
 	_ "github.com/go-sql-driver/mysql" // nolint
 	"github.com/jinzhu/gorm"
 )
@@ -24,4 +25,12 @@ func Init(cfg *config.Config) *gorm.DB {
 	}
 
 	return db
+}
+
+func InitRedis(cfg *config.Config) *redis.Client {
+	addr := fmt.Sprintf("%s:%s", cfg.Redis.Host, cfg.Redis.Port)
+
+	return redis.NewClient(&redis.Options{
+		Addr: addr,
+	})
 }

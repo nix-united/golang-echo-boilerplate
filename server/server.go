@@ -4,6 +4,7 @@ import (
 	"echo-demo-project/config"
 	"echo-demo-project/db"
 
+	"github.com/go-redis/redis/v7"
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
 )
@@ -11,6 +12,7 @@ import (
 type Server struct {
 	Echo   *echo.Echo
 	DB     *gorm.DB
+	Redis  *redis.Client
 	Config *config.Config
 }
 
@@ -18,6 +20,7 @@ func NewServer(cfg *config.Config) *Server {
 	return &Server{
 		Echo:   echo.New(),
 		DB:     db.Init(cfg),
+		Redis:  db.InitRedis(cfg),
 		Config: cfg,
 	}
 }
