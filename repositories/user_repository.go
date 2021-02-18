@@ -1,10 +1,14 @@
 package repositories
 
 import (
-	"echo-demo-project/server/models"
+	"echo-demo-project/models"
 
 	"github.com/jinzhu/gorm"
 )
+
+type UserRepositoryQ interface {
+	GetUserByEmail(user *models.User, email string)
+}
 
 type UserRepository struct {
 	DB *gorm.DB

@@ -1,25 +1,25 @@
 package db
 
 import (
-	"echo-demo-project/server/db/seeders"
+	"echo-demo-project/config"
+	"echo-demo-project/db/seeders"
 	"fmt"
-	"os"
 
 	_ "github.com/go-sql-driver/mysql" // nolint
 	"github.com/jinzhu/gorm"
 )
 
-func Init() *gorm.DB {
+func Init(cfg *config.Config) *gorm.DB {
 	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_NAME"))
+		cfg.DB.User,
+		cfg.DB.Password,
+		cfg.DB.Host,
+		cfg.DB.Port,
+		cfg.DB.Name)
 
 	fmt.Println(dataSourceName)
 
-	db, err := gorm.Open(os.Getenv("DB_DRIVER"), dataSourceName)
+	db, err := gorm.Open(cfg.DB.Driver, dataSourceName)
 	if err != nil {
 		panic(err.Error())
 	}

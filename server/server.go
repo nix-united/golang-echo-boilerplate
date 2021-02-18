@@ -1,21 +1,24 @@
 package server
 
 import (
-	"echo-demo-project/server/db"
+	"echo-demo-project/config"
+	"echo-demo-project/db"
 
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
 )
 
 type Server struct {
-	Echo *echo.Echo
-	DB   *gorm.DB
+	Echo   *echo.Echo
+	DB     *gorm.DB
+	Config *config.Config
 }
 
-func NewServer() *Server {
+func NewServer(cfg *config.Config) *Server {
 	return &Server{
-		Echo: echo.New(),
-		DB:   db.Init(),
+		Echo:   echo.New(),
+		DB:     db.Init(cfg),
+		Config: cfg,
 	}
 }
 

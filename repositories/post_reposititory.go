@@ -1,10 +1,15 @@
 package repositories
 
 import (
-	"echo-demo-project/server/models"
+	"echo-demo-project/models"
 
 	"github.com/jinzhu/gorm"
 )
+
+type PostRepositoryQ interface {
+	GetPosts(posts *[]models.Post)
+	GetPost(post *models.Post, id int)
+}
 
 type PostRepository struct {
 	DB *gorm.DB

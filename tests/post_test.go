@@ -1,10 +1,10 @@
 package tests
 
 import (
+	"echo-demo-project/requests"
 	"echo-demo-project/server"
 	"echo-demo-project/server/handlers"
-	"echo-demo-project/server/requests"
-	"echo-demo-project/server/services"
+	"echo-demo-project/services/token"
 	"echo-demo-project/tests/helpers"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
@@ -54,7 +54,7 @@ func TestWalkPostsCrud(t *testing.T) {
 		return handlers.NewPostHandlers(s).DeletePost(c)
 	}
 
-	claims := &services.JwtCustomClaims{
+	claims := &token.JwtCustomClaims{
 		Name: "user",
 		ID:   helpers.UserId,
 	}
@@ -70,8 +70,10 @@ func TestWalkPostsCrud(t *testing.T) {
 			"Create post success",
 			requestCreate,
 			requests.CreatePostRequest{
-				Title:   "title",
-				Content: "content",
+				BasicPost: requests.BasicPost{
+					Title:   "title",
+					Content: "content",
+				},
 			},
 			handlerFuncCreate,
 			nil,
@@ -84,8 +86,10 @@ func TestWalkPostsCrud(t *testing.T) {
 			"Create post with empty title",
 			requestCreate,
 			requests.CreatePostRequest{
-				Title:   "",
-				Content: "content",
+				BasicPost: requests.BasicPost{
+					Title:   "",
+					Content: "content",
+				},
 			},
 			handlerFuncCreate,
 			nil,
@@ -112,8 +116,10 @@ func TestWalkPostsCrud(t *testing.T) {
 			"Update post success",
 			requestUpdate,
 			requests.UpdatePostRequest{
-				Title:   "new title",
-				Content: "new content",
+				BasicPost: requests.BasicPost{
+					Title:   "new title",
+					Content: "new content",
+				},
 			},
 			handlerFuncUpdate,
 			commonMock,
@@ -126,8 +132,10 @@ func TestWalkPostsCrud(t *testing.T) {
 			"Update post with empty title",
 			requestUpdate,
 			requests.UpdatePostRequest{
-				Title:   "",
-				Content: "new content",
+				BasicPost: requests.BasicPost{
+					Title:   "",
+					Content: "new content",
+				},
 			},
 			handlerFuncUpdate,
 			commonMock,
@@ -147,8 +155,10 @@ func TestWalkPostsCrud(t *testing.T) {
 				},
 			},
 			requests.UpdatePostRequest{
-				Title:   "new title",
-				Content: "new content",
+				BasicPost: requests.BasicPost{
+					Title:   "new title",
+					Content: "new content",
+				},
 			},
 			handlerFuncUpdate,
 			commonMock,

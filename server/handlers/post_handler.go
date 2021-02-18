@@ -1,12 +1,13 @@
 package handlers
 
 import (
+	"echo-demo-project/models"
+	"echo-demo-project/repositories"
+	"echo-demo-project/requests"
+	"echo-demo-project/responses"
 	s "echo-demo-project/server"
-	"echo-demo-project/server/models"
-	"echo-demo-project/server/repositories"
-	"echo-demo-project/server/requests"
-	"echo-demo-project/server/responses"
-	"echo-demo-project/server/services"
+	postservice "echo-demo-project/services/post"
+	"echo-demo-project/services/token"
 	"net/http"
 	"strconv"
 
@@ -41,12 +42,12 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 		return err
 	}
 
-	if err := c.Validate(createPostRequest); err != nil {
+	if err := createPostRequest.Validate(); err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty")
 	}
 
 	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*services.JwtCustomClaims)
+	claims := user.Claims.(*token.JwtCustomClaims)
 	id := claims.ID
 
 	post := models.Post{
@@ -54,7 +55,7 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 		Content: createPostRequest.Content,
 		UserID:  id,
 	}
-	postService := services.NewPostService(p.server.DB)
+	postService := postservice.NewPostService(p.server.DB)
 	postService.Create(&post)
 
 	return responses.MessageResponse(c, http.StatusCreated, "Post successfully created")
@@ -82,7 +83,7 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
-	postService := services.NewPostService(p.server.DB)
+	postService := postservice.NewPostService(p.server.DB)
 	postService.Delete(&post)
 
 	return responses.MessageResponse(c, http.StatusNoContent, "Post deleted successfully")
@@ -133,7 +134,7 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 		return err
 	}
 
-	if err := c.Validate(updatePostRequest); err != nil {
+	if err := updatePostRequest.Validate(); err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty")
 	}
 
@@ -146,7 +147,7 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
-	postService := services.NewPostService(p.server.DB)
+	postService := postservice.NewPostService(p.server.DB)
 	postService.Update(&post, updatePostRequest)
 
 	return responses.MessageResponse(c, http.StatusOK, "Post successfully updated")
