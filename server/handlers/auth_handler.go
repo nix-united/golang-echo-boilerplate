@@ -23,7 +23,7 @@ func NewAuthHandler(server *s.Server) *AuthHandler {
 	return &AuthHandler{
 		server:         server,
 		userRepository: repositories.NewUserRepository(server.DB),
-		tokenService:   tokenservice.NewTokenService(server.Config),
+		tokenService:   tokenservice.NewTokenService(server),
 	}
 }
 
