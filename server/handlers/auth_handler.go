@@ -81,13 +81,18 @@ func (authHandler *AuthHandler) RefreshToken(c echo.Context) error {
 		return err
 	}
 
-	claims, err := authHandler.tokenService.ParseToken(refreshRequest.Token, authHandler.server.Config.Auth.RefreshSecret)
+	claims, err := authHandler.tokenService.ParseToken(refreshRequest.Token,
+		authHandler.server.Config.Auth.RefreshSecret)
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "Not authorized")
 	}
 
+	if authHandler.tokenService.ValidateToken(claims, true) != nil {
+		return responses.MessageResponse(c, http.StatusUnauthorized, "Not authorized")
+	}
+
 	user := new(models.User)
-	authHandler.userRepository.GetUser(user, int((*claims)["id"].(float64)))
+	authHandler.userRepository.GetUser(user, int(claims.ID))
 	if user.ID == 0 {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "User not found")
 	}

@@ -23,8 +23,9 @@ func ConfigureRoutes(server *s.Server) {
 	server.Echo.POST("/refresh", authHandler.RefreshToken)
 
 	authMW := middleware.JWT(server.Config.Auth.AccessSecret)
+	validateTokenMW := middleware.ValidateJWT(server)
 	apiProtected := server.Echo.Group("")
-	apiProtected.Use(authMW)
+	apiProtected.Use(authMW, validateTokenMW)
 
 	apiProtected.GET("/posts", postHandler.GetPosts)
 	apiProtected.POST("/posts", postHandler.CreatePost)

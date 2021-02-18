@@ -4,6 +4,7 @@ import (
 	"echo-demo-project/models"
 	s "echo-demo-project/server"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -28,6 +29,7 @@ type CachedTokens struct {
 type ServiceWrapper interface {
 	GenerateTokenPair(user *models.User) (accessToken, refreshToken string, exp int64, err error)
 	ParseToken(tokenString, secret string) (claims *jwtGo.MapClaims, err error)
+	ValidateToken(claims *JwtCustomClaims, isRefresh bool) error
 }
 
 type Service struct {
@@ -66,22 +68,45 @@ func (tokenService *Service) GenerateTokenPair(user *models.User) (
 	return
 }
 
-func (tokenService *Service) ParseToken(tokenString, secret string) (claims *jwtGo.MapClaims, err error) {
-	token, err := jwtGo.Parse(tokenString, func(token *jwtGo.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwtGo.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(secret), nil
-	})
+func (tokenService *Service) ParseToken(tokenString, secret string) (
+	claims *JwtCustomClaims,
+	err error,
+) {
+	token, err := jwtGo.ParseWithClaims(tokenString, &JwtCustomClaims{},
+		func(token *jwtGo.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwtGo.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+			return []byte(secret), nil
+		})
 	if err != nil {
 		return
 	}
 
-	if claims, ok := token.Claims.(jwtGo.MapClaims); ok && token.Valid {
-		return &claims, nil
+	if claims, ok := token.Claims.(*JwtCustomClaims); ok && token.Valid {
+		return claims, nil
 	}
 
 	return nil, err
+}
+
+func (tokenService *Service) ValidateToken(claims *JwtCustomClaims, isRefresh bool) error {
+	cacheJSON, _ := tokenService.server.Redis.Get(fmt.Sprintf("token-%d", claims.ID)).Result()
+	cachedTokens := new(CachedTokens)
+	err := json.Unmarshal([]byte(cacheJSON), cachedTokens)
+
+	var tokenUID string
+	if isRefresh {
+		tokenUID = cachedTokens.RefreshUID
+	} else {
+		tokenUID = cachedTokens.AccessUID
+	}
+
+	if err != nil || tokenUID != claims.UID {
+		return errors.New("token not found")
+	}
+
+	return nil
 }
 
 func (tokenService *Service) createToken(userID uint, expireMinutes int, secret string) (

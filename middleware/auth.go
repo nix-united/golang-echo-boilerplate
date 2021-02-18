@@ -1,16 +1,19 @@
 package middleware
 
 import (
-	"echo-demo-project/services/token"
+	"echo-demo-project/responses"
+	s "echo-demo-project/server"
+	tokenService "echo-demo-project/services/token"
 	"net/http"
 
+	jwtGo "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	echoMW "github.com/labstack/echo/v4/middleware"
 )
 
 func JWT(secret string) echo.MiddlewareFunc {
 	config := echoMW.JWTConfig{
-		Claims:     &token.JwtCustomClaims{},
+		Claims:     &tokenService.JwtCustomClaims{},
 		SigningKey: []byte(secret),
 		ErrorHandler: func(err error) error {
 			return &echo.HTTPError{
@@ -21,4 +24,19 @@ func JWT(secret string) echo.MiddlewareFunc {
 	}
 
 	return echoMW.JWTWithConfig(config)
+}
+
+func ValidateJWT(server *s.Server) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			token := c.Get("user").(*jwtGo.Token)
+			claims := token.Claims.(*tokenService.JwtCustomClaims)
+
+			if tokenService.NewTokenService(server).ValidateToken(claims, false) != nil {
+				return responses.MessageResponse(c, http.StatusUnauthorized, "Not authorized")
+			}
+
+			return next(c)
+		}
+	}
 }
