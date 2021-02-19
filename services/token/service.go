@@ -2,6 +2,7 @@ package token
 
 import (
 	"echo-demo-project/models"
+	"echo-demo-project/repositories"
 	s "echo-demo-project/server"
 	"encoding/json"
 	"errors"
@@ -92,10 +93,13 @@ func (tokenService *Service) ParseToken(tokenString, secret string) (
 	return nil, err
 }
 
-func (tokenService *Service) ValidateToken(claims *JwtCustomClaims, isRefresh bool) error {
+func (tokenService *Service) ValidateToken(claims *JwtCustomClaims, isRefresh bool) (
+	user *models.User,
+	err error,
+) {
 	cacheJSON, _ := tokenService.server.Redis.Get(fmt.Sprintf("token-%d", claims.ID)).Result()
 	cachedTokens := new(CachedTokens)
-	err := json.Unmarshal([]byte(cacheJSON), cachedTokens)
+	err = json.Unmarshal([]byte(cacheJSON), cachedTokens)
 
 	var tokenUID string
 	if isRefresh {
@@ -105,10 +109,17 @@ func (tokenService *Service) ValidateToken(claims *JwtCustomClaims, isRefresh bo
 	}
 
 	if err != nil || tokenUID != claims.UID {
-		return errors.New("token not found")
+		return nil, errors.New("token not found")
 	}
 
-	return nil
+	user = new(models.User)
+	userRepository := repositories.NewUserRepository(tokenService.server.DB)
+	userRepository.GetUser(user, int(claims.ID))
+	if user.ID == 0 {
+		return nil, errors.New("user not found")
+	}
+
+	return user, nil
 }
 
 func (tokenService *Service) createToken(userID uint, expireMinutes int, secret string) (
