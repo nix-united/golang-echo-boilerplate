@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"golang.org/x/sync/errgroup"
 	"time"
 
 	jwtGo "github.com/dgrijalva/jwt-go"
@@ -97,29 +98,40 @@ func (tokenService *Service) ValidateToken(claims *JwtCustomClaims, isRefresh bo
 	user *models.User,
 	err error,
 ) {
-	cacheJSON, _ := tokenService.server.Redis.Get(fmt.Sprintf("token-%d", claims.ID)).Result()
-	cachedTokens := new(CachedTokens)
-	err = json.Unmarshal([]byte(cacheJSON), cachedTokens)
+	var g errgroup.Group
+	g.Go(func() error {
+		cacheJSON, _ := tokenService.server.Redis.Get(fmt.Sprintf("token-%d", claims.ID)).Result()
+		cachedTokens := new(CachedTokens)
+		err = json.Unmarshal([]byte(cacheJSON), cachedTokens)
 
-	var tokenUID string
-	if isRefresh {
-		tokenUID = cachedTokens.RefreshUID
-	} else {
-		tokenUID = cachedTokens.AccessUID
-	}
+		var tokenUID string
+		if isRefresh {
+			tokenUID = cachedTokens.RefreshUID
+		} else {
+			tokenUID = cachedTokens.AccessUID
+		}
 
-	if err != nil || tokenUID != claims.UID {
-		return nil, errors.New("token not found")
-	}
+		if err != nil || tokenUID != claims.UID {
+			return errors.New("token not found")
+		}
 
-	user = new(models.User)
-	userRepository := repositories.NewUserRepository(tokenService.server.DB)
-	userRepository.GetUser(user, int(claims.ID))
-	if user.ID == 0 {
-		return nil, errors.New("user not found")
-	}
+		return nil
+	})
 
-	return user, nil
+	g.Go(func() error {
+		user = new(models.User)
+		userRepository := repositories.NewUserRepository(tokenService.server.DB)
+		userRepository.GetUser(user, int(claims.ID))
+		if user.ID == 0 {
+			return errors.New("user not found")
+		}
+
+		return nil
+	})
+
+	err = g.Wait()
+
+	return user, err
 }
 
 func (tokenService *Service) createToken(userID uint, expireMinutes int, secret string) (

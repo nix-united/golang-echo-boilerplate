@@ -47,8 +47,10 @@ func ValidateJWT(server *s.Server) echo.MiddlewareFunc {
 
 			c.Set("currentUser", user)
 
-			server.Redis.Expire(fmt.Sprintf("token-%d", claims.ID),
-				time.Minute*tokenService.AutoLogoffMinutes)
+			go func() {
+				server.Redis.Expire(fmt.Sprintf("token-%d", claims.ID),
+					time.Minute*tokenService.AutoLogoffMinutes)
+			}()
 
 			return next(c)
 		}
