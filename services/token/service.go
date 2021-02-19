@@ -14,6 +14,7 @@ import (
 
 const ExpireAccessMinutes = 30
 const ExpireRefreshMinutes = 2 * 60
+const AutoLogoffMinutes = 10
 
 type JwtCustomClaims struct {
 	ID  uint   `json:"id"`
@@ -63,7 +64,8 @@ func (tokenService *Service) GenerateTokenPair(user *models.User) (
 		AccessUID:  accessUID,
 		RefreshUID: refreshUID,
 	})
-	tokenService.server.Redis.Set(fmt.Sprintf("token-%d", user.ID), string(cacheJSON), 0)
+	tokenService.server.Redis.Set(fmt.Sprintf("token-%d", user.ID), string(cacheJSON),
+		time.Minute*AutoLogoffMinutes)
 
 	return
 }

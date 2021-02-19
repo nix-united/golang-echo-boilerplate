@@ -4,7 +4,9 @@ import (
 	"echo-demo-project/responses"
 	s "echo-demo-project/server"
 	tokenService "echo-demo-project/services/token"
+	"fmt"
 	"net/http"
+	"time"
 
 	jwtGo "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
@@ -35,6 +37,9 @@ func ValidateJWT(server *s.Server) echo.MiddlewareFunc {
 			if tokenService.NewTokenService(server).ValidateToken(claims, false) != nil {
 				return responses.MessageResponse(c, http.StatusUnauthorized, "Not authorized")
 			}
+
+			server.Redis.Expire(fmt.Sprintf("token-%d", claims.ID),
+				time.Minute*tokenService.AutoLogoffMinutes)
 
 			return next(c)
 		}
