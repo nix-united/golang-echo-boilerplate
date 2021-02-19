@@ -7,11 +7,9 @@ import (
 	"echo-demo-project/responses"
 	s "echo-demo-project/server"
 	postservice "echo-demo-project/services/post"
-	"echo-demo-project/services/token"
 	"net/http"
 	"strconv"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 )
 
@@ -46,14 +44,12 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty")
 	}
 
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*token.JwtCustomClaims)
-	id := claims.ID
+	user := c.Get("currentUser").(*models.User)
 
 	post := models.Post{
 		Title:   createPostRequest.Title,
 		Content: createPostRequest.Content,
-		UserID:  id,
+		UserID:  user.ID,
 	}
 	postService := postservice.NewPostService(p.server.DB)
 	postService.Create(&post)

@@ -1,16 +1,16 @@
 package tests
 
 import (
+	"echo-demo-project/models"
 	"echo-demo-project/requests"
 	"echo-demo-project/server"
 	"echo-demo-project/server/handlers"
-	"echo-demo-project/services/token"
 	"echo-demo-project/tests/helpers"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
+
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 )
 
 const postId = "1"
@@ -54,11 +54,8 @@ func TestWalkPostsCrud(t *testing.T) {
 		return handlers.NewPostHandlers(s).DeletePost(c)
 	}
 
-	claims := &token.JwtCustomClaims{
-		Name: "user",
-		ID:   helpers.UserId,
-	}
-	validToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	validUser := models.User{Email: "name@test.com"}
+	validUser.ID = helpers.UserId
 
 	commonMock := &helpers.QueryMock{
 		Query: `SELECT * FROM "posts"  WHERE "posts"."deleted_at" IS NULL AND ((id = 1 ))`,
@@ -203,7 +200,7 @@ func TestWalkPostsCrud(t *testing.T) {
 	for _, test := range cases {
 		t.Run(test.TestName, func(t *testing.T) {
 			c, recorder := helpers.PrepareContextFromTestCase(s, test)
-			c.Set("user", validToken)
+			c.Set("currentUser", &validUser)
 
 			if assert.NoError(t, test.HandlerFunc(s, c)) {
 				assert.Contains(t, recorder.Body.String(), test.Expected.BodyPart)

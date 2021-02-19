@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"echo-demo-project/config"
 	"echo-demo-project/models"
 	"echo-demo-project/requests"
 	"echo-demo-project/responses"
@@ -12,13 +11,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func TestWalkAuth(t *testing.T) {
@@ -114,15 +114,17 @@ func TestWalkRefresh(t *testing.T) {
 		return handlers.NewAuthHandler(s).RefreshToken(c)
 	}
 
-	tokenService := token.NewTokenService(config.NewConfig())
+	s := helpers.NewServer()
+
+	tokenService := token.NewTokenService(s)
 
 	validUser := models.User{Email: "name@test.com"}
 	validUser.ID = helpers.UserId
-	validToken, _ := tokenService.CreateRefreshToken(&validUser)
+	_, validToken, _, _ := tokenService.GenerateTokenPair(&validUser)
 
 	notExistUser := models.User{Email: "user.not.exists@test.com"}
 	notExistUser.ID = helpers.UserId + 1
-	notExistToken, _ := tokenService.CreateRefreshToken(&notExistUser)
+	_, notExistToken, _, _ := tokenService.GenerateTokenPair(&notExistUser)
 
 	invalidToken := validToken[1:len(validToken)-1]
 
@@ -155,7 +157,7 @@ func TestWalkRefresh(t *testing.T) {
 			commonMock,
 			helpers.ExpectedResponse{
 				StatusCode: 401,
-				BodyPart:   "User not found",
+				BodyPart:   "Not authorized",
 			},
 		},
 		{
@@ -172,8 +174,6 @@ func TestWalkRefresh(t *testing.T) {
 			},
 		},
 	}
-
-	s := helpers.NewServer()
 
 	for _, test := range cases {
 		t.Run(test.TestName, func(t *testing.T) {
