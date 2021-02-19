@@ -7,11 +7,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"golang.org/x/sync/errgroup"
 	"time"
 
 	jwtGo "github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
+	"golang.org/x/sync/errgroup"
 )
 
 const ExpireAccessMinutes = 30
@@ -45,8 +45,7 @@ func NewTokenService(server *s.Server) *Service {
 	}
 }
 
-func (tokenService *Service) GenerateTokenPair(user *models.User) (
-	accessToken string,
+func (tokenService *Service) GenerateTokenPair(user *models.User) (accessToken,
 	refreshToken string,
 	exp int64,
 	err error,
@@ -134,8 +133,7 @@ func (tokenService *Service) ValidateToken(claims *JwtCustomClaims, isRefresh bo
 	return user, err
 }
 
-func (tokenService *Service) createToken(userID uint, expireMinutes int, secret string) (
-	token string,
+func (tokenService *Service) createToken(userID uint, expireMinutes int, secret string) (token,
 	uid string,
 	exp int64,
 	err error,
