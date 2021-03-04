@@ -7,14 +7,14 @@ lint-build:
 
 lint-check:
 	@echo "🌀️ code linting..."
-	@docker-compose --file=$(lint_docker_compose_file) run echo-golinter golangci-lint run \
+	@docker-compose --file=$(lint_docker_compose_file) run --rm echo-golinter golangci-lint run \
  		&& echo "✔️  checked without errors" \
  		|| echo "☢️  code style issues found"
 
 
 lint-fix:
 	@echo "🌀 ️code fixing..."
-	@docker-compose --file=$(lint_docker_compose_file) run echo-golinter golangci-lint run --fix \
+	@docker-compose --file=$(lint_docker_compose_file) run --rm echo-golinter golangci-lint run --fix \
 		&& echo "✔️  fixed without errors" \
 		|| (echo "⚠️️  you need to fix above issues manually" && exit 1)
 	@echo "⚠️️ run \"make lint-check\" again to check what did not fix yet"

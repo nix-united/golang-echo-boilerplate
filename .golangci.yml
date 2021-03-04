@@ -98,4 +98,4 @@ run:
     - test
 
 service:
-  golangci-lint-version: 1.25.0
+  golangci-lint-version: 1.36.0

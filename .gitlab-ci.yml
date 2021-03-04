@@ -17,7 +17,7 @@ stages:
   - deploy
 
 lint:
-  image: golangci/golangci-lint:v1.25.0
+  image: golangci/golangci-lint:v1.36.0
   stage: test
   before_script:
     - go get -v github.com/swaggo/swag/cmd/swag
