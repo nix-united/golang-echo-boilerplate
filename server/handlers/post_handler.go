@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 )
 
@@ -103,10 +103,6 @@ func (p *PostHandlers) GetPosts(c echo.Context) error {
 
 	postRepository := repositories.NewPostRepository(p.server.DB)
 	postRepository.GetPosts(&posts)
-
-	for i := 0; i < len(posts); i++ {
-		p.server.DB.Model(&posts[i]).Related(&posts[i].User)
-	}
 
 	response := responses.NewPostResponse(posts)
 	return responses.Response(c, http.StatusOK, response)

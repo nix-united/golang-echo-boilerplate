@@ -1,5 +1,5 @@
 # base image
-FROM golang:1.13.3-alpine3.10 as build
+FROM golang:1.20.1-alpine3.17 as builder
 
 RUN apk add --no-cache --update git build-base openssh-client
 
@@ -16,7 +16,7 @@ RUN mkdir ~/.ssh && \
 COPY . .
 
 RUN git config --global http.sslVerify true &&\
-    go get -v github.com/swaggo/swag/cmd/swag &&\
+    go install -v github.com/swaggo/swag/cmd/swag@latest &&\
     $GOPATH/bin/swag init -g cmd/main.go &&\
     go get -v ./... &&\
     go build -o demo-echo .

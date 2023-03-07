@@ -5,6 +5,8 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+const emailLength = 1000
+
 type UpdateUserTable struct{}
 
 func (m *UpdateUserTable) GetName() string {
@@ -13,7 +15,7 @@ func (m *UpdateUserTable) GetName() string {
 
 func (m *UpdateUserTable) Up(con *sqlx.DB) {
 	table := mysql.ChangeTable("users", con)
-	table.String("email", 200).Unique()
+	table.String("email", emailLength).Unique()
 
 	table.MustExec()
 }

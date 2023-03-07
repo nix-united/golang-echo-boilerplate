@@ -1,6 +1,6 @@
 package requests
 
-import validation "github.com/go-ozzo/ozzo-validation"
+import validation "github.com/go-ozzo/ozzo-validation/v4"
 
 type BasicPost struct {
 	Title   string `json:"title" validate:"required" example:"Echo"`

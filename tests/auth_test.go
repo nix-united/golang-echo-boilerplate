@@ -12,7 +12,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
@@ -36,7 +36,7 @@ func TestWalkAuth(t *testing.T) {
 		Reply: helpers.MockReply{{"id": helpers.UserId, "email": "name@test.com", "name": "User Name", "password": encryptedPassword}},
 	}
 
-	cases := []helpers.TestCase {
+	cases := []helpers.TestCase{
 		{
 			"Auth success",
 			request,
@@ -124,14 +124,14 @@ func TestWalkRefresh(t *testing.T) {
 	notExistUser.ID = helpers.UserId + 1
 	notExistToken, _ := tokenService.CreateRefreshToken(&notExistUser)
 
-	invalidToken := validToken[1:len(validToken)-1]
+	invalidToken := validToken[1 : len(validToken)-1]
 
 	commonMock := &helpers.QueryMock{
 		Query: `SELECT * FROM "users"  WHERE "users"."deleted_at" IS NULL AND (("users"."id" = 1))`,
 		Reply: helpers.MockReply{{"id": helpers.UserId, "name": "User Name"}},
 	}
 
-	cases := []helpers.TestCase {
+	cases := []helpers.TestCase{
 		{
 			"Refresh success",
 			request,

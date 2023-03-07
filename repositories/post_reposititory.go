@@ -3,7 +3,7 @@ package repositories
 import (
 	"echo-demo-project/models"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type PostRepositoryQ interface {
@@ -20,7 +20,7 @@ func NewPostRepository(db *gorm.DB) *PostRepository {
 }
 
 func (postRepository *PostRepository) GetPosts(posts *[]models.Post) {
-	postRepository.DB.Find(posts)
+	postRepository.DB.Preload("User").Find(posts)
 }
 
 func (postRepository *PostRepository) GetPost(post *models.Post, id int) {

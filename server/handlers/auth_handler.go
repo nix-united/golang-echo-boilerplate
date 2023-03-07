@@ -10,8 +10,9 @@ import (
 	"fmt"
 	"net/http"
 
-	jwtGo "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
+
+	jwtGo "github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -67,7 +68,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 	return responses.Response(c, http.StatusOK, res)
 }
 
-// Refresh godoc
+// RefreshToken godoc
 // @Summary Refresh access token
 // @Description Perform refresh access token
 // @ID user-refresh

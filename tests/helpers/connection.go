@@ -1,8 +1,8 @@
 package helpers
 
 import (
-	"github.com/jinzhu/gorm"
 	mocket "github.com/selvatico/go-mocket"
+	"gorm.io/gorm"
 )
 
 func Init() *gorm.DB {

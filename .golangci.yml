@@ -51,7 +51,6 @@ linters:
   disable-all: true
   enable:
     - bodyclose
-    - deadcode
     - depguard
     - dogsled
     - dupl
@@ -63,27 +62,23 @@ linters:
     - gocyclo
     - gofmt
     - goimports
-    - golint
+    - revive
     - gomnd
     - goprintffuncname
     - gosec
     - gosimple
     - govet
     - ineffassign
-    - interfacer
     - lll
     - misspell
     - nakedret
-    - rowserrcheck
-    - scopelint
+    - exportloopref
     - staticcheck
-    - structcheck
     - stylecheck
     - typecheck
     - unconvert
     - unparam
     - unused
-    - varcheck
     - whitespace
 
   # don't enable:
@@ -95,7 +90,7 @@ linters:
 
 run:
   skip-dirs:
-    - test
+    - tests
 
 service:
-  golangci-lint-version: 1.36.0
+  golangci-lint-version: 1.51.0

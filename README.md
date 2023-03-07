@@ -102,13 +102,13 @@ Finally, you need to fix all problems manually or using autofixing (if it's supp
 ## Libraries
 Migrations - https://github.com/ShkrutDenis/go-migrations
 
-Jwt - https://github.com/dgrijalva/jwt-go
+Jwt - https://github.com/golang-jwt/jwt/v4
 
 Swagger - https://github.com/swaggo/echo-swagger
 
 Mocking db - https://github.com/selvatico/go-mocket
 
-Orm - https://github.com/jinzhu/gorm
+Orm - https://gorm.io/gorm
 
 ## License
 The project is developed by [NIX Solutions](http://nixsolutions.com) Go team and distributed under [MIT LICENSE](https://github.com/nixsolutions/golang-echo-boilerplate/blob/master/LICENSE)

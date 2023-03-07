@@ -6,6 +6,10 @@ import (
 	"echo-demo-project/services/token"
 	"fmt"
 
+	"github.com/golang-jwt/jwt/v4"
+	echojwt "github.com/labstack/echo-jwt/v4"
+	"github.com/labstack/echo/v4"
+
 	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
@@ -26,11 +30,14 @@ func ConfigureRoutes(server *s.Server) {
 	fmt.Println(server.Config.Auth.AccessSecret)
 
 	r := server.Echo.Group("")
-	config := middleware.JWTConfig{
-		Claims:     &token.JwtCustomClaims{},
+	// Configure middleware with the custom claims type
+	config := echojwt.Config{
+		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+			return new(token.JwtCustomClaims)
+		},
 		SigningKey: []byte(server.Config.Auth.AccessSecret),
 	}
-	r.Use(middleware.JWTWithConfig(config))
+	r.Use(echojwt.WithConfig(config))
 
 	r.GET("/posts", postHandler.GetPosts)
 	r.POST("/posts", postHandler.CreatePost)

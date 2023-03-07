@@ -6,7 +6,7 @@ import (
 	"echo-demo-project/server/handlers"
 	"echo-demo-project/services/token"
 	"echo-demo-project/tests/helpers"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -65,7 +65,7 @@ func TestWalkPostsCrud(t *testing.T) {
 		Reply: helpers.MockReply{{"id": 1, "title": "title", "content": "content", "username": "Username"}},
 	}
 
-	cases := []helpers.TestCase {
+	cases := []helpers.TestCase{
 		{
 			"Create post success",
 			requestCreate,
