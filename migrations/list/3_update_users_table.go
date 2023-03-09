@@ -5,7 +5,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-const emailLength = 1000
+const emailLength = 200
 
 type UpdateUserTable struct{}
 
