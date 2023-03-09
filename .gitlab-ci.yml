@@ -20,7 +20,7 @@ lint:
   image: golangci/golangci-lint:v1.51.0
   stage: test
   before_script:
-    - go get -v github.com/swaggo/swag/cmd/swag
+    - go install github.com/swaggo/swag/cmd/swag@latest
     - $GOPATH/bin/swag init -g cmd/main.go
   script:
     - golangci-lint run -v
