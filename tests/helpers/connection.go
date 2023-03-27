@@ -1,14 +1,15 @@
 package helpers
 
 import (
-	mocket "github.com/selvatico/go-mocket"
+	"database/sql"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-func Init() *gorm.DB {
-	mocket.Catcher.Register()
-	mocket.Catcher.Logging = true
-	db, err := gorm.Open(mocket.DriverName, "connection_string")
+func InitGorm(dbMock *sql.DB) *gorm.DB {
+	db, err := gorm.Open(mysql.New(mysql.Config{
+		Conn: dbMock,
+	}), &gorm.Config{})
 	if err != nil {
 		panic(err.Error())
 	}

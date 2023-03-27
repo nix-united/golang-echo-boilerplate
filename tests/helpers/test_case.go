@@ -1,22 +1,24 @@
 package helpers
 
 import (
+	"database/sql/driver"
 	"echo-demo-project/server"
 	"encoding/json"
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/labstack/echo/v4"
-	mocket "github.com/selvatico/go-mocket"
 	"net/http/httptest"
+	"regexp"
 	"strings"
 )
 
 const UserId = 1
 
-type TestCase struct{
+type TestCase struct {
 	TestName    string
 	Request     Request
 	RequestBody interface{}
 	HandlerFunc func(s *server.Server, c echo.Context) error
-	QueryMock   *QueryMock
+	QueryMocks  []*QueryMock
 	Expected    ExpectedResponse
 }
 
@@ -31,16 +33,30 @@ type Request struct {
 	PathParam *PathParam
 }
 
-type MockReply []map[string]interface{}
+type MockReply struct {
+	Columns []string
+	Rows    [][]driver.Value
+}
 
 type QueryMock struct {
-	Query string
-	Reply MockReply
+	Query    string
+	QueryArg []driver.Value
+	Reply    MockReply
 }
 
 type ExpectedResponse struct {
 	StatusCode int
 	BodyPart   string
+}
+
+var SelectVersionMock = QueryMock{
+	Query: "SELECT VERSION()",
+	Reply: MockReply{
+		Columns: []string{"VERSION()"},
+		Rows: [][]driver.Value{
+			{"8.0.32"},
+		},
+	},
 }
 
 func PrepareContextFromTestCase(s *server.Server, test TestCase) (c echo.Context, recorder *httptest.ResponseRecorder) {
@@ -55,9 +71,22 @@ func PrepareContextFromTestCase(s *server.Server, test TestCase) (c echo.Context
 		c.SetParamValues(test.Request.PathParam.Value)
 	}
 
-	if test.QueryMock != nil {
-		mocket.Catcher.Reset().NewMock().WithQuery(test.QueryMock.Query).WithReply(test.QueryMock.Reply)
-	}
-
 	return
+}
+
+func PrepareDatabaseQueryMocks(test TestCase, mock sqlmock.Sqlmock) {
+	for _, queryMock := range test.QueryMocks {
+		query := mock.ExpectQuery(regexp.QuoteMeta(queryMock.Query)).
+			WillReturnRows(mock.NewRows(queryMock.Reply.Columns))
+
+		if len(queryMock.QueryArg) != 0 {
+			query.WithArgs(queryMock.QueryArg...)
+		}
+
+		rows := sqlmock.NewRows(queryMock.Reply.Columns)
+		for _, row := range queryMock.Reply.Rows {
+			rows.AddRow(row...)
+		}
+		query.WillReturnRows(rows)
+	}
 }
