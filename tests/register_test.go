@@ -28,25 +28,31 @@ func TestWalkRegister(t *testing.T) {
 	}
 
 	cases := []helpers.TestCase{
-		//{
-		//	"Register user success",
-		//	request,
-		//	requests.RegisterRequest{
-		//		BasicAuth: requests.BasicAuth{
-		//			Email:    "name@test.com",
-		//			Password: "password",
-		//		},
-		//		Name: "name",
-		//	},
-		//	handlerFunc,
-		//	[]*helpers.QueryMock{
-		//		&helpers.SelectVersionMock,
-		//	},
-		//	helpers.ExpectedResponse{
-		//		StatusCode: 201,
-		//		BodyPart:   "User successfully created",
-		//	},
-		//},
+		{
+			"Register user success",
+			request,
+			requests.RegisterRequest{
+				BasicAuth: requests.BasicAuth{
+					Email:    "new-user@test.com",
+					Password: "password",
+				},
+				Name: "name",
+			},
+			handlerFunc,
+			[]*helpers.QueryMock{&helpers.SelectVersionMock,
+				{
+					Query:    "SELECT * FROM `users` WHERE email = ? AND `users`.`deleted_at` IS NULL",
+					QueryArg: []driver.Value{"new-user@test.com"},
+					Reply: helpers.MockReply{
+						Columns: []string{"id"},
+					},
+				},
+			},
+			helpers.ExpectedResponse{
+				StatusCode: 201,
+				BodyPart:   "User successfully created",
+			},
+		},
 		{
 			"Register user with empty name",
 			request,

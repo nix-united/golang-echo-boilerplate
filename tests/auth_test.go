@@ -142,9 +142,9 @@ func TestWalkRefresh(t *testing.T) {
 
 	notExistUser := models.User{Email: "user.not.exists@test.com"}
 	notExistUser.ID = helpers.UserId + 1
-	//notExistToken, _ := tokenService.CreateRefreshToken(&notExistUser)
+	notExistToken, _ := tokenService.CreateRefreshToken(&notExistUser)
 
-	//invalidToken := validToken[1 : len(validToken)-1]
+	invalidToken := validToken[1 : len(validToken)-1]
 
 	cases := []helpers.TestCase{
 		{
@@ -171,53 +171,51 @@ func TestWalkRefresh(t *testing.T) {
 				BodyPart:   "",
 			},
 		},
-		//{
-		//	"Refresh token of non-existent user",
-		//	request,
-		//	requests.RefreshRequest{
-		//		Token: notExistToken,
-		//	},
-		//	handlerFunc,
-		//	[]*helpers.QueryMock{&helpers.SelectVersionMock,
-		//		{
-		//			Query:    "SELECT * FROM `users` WHERE `users`.`id` = ? AND `users`.`deleted_at` IS NULL ORDER BY `users`.`id` LIMIT 1",
-		//			QueryArg: []driver.Value{int64(2)},
-		//			Reply: helpers.MockReply{
-		//				Columns: []string{"id", "name"},
-		//				Rows: [][]driver.Value{
-		//					{notExistUser.ID, "User Name"},
-		//				},
-		//			},
-		//		}},
-		//	helpers.ExpectedResponse{
-		//		StatusCode: 401,
-		//		BodyPart:   "User not found",
-		//	},
-		//},
-		//{
-		//	"Refresh invalid token",
-		//	request,
-		//	requests.RefreshRequest{
-		//		Token: invalidToken,
-		//	},
-		//	handlerFunc,
-		//	[]*helpers.QueryMock{&helpers.SelectVersionMock,
-		//		{
-		//			Query:    "SELECT * FROM `users` WHERE `users`.`id` = ? AND `users`.`deleted_at` IS NULL ORDER BY `users`.`id` LIMIT 1",
-		//			QueryArg: []driver.Value{int64(2)},
-		//			Reply: helpers.MockReply{
-		//				Columns: []string{"id", "name"},
-		//				Rows: [][]driver.Value{
-		//					{helpers.UserId, "User Name"},
-		//				},
-		//			},
-		//		},
-		//	},
-		//	helpers.ExpectedResponse{
-		//		StatusCode: 401,
-		//		BodyPart:   "error",
-		//	},
-		//},
+		{
+			"Refresh token of non-existent user",
+			request,
+			requests.RefreshRequest{
+				Token: notExistToken,
+			},
+			handlerFunc,
+			[]*helpers.QueryMock{&helpers.SelectVersionMock,
+				{
+					Query:    "SELECT * FROM `users` WHERE `users`.`id` = ? AND `users`.`deleted_at` IS NULL ORDER BY `users`.`id` LIMIT 1",
+					QueryArg: []driver.Value{int64(2)},
+					Reply: helpers.MockReply{
+						Columns: []string{"id", "name"},
+					},
+				},
+			},
+			helpers.ExpectedResponse{
+				StatusCode: 401,
+				BodyPart:   "User not found",
+			},
+		},
+		{
+			"Refresh invalid token",
+			request,
+			requests.RefreshRequest{
+				Token: invalidToken,
+			},
+			handlerFunc,
+			[]*helpers.QueryMock{&helpers.SelectVersionMock,
+				{
+					Query:    "SELECT * FROM `users` WHERE `users`.`id` = ? AND `users`.`deleted_at` IS NULL ORDER BY `users`.`id` LIMIT 1",
+					QueryArg: []driver.Value{int64(2)},
+					Reply: helpers.MockReply{
+						Columns: []string{"id", "name"},
+						Rows: [][]driver.Value{
+							{helpers.UserId, "User Name"},
+						},
+					},
+				},
+			},
+			helpers.ExpectedResponse{
+				StatusCode: 401,
+				BodyPart:   "error",
+			},
+		},
 	}
 
 	for _, test := range cases {

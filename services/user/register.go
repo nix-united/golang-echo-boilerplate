@@ -3,7 +3,6 @@ package user
 import (
 	"echo-demo-project/requests"
 	"echo-demo-project/server/builders"
-
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -21,5 +20,7 @@ func (userService *Service) Register(request *requests.RegisterRequest) error {
 		SetPassword(string(encryptedPassword)).
 		Build()
 
-	return userService.DB.Create(&user).Error
+	userService.DB.Create(&user)
+
+	return nil
 }

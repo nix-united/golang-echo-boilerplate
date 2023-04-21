@@ -40,14 +40,14 @@ func TestWalkPostsCrud(t *testing.T) {
 			Value: postId,
 		},
 	}
-	//requestDelete := helpers.Request{
-	//	Method: http.MethodDelete,
-	//	Url:    "/posts/" + postId,
-	//	PathParam: &helpers.PathParam{
-	//		Name:  "id",
-	//		Value: postId,
-	//	},
-	//}
+	requestDelete := helpers.Request{
+		Method: http.MethodDelete,
+		Url:    "/posts/" + postId,
+		PathParam: &helpers.PathParam{
+			Name:  "id",
+			Value: postId,
+		},
+	}
 	handlerFuncCreate := func(s *server.Server, c echo.Context) error {
 		return handlers.NewPostHandlers(s).CreatePost(c)
 	}
@@ -57,9 +57,9 @@ func TestWalkPostsCrud(t *testing.T) {
 	handlerFuncUpdate := func(s *server.Server, c echo.Context) error {
 		return handlers.NewPostHandlers(s).UpdatePost(c)
 	}
-	//handlerFuncDelete := func(s *server.Server, c echo.Context) error {
-	//	return handlers.NewPostHandlers(s).DeletePost(c)
-	//}
+	handlerFuncDelete := func(s *server.Server, c echo.Context) error {
+		return handlers.NewPostHandlers(s).DeletePost(c)
+	}
 
 	claims := &token.JwtCustomClaims{
 		Name: "user",
@@ -159,64 +159,64 @@ func TestWalkPostsCrud(t *testing.T) {
 				},
 			},
 			handlerFuncUpdate,
-			[]*helpers.QueryMock{&helpers.SelectVersionMock, commonMock},
+			[]*helpers.QueryMock{&helpers.SelectVersionMock},
 			helpers.ExpectedResponse{
 				StatusCode: 400,
 				BodyPart:   "Required fields are empty",
 			},
 		},
-		//{
-		//	"Update non-existent post",
-		//	helpers.Request{
-		//		Method: http.MethodPut,
-		//		Url:    "/posts/" + postIdNotExists,
-		//		PathParam: &helpers.PathParam{
-		//			Name:  "id",
-		//			Value: postIdNotExists,
-		//		},
-		//	},
-		//	requests.UpdatePostRequest{
-		//		BasicPost: requests.BasicPost{
-		//			Title:   "new title",
-		//			Content: "new content",
-		//		},
-		//	},
-		//	handlerFuncUpdate,
-		//	[]*helpers.QueryMock{&helpers.SelectVersionMock, commonMock},
-		//	helpers.ExpectedResponse{
-		//		StatusCode: 404,
-		//		BodyPart:   "Post not found",
-		//	},
-		//},
-		//{
-		//	"Delete post success",
-		//	requestDelete,
-		//	"",
-		//	handlerFuncDelete,
-		//	[]*helpers.QueryMock{&helpers.SelectVersionMock, commonMock},
-		//	helpers.ExpectedResponse{
-		//		StatusCode: 204,
-		//		BodyPart:   "Post deleted successfully",
-		//	},
-		//},
-		//{
-		//	"Delete non-existent post",
-		//	helpers.Request{
-		//		Method: http.MethodDelete,
-		//		Url:    "/posts/" + postIdNotExists,
-		//		PathParam: &helpers.PathParam{
-		//			Name:  "id",
-		//			Value: postIdNotExists,
-		//		},
-		//	},
-		//	"",
-		//	handlerFuncDelete,
-		//	[]*helpers.QueryMock{&helpers.SelectVersionMock, commonMock},
-		//	helpers.ExpectedResponse{
-		//		StatusCode: 404,
-		//		BodyPart:   "Post not found",
-		//	},
-		//},
+		{
+			"Update non-existent post",
+			helpers.Request{
+				Method: http.MethodPut,
+				Url:    "/posts/" + postIdNotExists,
+				PathParam: &helpers.PathParam{
+					Name:  "id",
+					Value: postIdNotExists,
+				},
+			},
+			requests.UpdatePostRequest{
+				BasicPost: requests.BasicPost{
+					Title:   "new title",
+					Content: "new content",
+				},
+			},
+			handlerFuncUpdate,
+			[]*helpers.QueryMock{&helpers.SelectVersionMock},
+			helpers.ExpectedResponse{
+				StatusCode: 404,
+				BodyPart:   "Post not found",
+			},
+		},
+		{
+			"Delete post success",
+			requestDelete,
+			"",
+			handlerFuncDelete,
+			[]*helpers.QueryMock{&helpers.SelectVersionMock, commonMock},
+			helpers.ExpectedResponse{
+				StatusCode: 204,
+				BodyPart:   "Post deleted successfully",
+			},
+		},
+		{
+			"Delete non-existent post",
+			helpers.Request{
+				Method: http.MethodDelete,
+				Url:    "/posts/" + postIdNotExists,
+				PathParam: &helpers.PathParam{
+					Name:  "id",
+					Value: postIdNotExists,
+				},
+			},
+			"",
+			handlerFuncDelete,
+			[]*helpers.QueryMock{&helpers.SelectVersionMock, commonMock},
+			helpers.ExpectedResponse{
+				StatusCode: 404,
+				BodyPart:   "Post not found",
+			},
+		},
 	}
 
 	for _, test := range cases {
