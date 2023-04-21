@@ -3,6 +3,7 @@ package user
 import (
 	"echo-demo-project/requests"
 	"echo-demo-project/server/builders"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
