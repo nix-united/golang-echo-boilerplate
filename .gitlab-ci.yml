@@ -22,7 +22,7 @@ lint:
   before_script:
     - cp .env.testing.gitlab-ci .env.testing
     - go install github.com/swaggo/swag/cmd/swag@latest
-    - $GOPATH/bin/swag init -g cmd/main.go
+    - swag init -g cmd/main.go
   script:
     - golangci-lint run
   allow_failure: true
@@ -57,7 +57,7 @@ test:
     - apk add --no-cache --update git build-base openssh-client
     - cp .env.testing.gitlab-ci .env.testing
     - go install -v github.com/swaggo/swag/cmd/swag@latest
-    - $GOPATH/bin/swag init -g cmd/main.go
+    - swag init -g cmd/main.go
   script:
     - go get -v ./...
     - go test -v ./...
@@ -82,9 +82,6 @@ deploy staging:
   environment:
     name: staging
   when: manual
-  only:
-    refs:
-      - develop
   tags:
     - dind
     - docker
