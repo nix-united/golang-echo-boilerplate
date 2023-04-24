@@ -9,7 +9,7 @@ RUN apk update && apk add --no-cache git
 WORKDIR /app
 
 RUN go install github.com/githubnemo/CompileDaemon@latest
-RUN go install github.com/swaggo/swag/cmd/swag@latest
+RUN go install github.com/swaggo/swag/cmd/swag@v1.8.10
 
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.7.3/wait /wait
 RUN chmod +x /wait

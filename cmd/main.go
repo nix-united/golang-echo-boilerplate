@@ -7,19 +7,19 @@ import (
 	"fmt"
 )
 
-// @title Echo Demo App
-// @version 1.0
-// @description This is a demo version of Echo app.
+//	@title			Echo Demo App
+//	@version		1.0
+//	@description	This is a demo version of Echo app.
 
-// @contact.name NIX Solutions
-// @contact.url https://www.nixsolutions.com/
-// @contact.email ask@nixsolutions.com
+//	@contact.name	NIX Solutions
+//	@contact.url	https://www.nixsolutions.com/
+//	@contact.email	ask@nixsolutions.com
 
-// @securityDefinitions.apikey ApiKeyAuth
-// @in header
-// @name Authorization
+//	@securityDefinitions.apikey	ApiKeyAuth
+//	@in							header
+//	@name						Authorization
 
-// @BasePath /
+// @BasePath	/
 func main() {
 	cfg := config.NewConfig()
 

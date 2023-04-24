@@ -24,17 +24,18 @@ func NewPostHandlers(server *s.Server) *PostHandlers {
 }
 
 // CreatePost godoc
-// @Summary Create post
-// @Description Create post
-// @ID posts-create
-// @Tags Posts Actions
-// @Accept json
-// @Produce json
-// @Param params body requests.CreatePostRequest true "Post title and content"
-// @Success 201 {object} responses.Data
-// @Failure 400 {object} responses.Error
-// @Security ApiKeyAuth
-// @Router /posts [post]
+//
+//	@Summary		Create post
+//	@Description	Create post
+//	@ID				posts-create
+//	@Tags			Posts Actions
+//	@Accept			json
+//	@Produce		json
+//	@Param			params	body		requests.CreatePostRequest	true	"Post title and content"
+//	@Success		201		{object}	responses.Data
+//	@Failure		400		{object}	responses.Error
+//	@Security		ApiKeyAuth
+//	@Router			/posts [post]
 func (p *PostHandlers) CreatePost(c echo.Context) error {
 	createPostRequest := new(requests.CreatePostRequest)
 
@@ -62,15 +63,16 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 }
 
 // DeletePost godoc
-// @Summary Delete post
-// @Description Delete post
-// @ID posts-delete
-// @Tags Posts Actions
-// @Param id path int true "Post ID"
-// @Success 204 {object} responses.Data
-// @Failure 404 {object} responses.Error
-// @Security ApiKeyAuth
-// @Router /posts/{id} [delete]
+//
+//	@Summary		Delete post
+//	@Description	Delete post
+//	@ID				posts-delete
+//	@Tags			Posts Actions
+//	@Param			id	path		int	true	"Post ID"
+//	@Success		204	{object}	responses.Data
+//	@Failure		404	{object}	responses.Error
+//	@Security		ApiKeyAuth
+//	@Router			/posts/{id} [delete]
 func (p *PostHandlers) DeletePost(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -90,14 +92,15 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 }
 
 // GetPosts godoc
-// @Summary Get posts
-// @Description Get the list of all posts
-// @ID posts-get
-// @Tags Posts Actions
-// @Produce json
-// @Success 200 {array} responses.PostResponse
-// @Security ApiKeyAuth
-// @Router /posts [get]
+//
+//	@Summary		Get posts
+//	@Description	Get the list of all posts
+//	@ID				posts-get
+//	@Tags			Posts Actions
+//	@Produce		json
+//	@Success		200	{array}	responses.PostResponse
+//	@Security		ApiKeyAuth
+//	@Router			/posts [get]
 func (p *PostHandlers) GetPosts(c echo.Context) error {
 	var posts []models.Post
 
@@ -109,19 +112,20 @@ func (p *PostHandlers) GetPosts(c echo.Context) error {
 }
 
 // UpdatePost godoc
-// @Summary Update post
-// @Description Update post
-// @ID posts-update
-// @Tags Posts Actions
-// @Accept json
-// @Produce json
-// @Param id path int true "Post ID"
-// @Param params body requests.UpdatePostRequest true "Post title and content"
-// @Success 200 {object} responses.Data
-// @Failure 400 {object} responses.Error
-// @Failure 404 {object} responses.Error
-// @Security ApiKeyAuth
-// @Router /posts/{id} [put]
+//
+//	@Summary		Update post
+//	@Description	Update post
+//	@ID				posts-update
+//	@Tags			Posts Actions
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int							true	"Post ID"
+//	@Param			params	body		requests.UpdatePostRequest	true	"Post title and content"
+//	@Success		200		{object}	responses.Data
+//	@Failure		400		{object}	responses.Error
+//	@Failure		404		{object}	responses.Error
+//	@Security		ApiKeyAuth
+//	@Router			/posts/{id} [put]
 func (p *PostHandlers) UpdatePost(c echo.Context) error {
 	updatePostRequest := new(requests.UpdatePostRequest)
 	id, _ := strconv.Atoi(c.Param("id"))
