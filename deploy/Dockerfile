@@ -5,6 +5,8 @@ RUN apk add --no-cache --update git build-base openssh-client
 
 WORKDIR /go/src/api
 
+RUN ls -la
+
 ARG WEB_PRIVATE_KEY
 ARG GIT_DOMAIN
 
@@ -21,10 +23,14 @@ RUN git config --global http.sslVerify true &&\
     go get -v ./... &&\
     go build -o demo-echo .
 
+RUN ls -la
+
 FROM alpine
 
 WORKDIR /app
 COPY --from=build /go/src/api/demo-echo /app/demo-echo
+
+RUN ls -la
 
 RUN ["chmod", "+x", "./demo-echo"]
 
