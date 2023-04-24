@@ -26,6 +26,6 @@ FROM alpine
 WORKDIR /app
 COPY --from=build /go/src/api/demo-echo /app/demo-echo
 
-RUN chmod +x ./demo-echo
+RUN ["chmod", "+x", "./demo-echo"]
 
-CMD ./demo-echo
+CMD ["./demo-echo"]
