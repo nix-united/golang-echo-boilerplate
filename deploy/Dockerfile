@@ -34,4 +34,6 @@ RUN ls -la
 
 RUN ["chmod", "+x", "./demo-echo"]
 
+RUN ls -la
+
 CMD ["./demo-echo"]
