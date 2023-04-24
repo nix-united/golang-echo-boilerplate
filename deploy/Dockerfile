@@ -16,7 +16,7 @@ RUN mkdir ~/.ssh && \
 COPY . .
 
 RUN git config --global http.sslVerify true &&\
-    go install -v github.com/swaggo/swag/cmd/swag@latest &&\
+    go install github.com/swaggo/swag/cmd/swag@v1.8.10 &&\
     $GOPATH/bin/swag init -g cmd/main.go &&\
     go get -v ./... &&\
     go build -o demo-echo .
