@@ -19,7 +19,7 @@ RUN git config --global http.sslVerify true &&\
     go install github.com/swaggo/swag/cmd/swag@v1.8.10 &&\
     $GOPATH/bin/swag init -g cmd/main.go &&\
     go get -v ./... &&\
-    go build -o demo-echo .
+    go build -o demo-echo ./cmd
 
 FROM alpine
 
