@@ -6,6 +6,15 @@ services:
       - 9379:80
     depends_on:
       - mysql
+    environment:
+      WAIT_HOSTS: mysql:${DB_PORT}
+      WAIT_BEFORE_HOSTS: 5
+      WAIT_SLEEP_INTERVAL: 3
+      DB_USERNAME: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: mysql
+      DB_PORT: ${DB_PORT}
     volumes:
       - ./.env:/app/.env
     restart: on-failure
