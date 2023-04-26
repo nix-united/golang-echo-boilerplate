@@ -23,7 +23,7 @@ import (
 func main() {
 	cfg := config.NewConfig()
 
-	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.ExposePort)
+	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.Port)
 
 	application.Start(cfg)
 }

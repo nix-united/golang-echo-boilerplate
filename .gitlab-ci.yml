@@ -94,11 +94,9 @@ deploy staging:
     - eval "$(ssh-agent -s)"
     - ssh-add ~/.ssh/id_rsa
     - ssh-keyscan -p 221 -H $STAGING_IP >> ~/.ssh/known_hosts
-    - GOOS=linux GOARCH=386 go build -o entry  migrations/entry.go
   script:
     - ssh dev@${STAGING_IP} -p 221 "mkdir -p ${PROJECT_PATH}"
     - scp -P 221 -r ${STAGING_ENV} dev@${STAGING_IP}:${PROJECT_PATH}/.env
-    - scp -P 221 -r ${MIGRATION_ENV} dev@${STAGING_IP}:${PROJECT_PATH}/.env.migration
     - scp -P 221 -r ./deploy/compose.yml dev@${STAGING_IP}:${PROJECT_PATH}/compose.yml
     - ssh dev@$STAGING_IP -p 221 "docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY};
       docker pull ${CI_REGISTRY}/${CI_PROJECT_PATH}:staging;

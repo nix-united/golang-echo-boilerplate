@@ -3,7 +3,7 @@ services:
     container_name: echo-demo
     image: hub.gitlab.nixdev.co/golang-general/echo-demo-app:staging
     ports:
-      - 9379:80
+      - ${EXPOSE_PORT}:${PORT}
     depends_on:
       - mysql
     environment:
