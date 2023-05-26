@@ -20,8 +20,8 @@ func (tokenService *Service) CreateAccessToken(user *models.User) (t string, exp
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err = token.SignedString([]byte(tokenService.config.Auth.AccessSecret))
 	if err != nil {
-		return "", 0, err
+		return
 	}
 
-	return t, expired, err
+	return
 }

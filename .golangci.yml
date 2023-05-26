@@ -91,6 +91,7 @@ linters:
 run:
   skip-dirs:
     - tests
+    - migrations/list
 
 service:
   golangci-lint-version: 1.51.0

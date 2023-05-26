@@ -15,8 +15,8 @@ func (m *CreateUserTable) Up(con *sqlx.DB) {
 	table := mysql.NewTable("users", con)
 	table.Column("id").Type("int unsigned").Autoincrement()
 	table.PrimaryKey("id")
-	table.String("name", titleLength).Nullable()
-	table.String("password", contentLength).Nullable()
+	table.String("name", 500).Nullable()
+	table.String("password", 1000).Nullable()
 	table.Column("deleted_at").Type("datetime").Nullable()
 	table.WithTimestamps()
 
