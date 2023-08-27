@@ -1,5 +1,5 @@
 # Start from golang base image
-FROM golang:1.17-alpine as builder
+FROM golang:1.18-alpine as builder
 
 # Install git.
 # Git is required for fetching the dependencies.
@@ -8,8 +8,8 @@ RUN apk update && apk add --no-cache git
 # Set the current working directory inside the container
 WORKDIR /app
 
-RUN go get github.com/githubnemo/CompileDaemon
-RUN go get github.com/swaggo/swag/cmd/swag
+RUN go install github.com/githubnemo/CompileDaemon@latest
+RUN go install github.com/swaggo/swag/cmd/swag@latest
 
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.7.3/wait /wait
 RUN chmod +x /wait
