@@ -1,6 +1,6 @@
 module echo-demo-project
 
-go 1.18
+go 1.20
 
 require (
 	github.com/ShkrutDenis/go-migrations v1.2.1
