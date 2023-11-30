@@ -17,17 +17,18 @@ stages:
   - deploy
 
 lint:
-  image: golangci/golangci-lint:v1.36.0
+  image: golangci/golangci-lint:v1.51.0
   stage: test
   before_script:
-    - go get -v github.com/swaggo/swag/cmd/swag
-    - $GOPATH/bin/swag init -g cmd/main.go
+    - cp .env.testing.gitlab-ci .env.testing
+    - go install -v github.com/swaggo/swag/cmd/swag@v1.8.10
+    - swag init -g cmd/main.go
   script:
-    - golangci-lint run -v
+    - golangci-lint run
   allow_failure: true
 
 migrations:
-  image: golang:1.13.3-alpine3.10
+  image: golang:1.20.1-alpine3.17
   services:
     - mysql:5.7
   tags:
@@ -37,7 +38,7 @@ migrations:
   before_script:
     - apk add --no-cache --update git build-base openssh-client
     - cp .env.testing.gitlab-ci .env
-    - go get -v github.com/swaggo/swag/cmd/swag
+    - go install -v github.com/swaggo/swag/cmd/swag@v1.8.10
     - $GOPATH/bin/swag init -g cmd/main.go
   script:
     - go get -v ./...
@@ -45,7 +46,7 @@ migrations:
     - go run migrations/entry.go --rollback --env-path=./ --verbose
 
 test:
-  image: golang:1.13.3-alpine3.10
+  image: golang:1.20.1-alpine3.17
   services:
     - mysql:5.7
   tags:
@@ -55,8 +56,8 @@ test:
   before_script:
     - apk add --no-cache --update git build-base openssh-client
     - cp .env.testing.gitlab-ci .env.testing
-    - go get -v github.com/swaggo/swag/cmd/swag
-    - $GOPATH/bin/swag init -g cmd/main.go
+    - go install -v github.com/swaggo/swag/cmd/swag@v1.8.10
+    - swag init -g cmd/main.go
   script:
     - go get -v ./...
     - go test -v ./...
@@ -77,13 +78,10 @@ build:
     - docker push $CI_REGISTRY_IMAGE:staging
 
 deploy staging:
-  image: golang:1.13.3-alpine3.10
+  image: golang:1.20.1-alpine3.17
   environment:
     name: staging
   when: manual
-  only:
-    refs:
-      - develop
   tags:
     - dind
     - docker
@@ -95,15 +93,11 @@ deploy staging:
     - chmod 600 ~/.ssh/id_rsa
     - eval "$(ssh-agent -s)"
     - ssh-add ~/.ssh/id_rsa
-    - ssh-keyscan -H $STAGING_IP >> ~/.ssh/known_hosts
-    - GOOS=linux GOARCH=386 go build -o entry  migrations/entry.go
+    - ssh-keyscan -p 221 -H $STAGING_IP >> ~/.ssh/known_hosts
   script:
-    - ssh dev@${STAGING_IP} "mkdir -p ${PROJECT_PATH}"
-    - scp -r ${STAGING_ENV} dev@${STAGING_IP}:${PROJECT_PATH}/.env
-    - scp -r ${MIGRATION_ENV} dev@${STAGING_IP}:${PROJECT_PATH}/.env.migration
-    - scp -r ./deploy/docker-compose.yml dev@${STAGING_IP}:${PROJECT_PATH}/docker-compose.yml
-    - ssh dev@$STAGING_IP "docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY};
+    - ssh dev@${STAGING_IP} -p 221 "mkdir -p ${PROJECT_PATH}"
+    - scp -P 221 -r ${STAGING_ENV} dev@${STAGING_IP}:${PROJECT_PATH}/.env
+    - scp -P 221 -r ./deploy/compose.yml dev@${STAGING_IP}:${PROJECT_PATH}/compose.yml
+    - ssh dev@$STAGING_IP -p 221 "docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY};
       docker pull ${CI_REGISTRY}/${CI_PROJECT_PATH}:staging;
-      docker-compose -f ${PROJECT_PATH}/docker-compose.yml up -d"
-    - scp -r ./entry dev@${STAGING_IP}:${PROJECT_PATH}/entry
-    - ssh dev@${STAGING_IP} "${PROJECT_PATH}/entry --env-path=${PROJECT_PATH} --env-file=.env.migration --verbose"
+      docker compose -f ${PROJECT_PATH}/compose.yml up -d"

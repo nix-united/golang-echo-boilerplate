@@ -7,23 +7,23 @@ import (
 	"fmt"
 )
 
-// @title Echo Demo App
-// @version 1.0
-// @description This is a demo version of Echo app.
+//	@title			Echo Demo App
+//	@version		1.0
+//	@description	This is a demo version of Echo app.
 
-// @contact.name NIX Solutions
-// @contact.url https://www.nixsolutions.com/
-// @contact.email ask@nixsolutions.com
+//	@contact.name	NIX Solutions
+//	@contact.url	https://www.nixsolutions.com/
+//	@contact.email	ask@nixsolutions.com
 
-// @securityDefinitions.apikey ApiKeyAuth
-// @in header
-// @name Authorization
+//	@securityDefinitions.apikey	ApiKeyAuth
+//	@in							header
+//	@name						Authorization
 
-// @BasePath /
+// @BasePath	/
 func main() {
 	cfg := config.NewConfig()
 
-	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.ExposePort)
+	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.Port)
 
 	application.Start(cfg)
 }

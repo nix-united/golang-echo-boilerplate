@@ -21,16 +21,17 @@ func NewRegisterHandler(server *s.Server) *RegisterHandler {
 }
 
 // Register godoc
-// @Summary Register
-// @Description New user registration
-// @ID user-register
-// @Tags User Actions
-// @Accept json
-// @Produce json
-// @Param params body requests.RegisterRequest true "User's email, user's password"
-// @Success 201 {object} responses.Data
-// @Failure 400 {object} responses.Error
-// @Router /register [post]
+//
+//	@Summary		Register
+//	@Description	New user registration
+//	@ID				user-register
+//	@Tags			User Actions
+//	@Accept			json
+//	@Produce		json
+//	@Param			params	body		requests.RegisterRequest	true	"User's email, user's password"
+//	@Success		201		{object}	responses.Data
+//	@Failure		400		{object}	responses.Error
+//	@Router			/register [post]
 func (registerHandler *RegisterHandler) Register(c echo.Context) error {
 	registerRequest := new(requests.RegisterRequest)
 

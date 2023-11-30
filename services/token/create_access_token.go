@@ -4,23 +4,24 @@ import (
 	"echo-demo-project/models"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
-func (tokenService *Service) CreateAccessToken(user *models.User) (accessToken string, exp int64, err error) {
-	exp = time.Now().Add(time.Hour * ExpireCount).Unix()
+func (tokenService *Service) CreateAccessToken(user *models.User) (t string, expired int64, err error) {
+	exp := time.Now().Add(time.Hour * ExpireCount)
 	claims := &JwtCustomClaims{
 		user.Name,
 		user.ID,
-		jwt.StandardClaims{
-			ExpiresAt: exp,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(exp),
 		},
 	}
+	expired = exp.Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	t, err := token.SignedString([]byte(tokenService.config.Auth.AccessSecret))
+	t, err = token.SignedString([]byte(tokenService.config.Auth.AccessSecret))
 	if err != nil {
-		return "", 0, err
+		return
 	}
 
-	return t, exp, err
+	return
 }

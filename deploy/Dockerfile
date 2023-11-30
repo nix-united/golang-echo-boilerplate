@@ -1,5 +1,5 @@
 # base image
-FROM golang:1.13.3-alpine3.10 as build
+FROM golang:1.20-alpine3.17 as build
 
 RUN apk add --no-cache --update git build-base openssh-client
 
@@ -16,14 +16,24 @@ RUN mkdir ~/.ssh && \
 COPY . .
 
 RUN git config --global http.sslVerify true &&\
-    go get -v github.com/swaggo/swag/cmd/swag &&\
+    go install github.com/swaggo/swag/cmd/swag@v1.8.10 &&\
     $GOPATH/bin/swag init -g cmd/main.go &&\
     go get -v ./... &&\
-    go build -o demo-echo .
+    go build -o demo-echo ./cmd &&\
+    go build -o entry ./migrations
 
 FROM alpine
 
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.7.3/wait /wait
+RUN chmod +x /wait
+
 WORKDIR /app
 COPY --from=build /go/src/api/demo-echo /app/demo-echo
+COPY --from=build /go/src/api/entry /app/entry
 
-CMD ["./demo-echo"]
+RUN ["chmod", "+x", "./demo-echo"]
+RUN ["chmod", "+x", "./entry"]
+
+CMD /wait &&\
+    ./entry --verbose &&\
+    ./demo-echo
