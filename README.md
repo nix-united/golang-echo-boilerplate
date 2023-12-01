@@ -1,4 +1,4 @@
-<h1 align="center">Welcome to <a href="https://nix-group.github.io/pix" target="_blank">Echo boilerplate</a> 👋</h1>
+<h1 align="center">Welcome to <span style="color:mediumseagreen">Echo boilerplate</span> 👋</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/golang-v1.21-lightblue" height="25"/>
