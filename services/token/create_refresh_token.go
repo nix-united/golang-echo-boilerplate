@@ -4,7 +4,7 @@ import (
 	"echo-demo-project/models"
 	"time"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func (tokenService *Service) CreateRefreshToken(user *models.User) (t string, err error) {

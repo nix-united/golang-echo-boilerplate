@@ -112,7 +112,7 @@ Finally, you need to fix all problems manually or using autofixing (if it's supp
 ## Libraries
 Migrations - https://github.com/ShkrutDenis/go-migrations
 
-Jwt - https://github.com/golang-jwt/jwt/v4
+Jwt - https://github.com/golang-jwt/jwt/v5
 
 Swagger - https://github.com/swaggo/echo-swagger
 

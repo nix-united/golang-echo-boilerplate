@@ -4,7 +4,7 @@ import (
 	"echo-demo-project/config"
 	"echo-demo-project/models"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 const ExpireCount = 2
