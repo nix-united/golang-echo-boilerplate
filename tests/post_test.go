@@ -8,7 +8,7 @@ import (
 	"echo-demo-project/services/token"
 	"echo-demo-project/tests/helpers"
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"net/http"

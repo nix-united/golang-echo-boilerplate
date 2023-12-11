@@ -12,7 +12,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	jwtGo "github.com/golang-jwt/jwt/v4"
+	jwtGo "github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
