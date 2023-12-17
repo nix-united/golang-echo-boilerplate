@@ -4,7 +4,7 @@ import (
 	"echo-demo-project/config"
 	"echo-demo-project/models"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 const ExpireCount = 2
@@ -13,12 +13,12 @@ const ExpireRefreshCount = 168
 type JwtCustomClaims struct {
 	Name string `json:"name"`
 	ID   uint   `json:"id"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 type JwtCustomRefreshClaims struct {
 	ID uint `json:"id"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 type ServiceWrapper interface {

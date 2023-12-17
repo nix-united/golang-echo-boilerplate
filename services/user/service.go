@@ -3,7 +3,7 @@ package user
 import (
 	"echo-demo-project/requests"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type ServiceWrapper interface {

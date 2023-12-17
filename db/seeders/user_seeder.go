@@ -3,7 +3,7 @@ package seeders
 import (
 	"echo-demo-project/models"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type UserSeeder struct {

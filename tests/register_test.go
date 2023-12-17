@@ -1,10 +1,12 @@
 package tests
 
 import (
+	"database/sql/driver"
 	"echo-demo-project/requests"
 	"echo-demo-project/server"
 	"echo-demo-project/server/handlers"
 	"echo-demo-project/tests/helpers"
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -12,6 +14,11 @@ import (
 )
 
 func TestWalkRegister(t *testing.T) {
+	dbMock, sqlMock, err := sqlmock.New()
+	if err != nil {
+		panic(err.Error())
+	}
+
 	request := helpers.Request{
 		Method: http.MethodPost,
 		Url:    "/register",
@@ -26,13 +33,21 @@ func TestWalkRegister(t *testing.T) {
 			request,
 			requests.RegisterRequest{
 				BasicAuth: requests.BasicAuth{
-					Email:    "name@test.com",
+					Email:    "new-user@test.com",
 					Password: "password",
 				},
 				Name: "name",
 			},
 			handlerFunc,
-			nil,
+			[]*helpers.QueryMock{&helpers.SelectVersionMock,
+				{
+					Query:    "SELECT * FROM `users` WHERE email = ? AND `users`.`deleted_at` IS NULL",
+					QueryArg: []driver.Value{"new-user@test.com"},
+					Reply: helpers.MockReply{
+						Columns: []string{"id"},
+					},
+				},
+			},
 			helpers.ExpectedResponse{
 				StatusCode: 201,
 				BodyPart:   "User successfully created",
@@ -46,10 +61,12 @@ func TestWalkRegister(t *testing.T) {
 					Email:    "name@test.com",
 					Password: "password",
 				},
-				Name:     "",
+				Name: "",
 			},
 			handlerFunc,
-			nil,
+			[]*helpers.QueryMock{
+				&helpers.SelectVersionMock,
+			},
 			helpers.ExpectedResponse{
 				StatusCode: 400,
 				BodyPart:   "error",
@@ -63,10 +80,12 @@ func TestWalkRegister(t *testing.T) {
 					Email:    "name@test.com",
 					Password: "passw",
 				},
-				Name:     "name",
+				Name: "name",
 			},
 			handlerFunc,
-			nil,
+			[]*helpers.QueryMock{
+				&helpers.SelectVersionMock,
+			},
 			helpers.ExpectedResponse{
 				StatusCode: 400,
 				BodyPart:   "error",
@@ -80,12 +99,21 @@ func TestWalkRegister(t *testing.T) {
 					Email:    "duplicated@test.com",
 					Password: "password",
 				},
-				Name:     "Another Name",
+				Name: "Another Name",
 			},
 			handlerFunc,
-			&helpers.QueryMock{
-				Query: `SELECT * FROM "users"  WHERE "users"."deleted_at" IS NULL AND ((email = duplicated@test.com))`,
-				Reply: helpers.MockReply{{"id": 1, "email": "duplicated@test.com", "password": "EncryptedPassword"}},
+			[]*helpers.QueryMock{
+				&helpers.SelectVersionMock,
+				{
+					Query:    "SELECT * FROM `users`  WHERE email = ? AND `users`.`deleted_at` IS NULL",
+					QueryArg: []driver.Value{"duplicated@test.com"},
+					Reply: helpers.MockReply{
+						Columns: []string{"id", "email", "password"},
+						Rows: [][]driver.Value{
+							{helpers.UserId, "duplicated@test.com", "EncryptedPassword"},
+						},
+					},
+				},
 			},
 			helpers.ExpectedResponse{
 				StatusCode: 400,
@@ -94,10 +122,12 @@ func TestWalkRegister(t *testing.T) {
 		},
 	}
 
-	s := helpers.NewServer()
-
 	for _, test := range cases {
 		t.Run(test.TestName, func(t *testing.T) {
+			helpers.PrepareDatabaseQueryMocks(test, sqlMock)
+			db := helpers.InitGorm(dbMock)
+			s := helpers.NewServer(db)
+
 			c, recorder := helpers.PrepareContextFromTestCase(s, test)
 
 			if assert.NoError(t, test.HandlerFunc(s, c)) {

@@ -4,8 +4,8 @@ import (
 	"echo-demo-project/config"
 	"echo-demo-project/db"
 
-	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
 type Server struct {

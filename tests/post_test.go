@@ -1,12 +1,14 @@
 package tests
 
 import (
+	"database/sql/driver"
 	"echo-demo-project/requests"
 	"echo-demo-project/server"
 	"echo-demo-project/server/handlers"
 	"echo-demo-project/services/token"
 	"echo-demo-project/tests/helpers"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -17,6 +19,11 @@ const postId = "1"
 const postIdNotExists = "2"
 
 func TestWalkPostsCrud(t *testing.T) {
+	dbMock, sqlMock, err := sqlmock.New()
+	if err != nil {
+		panic(err.Error())
+	}
+
 	requestCreate := helpers.Request{
 		Method: http.MethodPost,
 		Url:    "/posts",
@@ -61,11 +68,17 @@ func TestWalkPostsCrud(t *testing.T) {
 	validToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	commonMock := &helpers.QueryMock{
-		Query: `SELECT * FROM "posts"  WHERE "posts"."deleted_at" IS NULL AND ((id = 1 ))`,
-		Reply: helpers.MockReply{{"id": 1, "title": "title", "content": "content", "username": "Username"}},
+		Query:    "SELECT * FROM `posts` WHERE id = ? AND `posts`.`deleted_at` IS NULL",
+		QueryArg: []driver.Value{1},
+		Reply: helpers.MockReply{
+			Columns: []string{"id", "title", "content", "username"},
+			Rows: [][]driver.Value{
+				{helpers.UserId, "title", "content", "Username"},
+			},
+		},
 	}
 
-	cases := []helpers.TestCase {
+	cases := []helpers.TestCase{
 		{
 			"Create post success",
 			requestCreate,
@@ -76,7 +89,7 @@ func TestWalkPostsCrud(t *testing.T) {
 				},
 			},
 			handlerFuncCreate,
-			nil,
+			[]*helpers.QueryMock{&helpers.SelectVersionMock},
 			helpers.ExpectedResponse{
 				StatusCode: 201,
 				BodyPart:   "Post successfully created",
@@ -92,7 +105,7 @@ func TestWalkPostsCrud(t *testing.T) {
 				},
 			},
 			handlerFuncCreate,
-			nil,
+			[]*helpers.QueryMock{&helpers.SelectVersionMock},
 			helpers.ExpectedResponse{
 				StatusCode: 400,
 				BodyPart:   "Required fields are empty",
@@ -103,9 +116,17 @@ func TestWalkPostsCrud(t *testing.T) {
 			requestGet,
 			"",
 			handlerFuncGet,
-			&helpers.QueryMock{
-				Query: `SELECT * FROM "posts"  WHERE `,
-				Reply: helpers.MockReply{{"id": 1, "title": "title", "content": "content", "username": "Username"}},
+			[]*helpers.QueryMock{
+				&helpers.SelectVersionMock,
+				{
+					Query: "SELECT * FROM `posts` WHERE ",
+					Reply: helpers.MockReply{
+						Columns: []string{"id", "title", "content", "username"},
+						Rows: [][]driver.Value{
+							{helpers.UserId, "title", "content", "Username"},
+						},
+					},
+				},
 			},
 			helpers.ExpectedResponse{
 				StatusCode: 200,
@@ -122,7 +143,7 @@ func TestWalkPostsCrud(t *testing.T) {
 				},
 			},
 			handlerFuncUpdate,
-			commonMock,
+			[]*helpers.QueryMock{&helpers.SelectVersionMock, commonMock},
 			helpers.ExpectedResponse{
 				StatusCode: 200,
 				BodyPart:   "Post successfully updated",
@@ -138,7 +159,7 @@ func TestWalkPostsCrud(t *testing.T) {
 				},
 			},
 			handlerFuncUpdate,
-			commonMock,
+			[]*helpers.QueryMock{&helpers.SelectVersionMock},
 			helpers.ExpectedResponse{
 				StatusCode: 400,
 				BodyPart:   "Required fields are empty",
@@ -161,7 +182,7 @@ func TestWalkPostsCrud(t *testing.T) {
 				},
 			},
 			handlerFuncUpdate,
-			commonMock,
+			[]*helpers.QueryMock{&helpers.SelectVersionMock},
 			helpers.ExpectedResponse{
 				StatusCode: 404,
 				BodyPart:   "Post not found",
@@ -172,7 +193,7 @@ func TestWalkPostsCrud(t *testing.T) {
 			requestDelete,
 			"",
 			handlerFuncDelete,
-			commonMock,
+			[]*helpers.QueryMock{&helpers.SelectVersionMock, commonMock},
 			helpers.ExpectedResponse{
 				StatusCode: 204,
 				BodyPart:   "Post deleted successfully",
@@ -190,7 +211,7 @@ func TestWalkPostsCrud(t *testing.T) {
 			},
 			"",
 			handlerFuncDelete,
-			commonMock,
+			[]*helpers.QueryMock{&helpers.SelectVersionMock, commonMock},
 			helpers.ExpectedResponse{
 				StatusCode: 404,
 				BodyPart:   "Post not found",
@@ -198,10 +219,12 @@ func TestWalkPostsCrud(t *testing.T) {
 		},
 	}
 
-	s := helpers.NewServer()
-
 	for _, test := range cases {
 		t.Run(test.TestName, func(t *testing.T) {
+			helpers.PrepareDatabaseQueryMocks(test, sqlMock)
+			db := helpers.InitGorm(dbMock)
+			s := helpers.NewServer(db)
+
 			c, recorder := helpers.PrepareContextFromTestCase(s, test)
 			c.Set("user", validToken)
 
