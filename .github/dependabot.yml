@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+      day: "monday"
+      time: "09:00"
+    ignore:
+      - dependency-name: "*"
+        versions: ["version-update:semver-major"]
+    groups:
+      dependencies:
+        patterns:
+          - "*"
