@@ -32,7 +32,7 @@ func ConfigureRoutes(server *s.Server) {
 	r := server.Echo.Group("")
 	// Configure middleware with the custom claims type
 	config := echojwt.Config{
-		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+		NewClaimsFunc: func(_ echo.Context) jwt.Claims {
 			return new(token.JwtCustomClaims)
 		},
 		SigningKey: []byte(server.Config.Auth.AccessSecret),
