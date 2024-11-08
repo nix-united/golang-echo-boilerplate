@@ -1,13 +1,13 @@
 lint_docker_compose_file = "./development/golangci_lint/docker-compose.yml"
 
 lint-build:
-	@echo "🌀 ️container are building..."
+	@echo "🌀 ️container is building..."
 	@docker-compose --file=$(lint_docker_compose_file) build -q
 	@echo "✔  ️container built"
 
 lint-check:
 	@echo "🌀️ code linting..."
-	@docker-compose --file=$(lint_docker_compose_file) run --rm echo-golinter golangci-lint run \
+	@docker-compose --file=$(lint_docker_compose_file) run --rm echo-golinter golangci-lint version && golangci-lint run \
  		&& echo "✔️  checked without errors" \
  		|| echo "☢️  code style issues found"
 
