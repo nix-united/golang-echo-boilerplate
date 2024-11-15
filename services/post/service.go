@@ -2,7 +2,7 @@ package post
 
 import (
 	"echo-demo-project/internal/models"
-	"echo-demo-project/requests"
+	"echo-demo-project/internal/requests"
 
 	"gorm.io/gorm"
 )

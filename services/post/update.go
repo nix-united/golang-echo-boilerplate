@@ -2,7 +2,7 @@ package post
 
 import (
 	"echo-demo-project/internal/models"
-	"echo-demo-project/requests"
+	"echo-demo-project/internal/requests"
 )
 
 func (postService *Service) Update(post *models.Post, updatePostRequest *requests.UpdatePostRequest) {

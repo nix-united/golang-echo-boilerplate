@@ -1,7 +1,7 @@
 package user
 
 import (
-	"echo-demo-project/requests"
+	"echo-demo-project/internal/requests"
 
 	"gorm.io/gorm"
 )

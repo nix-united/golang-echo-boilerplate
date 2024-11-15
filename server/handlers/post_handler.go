@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"echo-demo-project/internal/models"
+	"echo-demo-project/internal/requests"
 	"echo-demo-project/internal/responses"
 	"echo-demo-project/repositories"
-	"echo-demo-project/requests"
 	s "echo-demo-project/server"
 	postservice "echo-demo-project/services/post"
 	"echo-demo-project/services/token"

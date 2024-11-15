@@ -2,15 +2,16 @@ package tests
 
 import (
 	"database/sql/driver"
-	"echo-demo-project/requests"
+	"echo-demo-project/internal/requests"
 	"echo-demo-project/server"
 	"echo-demo-project/server/handlers"
 	"echo-demo-project/tests/helpers"
+	"net/http"
+	"testing"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"testing"
 )
 
 func TestWalkRegister(t *testing.T) {
