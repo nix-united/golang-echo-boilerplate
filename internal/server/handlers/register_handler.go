@@ -5,7 +5,7 @@ import (
 	"echo-demo-project/internal/repositories"
 	"echo-demo-project/internal/requests"
 	"echo-demo-project/internal/responses"
-	s "echo-demo-project/server"
+	s "echo-demo-project/internal/server"
 	"echo-demo-project/internal/services/user"
 	"net/http"
 

@@ -1,8 +1,8 @@
 package routes
 
 import (
-	s "echo-demo-project/server"
-	"echo-demo-project/server/handlers"
+	s "echo-demo-project/internal/server"
+	"echo-demo-project/internal/server/handlers"
 	"echo-demo-project/internal/services/token"
 	"fmt"
 
