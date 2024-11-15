@@ -2,7 +2,7 @@ package server
 
 import (
 	"echo-demo-project/internal/config"
-	"echo-demo-project/db"
+	"echo-demo-project/internal/db"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"

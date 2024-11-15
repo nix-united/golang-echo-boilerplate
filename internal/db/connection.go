@@ -2,7 +2,7 @@ package db
 
 import (
 	"echo-demo-project/internal/config"
-	"echo-demo-project/db/seeders"
+	"echo-demo-project/internal/db/seeders"
 	"fmt"
 
 	"gorm.io/driver/mysql"
