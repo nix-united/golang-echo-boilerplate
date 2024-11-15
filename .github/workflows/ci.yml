@@ -70,7 +70,7 @@ jobs:
       - name: Setup Swagger
         run: |
           go install github.com/swaggo/swag/cmd/swag@0b9e347c196710ea155a147782bf51707a600c2c # https://github.com/swaggo/swag/releases/tag/v1.16.4
-          swag init -g cmd/service/main.go
+          swag init -g cmd/main.go
       - name: Run govulncheck
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@4ea4418106cea3bb2c9aa098527c924e9e1fbbb4 # https://go.googlesource.com/vuln/+/refs/tags/v1.1.3
