@@ -1,7 +1,7 @@
 package db
 
 import (
-	"echo-demo-project/config"
+	"echo-demo-project/internal/config"
 	"echo-demo-project/db/seeders"
 	"fmt"
 

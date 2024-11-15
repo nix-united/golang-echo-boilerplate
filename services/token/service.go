@@ -1,7 +1,7 @@
 package token
 
 import (
-	"echo-demo-project/config"
+	"echo-demo-project/internal/config"
 	"echo-demo-project/internal/models"
 
 	"github.com/golang-jwt/jwt/v5"

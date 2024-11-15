@@ -1,7 +1,7 @@
 package server
 
 import (
-	"echo-demo-project/config"
+	"echo-demo-project/internal/config"
 	"echo-demo-project/db"
 
 	"github.com/labstack/echo/v4"

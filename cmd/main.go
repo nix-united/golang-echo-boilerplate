@@ -2,7 +2,7 @@ package main
 
 import (
 	application "echo-demo-project"
-	"echo-demo-project/config"
+	"echo-demo-project/internal/config"
 	"echo-demo-project/docs"
 	"fmt"
 )
