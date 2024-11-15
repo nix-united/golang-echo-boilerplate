@@ -6,7 +6,7 @@ import (
 	"echo-demo-project/internal/requests"
 	"echo-demo-project/internal/responses"
 	s "echo-demo-project/server"
-	"echo-demo-project/services/user"
+	"echo-demo-project/internal/services/user"
 	"net/http"
 
 	"github.com/labstack/echo/v4"

@@ -6,8 +6,8 @@ import (
 	"echo-demo-project/internal/requests"
 	"echo-demo-project/internal/responses"
 	s "echo-demo-project/server"
-	postservice "echo-demo-project/services/post"
-	"echo-demo-project/services/token"
+	postservice "echo-demo-project/internal/services/post"
+	"echo-demo-project/internal/services/token"
 	"net/http"
 	"strconv"
 

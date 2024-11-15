@@ -5,7 +5,7 @@ import (
 	"echo-demo-project/internal/requests"
 	"echo-demo-project/server"
 	"echo-demo-project/server/handlers"
-	"echo-demo-project/services/token"
+	"echo-demo-project/internal/services/token"
 	"echo-demo-project/tests/helpers"
 	"net/http"
 	"testing"

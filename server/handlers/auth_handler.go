@@ -6,7 +6,7 @@ import (
 	"echo-demo-project/internal/requests"
 	"echo-demo-project/internal/responses"
 	s "echo-demo-project/server"
-	tokenservice "echo-demo-project/services/token"
+	tokenservice "echo-demo-project/internal/services/token"
 	"fmt"
 	"net/http"
 

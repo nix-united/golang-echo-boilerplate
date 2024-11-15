@@ -3,7 +3,7 @@ package routes
 import (
 	s "echo-demo-project/server"
 	"echo-demo-project/server/handlers"
-	"echo-demo-project/services/token"
+	"echo-demo-project/internal/services/token"
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v5"
