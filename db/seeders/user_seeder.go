@@ -1,7 +1,7 @@
 package seeders
 
 import (
-	"echo-demo-project/models"
+	"echo-demo-project/internal/models"
 
 	"gorm.io/gorm"
 )

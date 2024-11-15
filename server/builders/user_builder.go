@@ -1,6 +1,6 @@
 package builders
 
-import "echo-demo-project/models"
+import "echo-demo-project/internal/models"
 
 type UserBuilder struct {
 	email    string

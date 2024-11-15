@@ -3,7 +3,7 @@ package tests
 import (
 	"database/sql/driver"
 	"echo-demo-project/config"
-	"echo-demo-project/models"
+	"echo-demo-project/internal/models"
 	"echo-demo-project/requests"
 	"echo-demo-project/responses"
 	"echo-demo-project/server"
@@ -13,14 +13,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func TestWalkAuth(t *testing.T) {

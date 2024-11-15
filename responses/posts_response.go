@@ -1,7 +1,7 @@
 package responses
 
 import (
-	"echo-demo-project/models"
+	"echo-demo-project/internal/models"
 )
 
 type PostResponse struct {
