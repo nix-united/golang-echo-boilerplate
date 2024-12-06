@@ -10,9 +10,9 @@ import (
 func (tokenService *Service) CreateAccessToken(user *models.User) (t string, expired int64, err error) {
 	exp := time.Now().Add(time.Hour * ExpireCount)
 	claims := &JwtCustomClaims{
-		user.Name,
-		user.ID,
-		jwt.RegisteredClaims{
+		Name: user.Name,
+		ID:   user.ID,
+		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(exp),
 		},
 	}
