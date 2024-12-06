@@ -12,12 +12,12 @@ const ExpireRefreshCount = 168
 
 type JwtCustomClaims struct {
 	Name string `json:"name"`
-	ID   uint   `json:"id"`
+	ID   int64  `json:"id"`
 	jwt.RegisteredClaims
 }
 
 type JwtCustomRefreshClaims struct {
-	ID uint `json:"id"`
+	ID int64 `json:"id"`
 	jwt.RegisteredClaims
 }
 
