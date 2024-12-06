@@ -2,7 +2,7 @@ package tests
 
 import (
 	"database/sql/driver"
-	"echo-demo-project/config"
+	"echo-demo-project/internal/config"
 	"echo-demo-project/internal/models"
 	"echo-demo-project/internal/requests"
 	"echo-demo-project/internal/responses"
