@@ -42,8 +42,8 @@ migrations:
     - $GOPATH/bin/swag init -g cmd/main.go
   script:
     - go get -v ./...
-    - go run migrations/entry.go --env-path=./ --verbose
-    - go run migrations/entry.go --rollback --env-path=./ --verbose
+    - go run migrations/entry.go up
+    - go run migrations/entry.go down
 
 test:
   image: golang:1.20.1-alpine3.17
