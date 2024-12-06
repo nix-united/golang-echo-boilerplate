@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"database/sql/driver"
-	"echo-demo-project/server"
+	"echo-demo-project/internal/server"
 	"encoding/json"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/labstack/echo/v4"

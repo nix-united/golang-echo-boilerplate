@@ -1,9 +1,9 @@
 package application
 
 import (
-	"echo-demo-project/config"
-	"echo-demo-project/server"
-	"echo-demo-project/server/routes"
+	"echo-demo-project/internal/config"
+	"echo-demo-project/internal/server"
+	"echo-demo-project/internal/server/routes"
 	"log"
 )
 
