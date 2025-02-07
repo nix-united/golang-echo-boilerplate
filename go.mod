@@ -5,6 +5,7 @@ go 1.23.6
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/ShkrutDenis/go-migrations v1.2.1
+	github.com/caarlos0/env/v11 v11.3.1
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/jmoiron/sqlx v1.3.5

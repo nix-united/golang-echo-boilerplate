@@ -19,9 +19,11 @@ import (
 	"github.com/nix-united/golang-echo-boilerplate/tests/helpers"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/caarlos0/env/v11"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -136,7 +138,11 @@ func TestWalkRefresh(t *testing.T) {
 		return handlers.NewAuthHandler(s).RefreshToken(c)
 	}
 
-	tokenService := token.NewTokenService(config.NewConfig())
+	var cfg config.Config
+	err = env.Parse(&cfg)
+	require.NoError(t, err)
+
+	tokenService := token.NewTokenService(&cfg)
 
 	validUser := models.User{Email: "name@test.com"}
 	validUser.ID = helpers.UserId
