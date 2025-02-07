@@ -1,26 +1,27 @@
 package config
 
-import (
-	"log"
-
-	"github.com/joho/godotenv"
-)
-
 type Config struct {
 	Auth AuthConfig
 	DB   DBConfig
 	HTTP HTTPConfig
 }
 
-func NewConfig() *Config {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Error loading .env file")
-	}
+type DBConfig struct {
+	User     string `env:"DB_USER"`
+	Password string `env:"DB_PASSWORD"`
+	Driver   string `env:"DB_DRIVER"`
+	Name     string `env:"DB_NAME"`
+	Host     string `env:"DB_HOST"`
+	Port     string `env:"DB_PORT"`
+}
 
-	return &Config{
-		Auth: LoadAuthConfig(),
-		DB:   LoadDBConfig(),
-		HTTP: LoadHTTPConfig(),
-	}
+type AuthConfig struct {
+	AccessSecret  string `env:"ACCESS_SECRET"`
+	RefreshSecret string `env:"REFRESH_SECRET"`
+}
+
+type HTTPConfig struct {
+	Host       string `env:"HOST"`
+	Port       string `env:"PORT"`
+	ExposePort string `env:"EXPOSE_PORT"`
 }
