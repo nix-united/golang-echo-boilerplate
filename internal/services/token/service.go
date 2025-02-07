@@ -1,6 +1,8 @@
 package token
 
 import (
+	"time"
+
 	"github.com/nix-united/golang-echo-boilerplate/internal/config"
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 
@@ -34,4 +36,39 @@ func NewTokenService(cfg *config.Config) *Service {
 	return &Service{
 		config: cfg,
 	}
+}
+
+func (tokenService *Service) CreateAccessToken(user *models.User) (t string, expired int64, err error) {
+	exp := time.Now().Add(time.Hour * ExpireCount)
+	claims := &JwtCustomClaims{
+		user.Name,
+		user.ID,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(exp),
+		},
+	}
+	expired = exp.Unix()
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	t, err = token.SignedString([]byte(tokenService.config.Auth.AccessSecret))
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (tokenService *Service) CreateRefreshToken(user *models.User) (t string, err error) {
+	claimsRefresh := &JwtCustomRefreshClaims{
+		ID: user.ID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * ExpireRefreshCount)),
+		},
+	}
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsRefresh)
+
+	rt, err := refreshToken.SignedString([]byte(tokenService.config.Auth.RefreshSecret))
+	if err != nil {
+		return "", err
+	}
+	return rt, err
 }
