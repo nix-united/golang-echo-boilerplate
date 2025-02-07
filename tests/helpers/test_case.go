@@ -2,13 +2,15 @@ package helpers
 
 import (
 	"database/sql/driver"
-	"echo-demo-project/internal/server"
 	"encoding/json"
-	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/labstack/echo/v4"
 	"net/http/httptest"
 	"regexp"
 	"strings"
+
+	"github.com/nix-united/golang-echo-boilerplate/internal/server"
+
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/labstack/echo/v4"
 )
 
 const UserId = 1

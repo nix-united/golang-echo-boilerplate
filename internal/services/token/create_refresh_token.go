@@ -1,8 +1,9 @@
 package token
 
 import (
-	"echo-demo-project/internal/models"
 	"time"
+
+	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 
 	"github.com/golang-jwt/jwt/v5"
 )

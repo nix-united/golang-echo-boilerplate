@@ -1,8 +1,8 @@
 package server
 
 import (
-	"echo-demo-project/internal/config"
-	"echo-demo-project/internal/db"
+	"github.com/nix-united/golang-echo-boilerplate/internal/config"
+	"github.com/nix-united/golang-echo-boilerplate/internal/db"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
