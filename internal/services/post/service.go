@@ -1,8 +1,8 @@
 package post
 
 import (
-	"echo-demo-project/internal/models"
-	"echo-demo-project/internal/requests"
+	"github.com/nix-united/golang-echo-boilerplate/internal/models"
+	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 
 	"gorm.io/gorm"
 )

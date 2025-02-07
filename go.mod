@@ -1,4 +1,4 @@
-module echo-demo-project
+module github.com/nix-united/golang-echo-boilerplate
 
 go 1.23
 

@@ -1,6 +1,6 @@
 package post
 
-import "echo-demo-project/internal/models"
+import "github.com/nix-united/golang-echo-boilerplate/internal/models"
 
 func (postService *Service) Create(post *models.Post) {
 	postService.DB.Create(post)

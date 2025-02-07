@@ -1,13 +1,14 @@
 package handlers
 
 import (
-	"echo-demo-project/internal/models"
-	"echo-demo-project/internal/repositories"
-	"echo-demo-project/internal/requests"
-	"echo-demo-project/internal/responses"
-	s "echo-demo-project/internal/server"
-	"echo-demo-project/internal/services/user"
 	"net/http"
+
+	"github.com/nix-united/golang-echo-boilerplate/internal/models"
+	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
+	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
+	"github.com/nix-united/golang-echo-boilerplate/internal/responses"
+	s "github.com/nix-united/golang-echo-boilerplate/internal/server"
+	"github.com/nix-united/golang-echo-boilerplate/internal/services/user"
 
 	"github.com/labstack/echo/v4"
 )

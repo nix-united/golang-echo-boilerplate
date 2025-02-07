@@ -2,12 +2,13 @@ package tests
 
 import (
 	"database/sql/driver"
-	"echo-demo-project/internal/requests"
-	"echo-demo-project/internal/server"
-	"echo-demo-project/internal/server/handlers"
-	"echo-demo-project/tests/helpers"
 	"net/http"
 	"testing"
+
+	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
+	"github.com/nix-united/golang-echo-boilerplate/internal/server"
+	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
+	"github.com/nix-united/golang-echo-boilerplate/tests/helpers"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/labstack/echo/v4"

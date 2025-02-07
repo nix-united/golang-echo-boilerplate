@@ -1,7 +1,7 @@
 package main
 
 import (
-	"echo-demo-project/migrations/list"
+	"github.com/nix-united/golang-echo-boilerplate/migrations/list"
 
 	gm "github.com/ShkrutDenis/go-migrations"
 	gmStore "github.com/ShkrutDenis/go-migrations/store"

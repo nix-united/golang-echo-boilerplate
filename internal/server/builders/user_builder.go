@@ -1,6 +1,6 @@
 package builders
 
-import "echo-demo-project/internal/models"
+import "github.com/nix-united/golang-echo-boilerplate/internal/models"
 
 type UserBuilder struct {
 	email    string

@@ -1,7 +1,7 @@
 package user
 
 import (
-	"echo-demo-project/internal/requests"
+	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 
 	"gorm.io/gorm"
 )

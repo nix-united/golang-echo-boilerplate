@@ -1,9 +1,10 @@
 package db
 
 import (
-	"echo-demo-project/internal/config"
-	"echo-demo-project/internal/db/seeders"
 	"fmt"
+
+	"github.com/nix-united/golang-echo-boilerplate/internal/config"
+	"github.com/nix-united/golang-echo-boilerplate/internal/db/seeders"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

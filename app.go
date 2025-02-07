@@ -1,10 +1,11 @@
 package application
 
 import (
-	"echo-demo-project/internal/config"
-	"echo-demo-project/internal/server"
-	"echo-demo-project/internal/server/routes"
 	"log"
+
+	"github.com/nix-united/golang-echo-boilerplate/internal/config"
+	"github.com/nix-united/golang-echo-boilerplate/internal/server"
+	"github.com/nix-united/golang-echo-boilerplate/internal/server/routes"
 )
 
 func Start(cfg *config.Config) {

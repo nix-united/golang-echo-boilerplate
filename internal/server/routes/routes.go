@@ -1,15 +1,15 @@
 package routes
 
 import (
-	s "echo-demo-project/internal/server"
-	"echo-demo-project/internal/server/handlers"
-	"echo-demo-project/internal/services/token"
 	"fmt"
+
+	s "github.com/nix-united/golang-echo-boilerplate/internal/server"
+	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
+	"github.com/nix-united/golang-echo-boilerplate/internal/services/token"
 
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
-
 	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )

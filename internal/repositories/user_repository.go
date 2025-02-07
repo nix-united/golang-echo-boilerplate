@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"echo-demo-project/internal/models"
+	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 
 	"gorm.io/gorm"
 )
