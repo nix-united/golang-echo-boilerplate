@@ -18,3 +18,6 @@ lint-fix:
 		&& echo "✔️  fixed without errors" \
 		|| (echo "⚠️️  you need to fix above issues manually" && exit 1)
 	@echo "⚠️️ run \"make lint-check\" again to check what did not fix yet"
+
+organize-imports:
+	@gci write --custom-order -s standard -s "prefix(github.com/nix-united/golang-echo-boilerplate)" -s default --skip-generated --skip-vendor .
