@@ -103,6 +103,3 @@ issues:
   exclude-dirs:
     - tests
     - migrations/list
-
-service:
-  golangci-lint-version: 1.59.1
