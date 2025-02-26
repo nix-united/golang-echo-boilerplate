@@ -1,5 +1,5 @@
 # Start from golang base image
-FROM golang:1.23.0-alpine3.20 as builder
+FROM golang:1.24.0-alpine3.21 as builder
 
 # Install git.
 # Git is required for fetching the dependencies.
@@ -15,7 +15,7 @@ ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.7.3/wait
 RUN chmod +x /wait
 
 #Command to run the executable
-CMD swag init -g cmd/main.go\
+CMD swag init -g cmd/service/main.go\
   && /wait \
   && go run migrations/entry.go --verbose \
-  && CompileDaemon --build="go build cmd/main.go"  --command="./main" --color
+  && CompileDaemon --build="go build cmd/service/main.go"  --command="./main" --color
