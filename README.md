@@ -84,7 +84,7 @@ Now, you are able to make requests which require authentication.
 16. **/tests**  includes tests and test data.
 
 ## Code quality
-For control code quality we are use [golangci-lint](https://github.com/golangci/golangci-lint).
+For control code quality we use [golangci-lint](https://github.com/golangci/golangci-lint).
 Golangci-lint is a linters aggregator.
 
 Why we use linters? Linters help us:
