@@ -3,30 +3,30 @@ package db
 import (
 	"fmt"
 
-	"github.com/nix-united/golang-echo-boilerplate/internal/config"
-	"github.com/nix-united/golang-echo-boilerplate/internal/db/seeders"
-
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-func Init(cfg *config.Config) *gorm.DB {
-	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		cfg.DB.User,
-		cfg.DB.Password,
-		cfg.DB.Host,
-		cfg.DB.Port,
-		cfg.DB.Name)
+type Config struct {
+	User     string `env:"DB_USER"`
+	Password string `env:"DB_PASSWORD"`
+	Name     string `env:"DB_NAME"`
+	Host     string `env:"DB_HOST"`
+	Port     string `env:"DB_PORT"`
+}
 
-	fmt.Println(dataSourceName)
+func (c Config) dsn() string {
+	return fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		c.User, c.Password, c.Host, c.Port, c.Name,
+	)
+}
 
-	db, err := gorm.Open(mysql.Open(dataSourceName), &gorm.Config{})
+func NewConnection(cfg Config) (*gorm.DB, error) {
+	db, err := gorm.Open(mysql.Open(cfg.dsn()), &gorm.Config{})
 	if err != nil {
-		panic(err.Error())
+		return nil, fmt.Errorf("open db connection: %w", err)
 	}
 
-	userSeeder := seeders.NewUserSeeder(db)
-	userSeeder.SetUsers()
-
-	return db
+	return db, nil
 }
