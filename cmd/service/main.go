@@ -3,13 +3,17 @@ package main
 import (
 	"fmt"
 	"log/slog"
+	"os"
 
-	application "github.com/nix-united/golang-echo-boilerplate"
 	"github.com/nix-united/golang-echo-boilerplate/docs"
 	"github.com/nix-united/golang-echo-boilerplate/internal/config"
+	"github.com/nix-united/golang-echo-boilerplate/internal/db"
+	"github.com/nix-united/golang-echo-boilerplate/internal/server"
+	"github.com/nix-united/golang-echo-boilerplate/internal/server/routes"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
+	"github.com/labstack/echo/v4"
 )
 
 //	@title			Echo Demo App
@@ -28,6 +32,7 @@ import (
 func main() {
 	if err := run(); err != nil {
 		slog.Error("Service run error", "err", err.Error())
+		os.Exit(1)
 	}
 }
 
@@ -43,7 +48,19 @@ func run() error {
 
 	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.Port)
 
-	application.Start(&cfg)
+	dbConnection, err := db.NewConnection(cfg.DB)
+	if err != nil {
+		return fmt.Errorf("new db connection: %w", err)
+	}
+
+	app := server.NewServer(echo.New(), dbConnection, &cfg)
+
+	routes.ConfigureRoutes(app)
+
+	err = app.Start(cfg.HTTP.Port)
+	if err != nil {
+		return fmt.Errorf("start application: %w", err)
+	}
 
 	return nil
 }
