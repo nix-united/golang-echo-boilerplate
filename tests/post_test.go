@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
+	"github.com/nix-united/golang-echo-boilerplate/internal/services/post"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/token"
 	"github.com/nix-united/golang-echo-boilerplate/tests/helpers"
 
@@ -51,16 +53,28 @@ func TestWalkPostsCrud(t *testing.T) {
 		},
 	}
 	handlerFuncCreate := func(s *server.Server, c echo.Context) error {
-		return handlers.NewPostHandlers(s).CreatePost(c)
+		postRepository := repositories.NewPostRepository(s.DB)
+		postService := post.NewPostService(postRepository)
+
+		return handlers.NewPostHandlers(postService).CreatePost(c)
 	}
 	handlerFuncGet := func(s *server.Server, c echo.Context) error {
-		return handlers.NewPostHandlers(s).GetPosts(c)
+		postRepository := repositories.NewPostRepository(s.DB)
+		postService := post.NewPostService(postRepository)
+
+		return handlers.NewPostHandlers(postService).GetPosts(c)
 	}
 	handlerFuncUpdate := func(s *server.Server, c echo.Context) error {
-		return handlers.NewPostHandlers(s).UpdatePost(c)
+		postRepository := repositories.NewPostRepository(s.DB)
+		postService := post.NewPostService(postRepository)
+
+		return handlers.NewPostHandlers(postService).UpdatePost(c)
 	}
 	handlerFuncDelete := func(s *server.Server, c echo.Context) error {
-		return handlers.NewPostHandlers(s).DeletePost(c)
+		postRepository := repositories.NewPostRepository(s.DB)
+		postService := post.NewPostService(postRepository)
+
+		return handlers.NewPostHandlers(postService).DeletePost(c)
 	}
 
 	claims := &token.JwtCustomClaims{

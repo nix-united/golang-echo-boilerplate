@@ -5,23 +5,28 @@ import (
 	"strconv"
 
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
-	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 	"github.com/nix-united/golang-echo-boilerplate/internal/responses"
-	s "github.com/nix-united/golang-echo-boilerplate/internal/server"
-	postservice "github.com/nix-united/golang-echo-boilerplate/internal/services/post"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/token"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
-type PostHandlers struct {
-	server *s.Server
+type postService interface {
+	Create(post *models.Post)
+	GetPosts(posts *[]models.Post)
+	GetPost(post *models.Post, id int)
+	Update(post *models.Post, updatePostRequest *requests.UpdatePostRequest)
+	Delete(post *models.Post)
 }
 
-func NewPostHandlers(server *s.Server) *PostHandlers {
-	return &PostHandlers{server: server}
+type PostHandlers struct {
+	postService postService
+}
+
+func NewPostHandlers(postService postService) PostHandlers {
+	return PostHandlers{postService: postService}
 }
 
 // CreatePost godoc
@@ -37,7 +42,7 @@ func NewPostHandlers(server *s.Server) *PostHandlers {
 //	@Failure		400		{object}	responses.Error
 //	@Security		ApiKeyAuth
 //	@Router			/posts [post]
-func (p *PostHandlers) CreatePost(c echo.Context) error {
+func (p PostHandlers) CreatePost(c echo.Context) error {
 	createPostRequest := new(requests.CreatePostRequest)
 
 	if err := c.Bind(createPostRequest); err != nil {
@@ -58,9 +63,7 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 		UserID:  id,
 	}
 
-	postRepository := repositories.NewPostRepository(p.server.DB)
-	postService := postservice.NewPostService(postRepository)
-	postService.Create(&post)
+	p.postService.Create(&post)
 
 	return responses.MessageResponse(c, http.StatusCreated, "Post successfully created")
 }
@@ -76,20 +79,18 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 //	@Failure		404	{object}	responses.Error
 //	@Security		ApiKeyAuth
 //	@Router			/posts/{id} [delete]
-func (p *PostHandlers) DeletePost(c echo.Context) error {
+func (p PostHandlers) DeletePost(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	post := models.Post{}
+	post := new(models.Post)
 
-	postRepository := repositories.NewPostRepository(p.server.DB)
-	postRepository.GetPost(&post, id)
+	p.postService.GetPost(post, id)
 
 	if post.ID == 0 {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
-	postService := postservice.NewPostService(postRepository)
-	postService.Delete(&post)
+	p.postService.Delete(post)
 
 	return responses.MessageResponse(c, http.StatusNoContent, "Post deleted successfully")
 }
@@ -104,11 +105,10 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 //	@Success		200	{array}	responses.PostResponse
 //	@Security		ApiKeyAuth
 //	@Router			/posts [get]
-func (p *PostHandlers) GetPosts(c echo.Context) error {
+func (p PostHandlers) GetPosts(c echo.Context) error {
 	var posts []models.Post
 
-	postRepository := repositories.NewPostRepository(p.server.DB)
-	postRepository.GetPosts(&posts)
+	p.postService.GetPosts(&posts)
 
 	response := responses.NewPostResponse(posts)
 	return responses.Response(c, http.StatusOK, response)
@@ -129,7 +129,7 @@ func (p *PostHandlers) GetPosts(c echo.Context) error {
 //	@Failure		404		{object}	responses.Error
 //	@Security		ApiKeyAuth
 //	@Router			/posts/{id} [put]
-func (p *PostHandlers) UpdatePost(c echo.Context) error {
+func (p PostHandlers) UpdatePost(c echo.Context) error {
 	updatePostRequest := new(requests.UpdatePostRequest)
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -143,15 +143,13 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 
 	post := models.Post{}
 
-	postRepository := repositories.NewPostRepository(p.server.DB)
-	postRepository.GetPost(&post, id)
+	p.postService.GetPost(&post, id)
 
 	if post.ID == 0 {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
-	postService := postservice.NewPostService(postRepository)
-	postService.Update(&post, updatePostRequest)
+	p.postService.Update(&post, updatePostRequest)
 
 	return responses.MessageResponse(c, http.StatusOK, "Post successfully updated")
 }
