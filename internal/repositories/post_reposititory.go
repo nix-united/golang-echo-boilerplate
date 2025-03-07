@@ -6,23 +6,30 @@ import (
 	"gorm.io/gorm"
 )
 
-type PostRepositoryQ interface {
-	GetPosts(posts *[]models.Post)
-	GetPost(post *models.Post, id int)
-}
-
 type PostRepository struct {
-	DB *gorm.DB
+	db *gorm.DB
 }
 
-func NewPostRepository(db *gorm.DB) *PostRepository {
-	return &PostRepository{DB: db}
+func NewPostRepository(db *gorm.DB) PostRepository {
+	return PostRepository{db: db}
 }
 
-func (postRepository *PostRepository) GetPosts(posts *[]models.Post) {
-	postRepository.DB.Preload("User").Find(posts)
+func (r PostRepository) Create(post *models.Post) {
+	r.db.Create(post)
 }
 
-func (postRepository *PostRepository) GetPost(post *models.Post, id int) {
-	postRepository.DB.Where("id = ? ", id).Find(post)
+func (r PostRepository) GetPosts(posts *[]models.Post) {
+	r.db.Preload("User").Find(posts)
+}
+
+func (r PostRepository) GetPost(post *models.Post, id int) {
+	r.db.Where("id = ? ", id).Find(post)
+}
+
+func (r PostRepository) Update(post *models.Post) {
+	r.db.Save(post)
+}
+
+func (r PostRepository) Delete(post *models.Post) {
+	r.db.Delete(post)
 }
