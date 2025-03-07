@@ -22,7 +22,7 @@ func (c Config) dsn() string {
 	)
 }
 
-func NewConnection(cfg Config) (*gorm.DB, error) {
+func NewGormDB(cfg Config) (*gorm.DB, error) {
 	db, err := gorm.Open(mysql.Open(cfg.dsn()), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("open db connection: %w", err)

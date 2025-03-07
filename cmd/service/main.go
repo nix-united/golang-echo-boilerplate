@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/nix-united/golang-echo-boilerplate/docs"
 	"github.com/nix-united/golang-echo-boilerplate/internal/config"
@@ -15,6 +19,8 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 )
+
+const shutdownTimeout = 20 * time.Second
 
 //	@title			Echo Demo App
 //	@version		1.0
@@ -48,18 +54,39 @@ func run() error {
 
 	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.Port)
 
-	dbConnection, err := db.NewConnection(cfg.DB)
+	gormDB, err := db.NewGormDB(cfg.DB)
 	if err != nil {
 		return fmt.Errorf("new db connection: %w", err)
 	}
 
-	app := server.NewServer(echo.New(), dbConnection, &cfg)
+	app := server.NewServer(echo.New(), gormDB, &cfg)
 
 	routes.ConfigureRoutes(app)
 
-	err = app.Start(cfg.HTTP.Port)
+	go func() {
+		if err = app.Start(cfg.HTTP.Port); err != nil {
+			slog.Error("Server error", "err", err.Error())
+		}
+	}()
+
+	shutdownChannel := make(chan os.Signal, 1)
+	signal.Notify(shutdownChannel, os.Interrupt, syscall.SIGHUP, syscall.SIGTERM)
+	<-shutdownChannel
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer cancel()
+
+	if err := app.Shutdown(shutdownCtx); err != nil {
+		return fmt.Errorf("http server shutdown: %w", err)
+	}
+
+	dbConnection, err := gormDB.DB()
 	if err != nil {
-		return fmt.Errorf("start application: %w", err)
+		return fmt.Errorf("get db connection: %w", err)
+	}
+
+	if err := dbConnection.Close(); err != nil {
+		return fmt.Errorf("close db connection: %w", err)
 	}
 
 	return nil
