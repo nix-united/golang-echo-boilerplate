@@ -3,34 +3,35 @@ package post
 import (
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
-
-	"gorm.io/gorm"
 )
 
-type ServiceWrapper interface {
+type postRepository interface {
 	Create(post *models.Post)
+	GetPosts(posts *[]models.Post)
+	GetPost(post *models.Post, id int)
+	Update(post *models.Post)
 	Delete(post *models.Post)
-	Update(post *models.Post, updatePostRequest *requests.UpdatePostRequest)
 }
 
 type Service struct {
-	DB *gorm.DB
+	postRepository postRepository
 }
 
-func NewPostService(db *gorm.DB) *Service {
-	return &Service{DB: db}
+func NewPostService(postRepository postRepository) Service {
+	return Service{postRepository: postRepository}
 }
 
-func (postService *Service) Create(post *models.Post) {
-	postService.DB.Create(post)
+func (s Service) Create(post *models.Post) {
+	s.postRepository.Create(post)
 }
 
-func (postService *Service) Update(post *models.Post, updatePostRequest *requests.UpdatePostRequest) {
+func (s Service) Update(post *models.Post, updatePostRequest *requests.UpdatePostRequest) {
 	post.Content = updatePostRequest.Content
 	post.Title = updatePostRequest.Title
-	postService.DB.Save(post)
+
+	s.postRepository.Update(post)
 }
 
-func (postService *Service) Delete(post *models.Post) {
-	postService.DB.Delete(post)
+func (s Service) Delete(post *models.Post) {
+	s.postRepository.Delete(post)
 }

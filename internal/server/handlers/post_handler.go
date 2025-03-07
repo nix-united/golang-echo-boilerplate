@@ -57,7 +57,9 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 		Content: createPostRequest.Content,
 		UserID:  id,
 	}
-	postService := postservice.NewPostService(p.server.DB)
+
+	postRepository := repositories.NewPostRepository(p.server.DB)
+	postService := postservice.NewPostService(postRepository)
 	postService.Create(&post)
 
 	return responses.MessageResponse(c, http.StatusCreated, "Post successfully created")
@@ -86,7 +88,7 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
-	postService := postservice.NewPostService(p.server.DB)
+	postService := postservice.NewPostService(postRepository)
 	postService.Delete(&post)
 
 	return responses.MessageResponse(c, http.StatusNoContent, "Post deleted successfully")
@@ -148,7 +150,7 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
-	postService := postservice.NewPostService(p.server.DB)
+	postService := postservice.NewPostService(postRepository)
 	postService.Update(&post, updatePostRequest)
 
 	return responses.MessageResponse(c, http.StatusOK, "Post successfully updated")
