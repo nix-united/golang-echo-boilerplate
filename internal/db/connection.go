@@ -4,29 +4,23 @@ import (
 	"fmt"
 
 	"github.com/nix-united/golang-echo-boilerplate/internal/config"
-	"github.com/nix-united/golang-echo-boilerplate/internal/db/seeders"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-func Init(cfg *config.Config) *gorm.DB {
-	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		cfg.DB.User,
-		cfg.DB.Password,
-		cfg.DB.Host,
-		cfg.DB.Port,
-		cfg.DB.Name)
-
-	fmt.Println(dataSourceName)
-
-	db, err := gorm.Open(mysql.Open(dataSourceName), &gorm.Config{})
+func NewGormDB(cfg config.DBConfig) (*gorm.DB, error) {
+	db, err := gorm.Open(mysql.Open(dsn(cfg)), &gorm.Config{})
 	if err != nil {
-		panic(err.Error())
+		return nil, fmt.Errorf("open db connection: %w", err)
 	}
 
-	userSeeder := seeders.NewUserSeeder(db)
-	userSeeder.SetUsers()
+	return db, nil
+}
 
-	return db
+func dsn(c config.DBConfig) string {
+	return fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		c.User, c.Password, c.Host, c.Port, c.Name,
+	)
 }

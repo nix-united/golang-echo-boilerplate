@@ -1,8 +1,12 @@
 package server
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+
 	"github.com/nix-united/golang-echo-boilerplate/internal/config"
-	"github.com/nix-united/golang-echo-boilerplate/internal/db"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -14,14 +18,30 @@ type Server struct {
 	Config *config.Config
 }
 
-func NewServer(cfg *config.Config) *Server {
+func NewServer(
+	Echo *echo.Echo,
+	DB *gorm.DB,
+	Config *config.Config,
+) *Server {
 	return &Server{
-		Echo:   echo.New(),
-		DB:     db.Init(cfg),
-		Config: cfg,
+		Echo:   Echo,
+		DB:     DB,
+		Config: Config,
 	}
 }
 
-func (server *Server) Start(addr string) error {
-	return server.Echo.Start(":" + addr)
+func (s *Server) Start(addr string) error {
+	if err := s.Echo.Start(":" + addr); err != nil && errors.Is(err, http.ErrServerClosed) {
+		return fmt.Errorf("start echo: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Server) Shutdown(ctx context.Context) error {
+	if err := s.Echo.Shutdown(ctx); err != nil {
+		return fmt.Errorf("shutdown echo: %w", err)
+	}
+
+	return nil
 }
