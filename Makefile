@@ -11,7 +11,6 @@ lint-check:
  		&& echo "✔️  checked without errors" \
  		|| echo "☢️  code style issues found"
 
-
 lint-fix:
 	@echo "🌀 ️code fixing..."
 	@docker-compose --file=$(lint_docker_compose_file) run --rm echo-golinter golangci-lint run --fix \
@@ -21,3 +20,6 @@ lint-fix:
 
 organize-imports:
 	@gci write --custom-order -s standard -s "prefix(github.com/nix-united/golang-echo-boilerplate)" -s default --skip-generated --skip-vendor .
+
+lint:
+	go tool golangci-lint run ./...

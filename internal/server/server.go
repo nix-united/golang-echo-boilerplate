@@ -19,14 +19,14 @@ type Server struct {
 }
 
 func NewServer(
-	Echo *echo.Echo,
-	DB *gorm.DB,
-	Config *config.Config,
+	echo *echo.Echo,
+	db *gorm.DB,
+	config *config.Config,
 ) *Server {
 	return &Server{
-		Echo:   Echo,
-		DB:     DB,
-		Config: Config,
+		Echo:   echo,
+		DB:     db,
+		Config: config,
 	}
 }
 

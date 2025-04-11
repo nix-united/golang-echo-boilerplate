@@ -15,7 +15,7 @@ func NewUserSeeder(db *gorm.DB) *UserSeeder {
 }
 
 func (userSeeder *UserSeeder) SetUsers() {
-	users := map[int]map[string]string{
+	users := map[uint]map[string]string{
 		1: {
 			"email":    "user1@example.com",
 			"name":     "user1",
@@ -33,7 +33,7 @@ func (userSeeder *UserSeeder) SetUsers() {
 		userSeeder.DB.First(&user, key)
 
 		if user.ID == 0 {
-			user.ID = uint(key)
+			user.ID = key
 			user.Email = value["email"]
 			user.Name = value["name"]
 			user.Password = value["password"]
