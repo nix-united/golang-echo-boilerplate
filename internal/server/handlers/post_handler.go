@@ -14,11 +14,11 @@ import (
 )
 
 type postService interface {
-	Create(post *models.Post)
-	GetPosts(posts *[]models.Post)
-	GetPost(post *models.Post, id int)
-	Update(post *models.Post, updatePostRequest *requests.UpdatePostRequest)
-	Delete(post *models.Post)
+	Create(post *models.Post) error
+	GetPosts() ([]models.Post, error)
+	GetPost(id int) (models.Post, error)
+	Update(post *models.Post, updatePostRequest requests.UpdatePostRequest) error
+	Delete(post *models.Post) error
 }
 
 type PostHandlers struct {
@@ -42,11 +42,10 @@ func NewPostHandlers(postService postService) PostHandlers {
 //	@Failure		400		{object}	responses.Error
 //	@Security		ApiKeyAuth
 //	@Router			/posts [post]
-func (p PostHandlers) CreatePost(c echo.Context) error {
-	createPostRequest := new(requests.CreatePostRequest)
-
-	if err := c.Bind(createPostRequest); err != nil {
-		return err
+func (p *PostHandlers) CreatePost(c echo.Context) error {
+	var createPostRequest requests.CreatePostRequest
+	if err := c.Bind(&createPostRequest); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request: "+err.Error())
 	}
 
 	if err := createPostRequest.Validate(); err != nil {
@@ -63,7 +62,9 @@ func (p PostHandlers) CreatePost(c echo.Context) error {
 		UserID:  id,
 	}
 
-	p.postService.Create(&post)
+	if err := p.postService.Create(&post); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to create post: "+err.Error())
+	}
 
 	return responses.MessageResponse(c, http.StatusCreated, "Post successfully created")
 }
@@ -79,19 +80,20 @@ func (p PostHandlers) CreatePost(c echo.Context) error {
 //	@Failure		404	{object}	responses.Error
 //	@Security		ApiKeyAuth
 //	@Router			/posts/{id} [delete]
-func (p PostHandlers) DeletePost(c echo.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
+func (p *PostHandlers) DeletePost(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
+	}
 
-	post := new(models.Post)
-
-	p.postService.GetPost(post, id)
-
-	post, err := postRepository.GetPost(id)
+	post, err := p.postService.GetPost(id)
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
-	p.postService.Delete(post)
+	if err := p.postService.Delete(&post); err != nil {
+		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to delete post: "+err.Error())
+	}
 
 	return responses.MessageResponse(c, http.StatusNoContent, "Post deleted successfully")
 }
@@ -106,10 +108,11 @@ func (p PostHandlers) DeletePost(c echo.Context) error {
 //	@Success		200	{array}	responses.PostResponse
 //	@Security		ApiKeyAuth
 //	@Router			/posts [get]
-func (p PostHandlers) GetPosts(c echo.Context) error {
-	var posts []models.Post
-
-	p.postService.GetPosts(&posts)
+func (p *PostHandlers) GetPosts(c echo.Context) error {
+	posts, err := p.postService.GetPosts()
+	if err != nil {
+		return responses.ErrorResponse(c, http.StatusNotFound, "Failed to get all posts: "+err.Error())
+	}
 
 	response := responses.NewPostResponse(posts)
 	return responses.Response(c, http.StatusOK, response)
@@ -130,9 +133,11 @@ func (p PostHandlers) GetPosts(c echo.Context) error {
 //	@Failure		404		{object}	responses.Error
 //	@Security		ApiKeyAuth
 //	@Router			/posts/{id} [put]
-func (p PostHandlers) UpdatePost(c echo.Context) error {
-	updatePostRequest := new(requests.UpdatePostRequest)
-	id, _ := strconv.Atoi(c.Param("id"))
+func (p *PostHandlers) UpdatePost(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
+	}
 
 	var updatePostRequest requests.UpdatePostRequest
 	if err := c.Bind(&updatePostRequest); err != nil {
@@ -143,16 +148,14 @@ func (p PostHandlers) UpdatePost(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty")
 	}
 
-	post := models.Post{}
-
-	p.postService.GetPost(&post, id)
-
-	post, err := postRepository.GetPost(id)
+	post, err := p.postService.GetPost(id)
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
-	p.postService.Update(&post, updatePostRequest)
+	if err := p.postService.Update(&post, updatePostRequest); err != nil {
+		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to update post: "+err.Error())
+	}
 
 	return responses.MessageResponse(c, http.StatusOK, "Post successfully updated")
 }
