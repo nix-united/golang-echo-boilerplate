@@ -14,9 +14,8 @@ linters-settings:
       - opinionated
       - performance
       - style
-    enabled-checks:
-      - whyNoLint
     disabled-checks:
+      - hugeParam
       - dupImport # https://github.com/go-critic/go-critic/issues/845
   gocyclo:
     min-complexity: 15
@@ -80,7 +79,7 @@ linters:
     - lll
     - misspell
     - nakedret
-    - exportloopref
+    - copyloopvar
     - staticcheck
     - stylecheck
     - typecheck
