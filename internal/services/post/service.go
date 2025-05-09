@@ -1,12 +1,14 @@
 package post
 
 import (
+	"fmt"
+
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 )
 
 type postRepository interface {
-	Create(post *models.Post)
+	Create(post *models.Post) error
 	GetPosts(posts *[]models.Post)
 	GetPost(post *models.Post, id int)
 	Update(post *models.Post)
@@ -21,8 +23,12 @@ func NewPostService(postRepository postRepository) Service {
 	return Service{postRepository: postRepository}
 }
 
-func (s Service) Create(post *models.Post) {
-	s.postRepository.Create(post)
+func (s Service) Create(post *models.Post) error {
+	if err := s.postRepository.Create(post); err != nil {
+		return fmt.Errorf("create post in repository: %w", err)
+	}
+
+	return nil
 }
 
 func (s Service) Update(post *models.Post, updatePostRequest *requests.UpdatePostRequest) {

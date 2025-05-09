@@ -60,7 +60,10 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 
 	postRepository := repositories.NewPostRepository(p.server.DB)
 	postService := postservice.NewPostService(postRepository)
-	postService.Create(&post)
+
+	if err := postService.Create(&post); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to create post: "+err.Error())
+	}
 
 	return responses.MessageResponse(c, http.StatusCreated, "Post successfully created")
 }
