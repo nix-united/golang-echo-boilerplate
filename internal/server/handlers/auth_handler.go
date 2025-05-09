@@ -51,7 +51,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 
 	user, err := userRepository.GetUserByEmail(loginRequest.Email)
 	if err != nil {
-		return responses.ErrorResponse(c, http.StatusNotFound, "User with such email not found: "+err.Error())
+		return responses.ErrorResponse(c, http.StatusNotFound, "User with such email not found")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password)); err != nil {
