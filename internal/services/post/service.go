@@ -11,8 +11,8 @@ type postRepository interface {
 	Create(post *models.Post) error
 	GetPosts() ([]models.Post, error)
 	GetPost(id int) (models.Post, error)
-	Update(post *models.Post)
-	Delete(post *models.Post)
+	Update(post *models.Post) error
+	Delete(post *models.Post) error
 }
 
 type Service struct {
