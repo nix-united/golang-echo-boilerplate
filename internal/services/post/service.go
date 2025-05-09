@@ -31,12 +31,22 @@ func (s Service) Create(post *models.Post) error {
 	return nil
 }
 
-func (s Service) GetPosts(posts *[]models.Post) {
-	s.postRepository.GetPosts()
+func (s Service) GetPosts() ([]models.Post, error) {
+	posts, err := s.postRepository.GetPosts()
+	if err != nil {
+		return nil, fmt.Errorf("get posts from repository: %w", err)
+	}
+
+	return posts, nil
 }
 
-func (s Service) GetPost(post *models.Post, id int) {
-	s.postRepository.GetPost(id)
+func (s Service) GetPost(id int) (models.Post, error) {
+	post, err := s.postRepository.GetPost(id)
+	if err != nil {
+		return models.Post{}, fmt.Errorf("get post from repository: %w", err)
+	}
+
+	return post, nil
 }
 
 func (s Service) Update(post *models.Post, updatePostRequest requests.UpdatePostRequest) error {
