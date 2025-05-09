@@ -86,7 +86,8 @@ func (p PostHandlers) DeletePost(c echo.Context) error {
 
 	p.postService.GetPost(post, id)
 
-	if post.ID == 0 {
+	post, err := postRepository.GetPost(id)
+	if err != nil {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
@@ -145,7 +146,8 @@ func (p PostHandlers) UpdatePost(c echo.Context) error {
 
 	p.postService.GetPost(&post, id)
 
-	if post.ID == 0 {
+	post, err := postRepository.GetPost(id)
+	if err != nil {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
