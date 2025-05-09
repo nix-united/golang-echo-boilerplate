@@ -23,3 +23,6 @@ organize-imports:
 
 lint:
 	go tool golangci-lint run ./...
+
+goose-create: # Creates goose migration. Example: NAME=migration_name make goose-create
+	goose -dir migrations create $(NAME) sql

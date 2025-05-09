@@ -55,26 +55,30 @@ func TestWalkPostsCrud(t *testing.T) {
 	handlerFuncCreate := func(s *server.Server, c echo.Context) error {
 		postRepository := repositories.NewPostRepository(s.DB)
 		postService := post.NewPostService(postRepository)
+		handler := handlers.NewPostHandlers(postService)
 
-		return handlers.NewPostHandlers(postService).CreatePost(c)
+		return handler.CreatePost(c)
 	}
 	handlerFuncGet := func(s *server.Server, c echo.Context) error {
 		postRepository := repositories.NewPostRepository(s.DB)
 		postService := post.NewPostService(postRepository)
+		handler := handlers.NewPostHandlers(postService)
 
-		return handlers.NewPostHandlers(postService).GetPosts(c)
+		return handler.GetPosts(c)
 	}
 	handlerFuncUpdate := func(s *server.Server, c echo.Context) error {
 		postRepository := repositories.NewPostRepository(s.DB)
 		postService := post.NewPostService(postRepository)
+		handler := handlers.NewPostHandlers(postService)
 
-		return handlers.NewPostHandlers(postService).UpdatePost(c)
+		return handler.UpdatePost(c)
 	}
 	handlerFuncDelete := func(s *server.Server, c echo.Context) error {
 		postRepository := repositories.NewPostRepository(s.DB)
 		postService := post.NewPostService(postRepository)
+		handler := handlers.NewPostHandlers(postService)
 
-		return handlers.NewPostHandlers(postService).DeletePost(c)
+		return handler.DeletePost(c)
 	}
 
 	claims := &token.JwtCustomClaims{
