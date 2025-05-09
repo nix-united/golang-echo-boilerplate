@@ -98,8 +98,8 @@ func TestWalkAuth(t *testing.T) {
 			handlerFunc,
 			[]*helpers.QueryMock{&helpers.SelectVersionMock, commonMock},
 			helpers.ExpectedResponse{
-				StatusCode: 401,
-				BodyPart:   "Invalid credentials",
+				StatusCode: 404,
+				BodyPart:   "User with such email not found",
 			},
 		},
 	}
