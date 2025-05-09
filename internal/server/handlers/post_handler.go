@@ -134,8 +134,9 @@ func (p PostHandlers) UpdatePost(c echo.Context) error {
 	updatePostRequest := new(requests.UpdatePostRequest)
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	if err := c.Bind(updatePostRequest); err != nil {
-		return err
+	var updatePostRequest requests.UpdatePostRequest
+	if err := c.Bind(&updatePostRequest); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request: "+err.Error())
 	}
 
 	if err := updatePostRequest.Validate(); err != nil {

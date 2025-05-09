@@ -32,20 +32,28 @@ func (s Service) Create(post *models.Post) error {
 }
 
 func (s Service) GetPosts(posts *[]models.Post) {
-	s.postRepository.GetPosts(posts)
+	s.postRepository.GetPosts()
 }
 
 func (s Service) GetPost(post *models.Post, id int) {
-	s.postRepository.GetPost(post, id)
+	s.postRepository.GetPost(id)
 }
 
-func (s Service) Update(post *models.Post, updatePostRequest *requests.UpdatePostRequest) {
+func (s Service) Update(post *models.Post, updatePostRequest requests.UpdatePostRequest) error {
 	post.Content = updatePostRequest.Content
 	post.Title = updatePostRequest.Title
 
-	s.postRepository.Update(post)
+	if err := s.postRepository.Update(post); err != nil {
+		return fmt.Errorf("update post in repository: %w", err)
+	}
+
+	return nil
 }
 
-func (s Service) Delete(post *models.Post) {
-	s.postRepository.Delete(post)
+func (s Service) Delete(post *models.Post) error {
+	if err := s.postRepository.Delete(post); err != nil {
+		return fmt.Errorf("delete post in repository: %w", err)
+	}
+
+	return nil
 }
