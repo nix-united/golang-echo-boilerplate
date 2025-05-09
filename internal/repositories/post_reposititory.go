@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
@@ -33,8 +34,16 @@ func (r PostRepository) GetPosts() ([]models.Post, error) {
 	return posts, nil
 }
 
-func (r PostRepository) GetPost(post *models.Post, id int) {
-	r.db.Where("id = ? ", id).Find(post)
+func (r PostRepository) GetPost(id int) (models.Post, error) {
+	var post models.Post
+	err := r.db.Where("id = ?", id).Take(&post).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return models.Post{}, fmt.Errorf("post not found: %w", err)
+	} else if err != nil {
+		return models.Post{}, fmt.Errorf("execute select post by id query: %w", err)
+	}
+
+	return post, nil
 }
 
 func (r PostRepository) Update(post *models.Post) {

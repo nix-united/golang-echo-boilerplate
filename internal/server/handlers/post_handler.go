@@ -82,12 +82,10 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 func (p *PostHandlers) DeletePost(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	post := models.Post{}
-
 	postRepository := repositories.NewPostRepository(p.server.DB)
-	postRepository.GetPost(&post, id)
 
-	if post.ID == 0 {
+	post, err := postRepository.GetPost(id)
+	if err != nil {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
@@ -148,9 +146,9 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 	post := models.Post{}
 
 	postRepository := repositories.NewPostRepository(p.server.DB)
-	postRepository.GetPost(&post, id)
 
-	if post.ID == 0 {
+	post, err := postRepository.GetPost(id)
+	if err != nil {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
