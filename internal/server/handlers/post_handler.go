@@ -108,10 +108,11 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 //	@Security		ApiKeyAuth
 //	@Router			/posts [get]
 func (p *PostHandlers) GetPosts(c echo.Context) error {
-	var posts []models.Post
-
 	postRepository := repositories.NewPostRepository(p.server.DB)
-	postRepository.GetPosts(&posts)
+	posts, err := postRepository.GetPosts()
+	if err != nil {
+		return responses.ErrorResponse(c, http.StatusNotFound, "Failed to get all posts: "+err.Error())
+	}
 
 	response := responses.NewPostResponse(posts)
 	return responses.Response(c, http.StatusOK, response)
