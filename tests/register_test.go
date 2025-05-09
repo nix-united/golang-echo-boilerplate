@@ -118,7 +118,7 @@ func TestWalkRegister(t *testing.T) {
 				},
 			},
 			helpers.ExpectedResponse{
-				StatusCode: 400,
+				StatusCode: 409,
 				BodyPart:   "User already exists",
 			},
 		},

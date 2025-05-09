@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -47,11 +48,17 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty or not valid")
 	}
 
-	user := models.User{}
 	userRepository := repositories.NewUserRepository(authHandler.server.DB)
-	userRepository.GetUserByEmail(&user, loginRequest.Email)
 
-	if user.ID == 0 || (bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password)) != nil) {
+	user, err := userRepository.GetUserByEmail(c.Request().Context(), loginRequest.Email)
+	if errors.Is(err, models.ErrUserNotFound) {
+		return responses.ErrorResponse(c, http.StatusNotFound, "User with such email not found")
+	}
+	if err != nil {
+		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to get user by email")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password)); err != nil {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid credentials")
 	}
 
