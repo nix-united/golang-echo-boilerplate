@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
+	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 	"github.com/nix-united/golang-echo-boilerplate/internal/responses"
@@ -44,9 +46,13 @@ func (registerHandler *RegisterHandler) Register(c echo.Context) error {
 	}
 
 	userRepository := repositories.NewUserRepository(registerHandler.server.DB)
-	_, err := userRepository.GetUserByEmail(registerRequest.Email)
+
+	_, err := userRepository.GetUserByEmail(c.Request().Context(), registerRequest.Email)
+	if err != nil && !errors.Is(err, models.ErrUserNotFound) {
+		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to check if user with such email exists")
+	}
 	if err == nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "User already exists")
+		return responses.ErrorResponse(c, http.StatusConflict, "User already exists")
 	}
 
 	userService := user.NewUserService(registerHandler.server.DB)

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -49,9 +50,12 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 
 	userRepository := repositories.NewUserRepository(authHandler.server.DB)
 
-	user, err := userRepository.GetUserByEmail(loginRequest.Email)
-	if err != nil {
+	user, err := userRepository.GetUserByEmail(c.Request().Context(), loginRequest.Email)
+	if errors.Is(err, models.ErrUserNotFound) {
 		return responses.ErrorResponse(c, http.StatusNotFound, "User with such email not found")
+	}
+	if err != nil {
+		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to get user by email")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password)); err != nil {
