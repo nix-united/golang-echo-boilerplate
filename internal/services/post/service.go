@@ -9,7 +9,7 @@ import (
 
 type postRepository interface {
 	Create(post *models.Post) error
-	GetPosts(posts *[]models.Post)
+	GetPosts() ([]models.Post, error)
 	GetPost(post *models.Post, id int)
 	Update(post *models.Post)
 	Delete(post *models.Post)
