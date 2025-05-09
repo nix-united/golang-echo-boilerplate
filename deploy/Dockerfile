@@ -1,5 +1,5 @@
 # base image
-FROM golang:1.24.2-alpine3.20 as build
+FROM golang:1.24.3-alpine3.21 AS build
 
 RUN apk add --no-cache --update git build-base openssh-client
 
@@ -19,8 +19,7 @@ RUN git config --global http.sslVerify true &&\
     go install github.com/swaggo/swag/cmd/swag@v1.8.10 &&\
     $GOPATH/bin/swag init -g cmd/main.go &&\
     go get -v ./... &&\
-    go build -o demo-echo ./cmd &&\
-    go build -o entry ./migrations
+    go build -o demo-echo ./cmd &&
 
 FROM alpine
 
@@ -29,11 +28,11 @@ RUN chmod +x /wait
 
 WORKDIR /app
 COPY --from=build /go/src/api/demo-echo /app/demo-echo
-COPY --from=build /go/src/api/entry /app/entry
 
 RUN ["chmod", "+x", "./demo-echo"]
-RUN ["chmod", "+x", "./entry"]
 
-CMD /wait &&\
-    ./entry --verbose &&\
-    ./demo-echo
+CMD ["sh", "-c", "\
+  /wait && \
+  go tool goose -dir './migrations' mysql ${DB_USER}:${DB_PASSWORD}@tcp(mysql:${DB_PORT})/${DB_NAME} up && \
+  ./demo-echo \
+"]
