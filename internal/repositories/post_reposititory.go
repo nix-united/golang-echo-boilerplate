@@ -46,10 +46,18 @@ func (r PostRepository) GetPost(id int) (models.Post, error) {
 	return post, nil
 }
 
-func (r PostRepository) Update(post *models.Post) {
-	r.db.Save(post)
+func (r PostRepository) Update(post *models.Post) error {
+	if err := r.db.Save(post).Error; err != nil {
+		return fmt.Errorf("execute update post query: %w", err)
+	}
+
+	return nil
 }
 
-func (r PostRepository) Delete(post *models.Post) {
-	r.db.Delete(post)
+func (r PostRepository) Delete(post *models.Post) error {
+	if err := r.db.Delete(post).Error; err != nil {
+		return fmt.Errorf("execute delete post query: %w", err)
+	}
+
+	return nil
 }
