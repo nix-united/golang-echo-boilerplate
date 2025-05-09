@@ -3,8 +3,10 @@ package routes
 import (
 	"fmt"
 
+	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
 	s "github.com/nix-united/golang-echo-boilerplate/internal/server"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
+	"github.com/nix-united/golang-echo-boilerplate/internal/services/post"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/token"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -15,7 +17,10 @@ import (
 )
 
 func ConfigureRoutes(server *s.Server) {
-	postHandler := handlers.NewPostHandlers(server)
+	postRepository := repositories.NewPostRepository(server.DB)
+	postService := post.NewPostService(postRepository)
+
+	postHandler := handlers.NewPostHandlers(postService)
 	authHandler := handlers.NewAuthHandler(server)
 	registerHandler := handlers.NewRegisterHandler(server)
 
