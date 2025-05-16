@@ -4,8 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/mysql"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 const (
@@ -33,6 +36,13 @@ func SetupMySQL(ctx context.Context) (_ MySQLConfig, _ func(ctx context.Context)
 		mysql.WithDatabase(mysqlDatabase),
 		mysql.WithUsername(mysqlUsername),
 		mysql.WithPassword(mysqlPassword),
+		testcontainers.WithWaitStrategyAndDeadline(
+			time.Minute,
+			wait.ForLog(fmt.Sprintf(
+				"/usr/sbin/mysqld: ready for connections. Version: '9.3.0'  socket: '/var/run/mysqld/mysqld.sock'  port: %s  MySQL Community Server - GPL.",
+				mysqlPort,
+			)),
+		),
 	)
 	if err != nil {
 		return MySQLConfig{}, nil, fmt.Errorf("run mysql container: %w", err)

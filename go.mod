@@ -14,6 +14,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/swaggo/swag v1.16.4
+	github.com/testcontainers/testcontainers-go v0.37.0
 	github.com/testcontainers/testcontainers-go/modules/mysql v0.37.0
 	golang.org/x/crypto v0.38.0
 	gorm.io/driver/mysql v1.5.2
@@ -248,7 +249,6 @@ require (
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/swaggo/files/v2 v2.0.0 // indirect
 	github.com/tdakkota/asciicheck v0.4.0 // indirect
-	github.com/testcontainers/testcontainers-go v0.37.0 // indirect
 	github.com/tetafro/godot v1.4.20 // indirect
 	github.com/timakin/bodyclose v0.0.0-20241017074812-ed6a65f985e3 // indirect
 	github.com/timonwong/loggercheck v0.10.1 // indirect

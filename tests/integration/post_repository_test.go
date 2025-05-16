@@ -23,8 +23,7 @@ func TestPostRepository(t *testing.T) {
 	err := gormDB.Create(userToCreate).Error
 	require.NoError(t, err)
 
-	user := new(models.User)
-	userRepository.GetUserByEmail(user, "example_user_email@email.com")
+	user, err := userRepository.GetUserByEmail("example_user_email@email.com")
 	require.NotNil(t, user)
 
 	postToCreate := &models.Post{
@@ -42,7 +41,7 @@ func TestPostRepository(t *testing.T) {
 
 	gotPost := (*gotPosts)[0]
 	wantPost := postToCreate
-	wantPost.User = *user
+	wantPost.User = user
 	wantPost.CreatedAt = gotPost.CreatedAt
 	wantPost.UpdatedAt = gotPost.UpdatedAt
 
