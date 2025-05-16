@@ -34,16 +34,14 @@ func TestPostRepository(t *testing.T) {
 
 	postRepository.Create(postToCreate)
 
-	gotPosts := new([]models.Post)
-	postRepository.GetPosts(gotPosts)
-	require.NotNil(t, gotPosts)
-	require.Len(t, (*gotPosts), 1)
+	gotPosts, err := postRepository.GetPosts()
+	require.NoError(t, err)
+	require.Len(t, gotPosts, 1)
 
-	gotPost := (*gotPosts)[0]
 	wantPost := postToCreate
 	wantPost.User = user
-	wantPost.CreatedAt = gotPost.CreatedAt
-	wantPost.UpdatedAt = gotPost.UpdatedAt
+	wantPost.CreatedAt = gotPosts[0].CreatedAt
+	wantPost.UpdatedAt = gotPosts[0].UpdatedAt
 
-	assert.Equal(t, *postToCreate, (*gotPosts)[0])
+	assert.Equal(t, *postToCreate, gotPosts[0])
 }
