@@ -28,5 +28,9 @@ CREATE TABLE posts (
 
 -- +goose Down
 -- +goose StatementBegin
+DROP TABLE posts;
+-- +goose StatementEnd
+
+-- +goose StatementBegin
 DROP TABLE users;
 -- +goose StatementEnd
