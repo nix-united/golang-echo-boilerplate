@@ -13,6 +13,7 @@ import (
 
 type userRepository interface {
 	Create(ctx context.Context, user *models.User) error
+	GetByID(ctx context.Context, id uint) (models.User, error)
 	GetUserByEmail(ctx context.Context, email string) (models.User, error)
 }
 
@@ -44,6 +45,15 @@ func (s *UserService) Register(ctx context.Context, request *requests.RegisterRe
 	}
 
 	return nil
+}
+
+func (s *UserService) GetByID(ctx context.Context, id uint) (models.User, error) {
+	user, err := s.userRepository.GetByID(ctx, id)
+	if err != nil {
+		return models.User{}, fmt.Errorf("get user by id from repository: %w", err)
+	}
+
+	return user, nil
 }
 
 func (s *UserService) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
