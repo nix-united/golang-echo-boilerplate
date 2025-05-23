@@ -49,7 +49,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 
 	userRepository := repositories.NewUserRepository(authHandler.server.DB)
 
-	user, err := userRepository.GetUserByEmail(loginRequest.Email)
+	user, err := userRepository.GetUserByEmail(c.Request().Context(), loginRequest.Email)
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusNotFound, "User with such email not found")
 	}
