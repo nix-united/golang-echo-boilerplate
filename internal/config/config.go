@@ -1,9 +1,12 @@
 package config
 
+import "github.com/nix-united/golang-echo-boilerplate/internal/slogx"
+
 type Config struct {
-	Auth AuthConfig
-	DB   DBConfig
-	HTTP HTTPConfig
+	Logger slogx.Config
+	Auth   AuthConfig
+	DB     DBConfig
+	HTTP   HTTPConfig
 }
 
 type DBConfig struct {
