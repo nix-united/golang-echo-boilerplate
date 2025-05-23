@@ -78,7 +78,7 @@ func (h traceHandler) addAttrs(ctx context.Context, record slog.Record) slog.Rec
 	return record
 }
 
-type traceKeyType = int8
+type traceKeyType int8
 
 var traceKey traceKeyType = 1
 
