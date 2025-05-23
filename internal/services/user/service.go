@@ -17,15 +17,15 @@ type userRepository interface {
 	GetUserByEmail(ctx context.Context, email string) (models.User, error)
 }
 
-type UserService struct {
+type Service struct {
 	userRepository userRepository
 }
 
-func NewUserService(userRepository userRepository) *UserService {
-	return &UserService{userRepository: userRepository}
+func NewService(userRepository userRepository) *Service {
+	return &Service{userRepository: userRepository}
 }
 
-func (s *UserService) Register(ctx context.Context, request *requests.RegisterRequest) error {
+func (s *Service) Register(ctx context.Context, request *requests.RegisterRequest) error {
 	encryptedPassword, err := bcrypt.GenerateFromPassword(
 		[]byte(request.Password),
 		bcrypt.DefaultCost,
@@ -47,7 +47,7 @@ func (s *UserService) Register(ctx context.Context, request *requests.RegisterRe
 	return nil
 }
 
-func (s *UserService) GetByID(ctx context.Context, id uint) (models.User, error) {
+func (s *Service) GetByID(ctx context.Context, id uint) (models.User, error) {
 	user, err := s.userRepository.GetByID(ctx, id)
 	if err != nil {
 		return models.User{}, fmt.Errorf("get user by id from repository: %w", err)
@@ -56,7 +56,7 @@ func (s *UserService) GetByID(ctx context.Context, id uint) (models.User, error)
 	return user, nil
 }
 
-func (s *UserService) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
+func (s *Service) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
 	user, err := s.userRepository.GetUserByEmail(ctx, email)
 	if err != nil {
 		return models.User{}, fmt.Errorf("get user by email from repository: %w", err)

@@ -19,7 +19,7 @@ import (
 
 func ConfigureRoutes(server *s.Server) {
 	userRepository := repositories.NewUserRepository(server.DB)
-	userService := user.NewUserService(userRepository)
+	userService := user.NewService(userRepository)
 
 	postRepository := repositories.NewPostRepository(server.DB)
 	postService := post.NewPostService(postRepository)
