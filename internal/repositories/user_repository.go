@@ -18,6 +18,14 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
+func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
+	if err := r.db.WithContext(ctx).Create(user).Error; err != nil {
+		return fmt.Errorf("execute insert user query: %w", err)
+	}
+
+	return nil
+}
+
 func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
 	var user models.User
 	err := r.db.WithContext(ctx).Where("email = ?", email).Take(&user).Error
