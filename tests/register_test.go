@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
+	"github.com/nix-united/golang-echo-boilerplate/internal/services/user"
 	"github.com/nix-united/golang-echo-boilerplate/tests/helpers"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -26,7 +28,9 @@ func TestWalkRegister(t *testing.T) {
 		Url:    "/register",
 	}
 	handlerFunc := func(s *server.Server, c echo.Context) error {
-		return handlers.NewRegisterHandler(s).Register(c)
+		userRepository := repositories.NewUserRepository(s.DB)
+		userService := user.NewUserService(userRepository)
+		return handlers.NewRegisterHandler(userService).Register(c)
 	}
 
 	cases := []helpers.TestCase{
