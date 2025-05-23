@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
@@ -14,11 +15,11 @@ import (
 )
 
 type postService interface {
-	Create(post *models.Post) error
-	GetPosts() ([]models.Post, error)
-	GetPost(id int) (models.Post, error)
-	Update(post *models.Post, updatePostRequest requests.UpdatePostRequest) error
-	Delete(post *models.Post) error
+	Create(ctx context.Context, post *models.Post) error
+	GetPosts(ctx context.Context) ([]models.Post, error)
+	GetPost(ctx context.Context, id uint) (models.Post, error)
+	Update(ctx context.Context, post *models.Post, updatePostRequest requests.UpdatePostRequest) error
+	Delete(ctx context.Context, post *models.Post) error
 }
 
 type PostHandlers struct {
@@ -56,13 +57,13 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 	claims := user.Claims.(*token.JwtCustomClaims)
 	id := claims.ID
 
-	post := models.Post{
+	post := &models.Post{
 		Title:   createPostRequest.Title,
 		Content: createPostRequest.Content,
 		UserID:  id,
 	}
 
-	if err := p.postService.Create(&post); err != nil {
+	if err := p.postService.Create(c.Request().Context(), post); err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to create post: "+err.Error())
 	}
 
@@ -81,17 +82,17 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 //	@Security		ApiKeyAuth
 //	@Router			/posts/{id} [delete]
 func (p *PostHandlers) DeletePost(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
 	}
 
-	post, err := p.postService.GetPost(id)
+	post, err := p.postService.GetPost(c.Request().Context(), uint(id))
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
-	if err := p.postService.Delete(&post); err != nil {
+	if err := p.postService.Delete(c.Request().Context(), &post); err != nil {
 		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to delete post: "+err.Error())
 	}
 
@@ -109,7 +110,7 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 //	@Security		ApiKeyAuth
 //	@Router			/posts [get]
 func (p *PostHandlers) GetPosts(c echo.Context) error {
-	posts, err := p.postService.GetPosts()
+	posts, err := p.postService.GetPosts(c.Request().Context())
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Failed to get all posts: "+err.Error())
 	}
@@ -134,7 +135,7 @@ func (p *PostHandlers) GetPosts(c echo.Context) error {
 //	@Security		ApiKeyAuth
 //	@Router			/posts/{id} [put]
 func (p *PostHandlers) UpdatePost(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
 	}
@@ -148,12 +149,12 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty")
 	}
 
-	post, err := p.postService.GetPost(id)
+	post, err := p.postService.GetPost(c.Request().Context(), uint(id))
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
 
-	if err := p.postService.Update(&post, updatePostRequest); err != nil {
+	if err := p.postService.Update(c.Request().Context(), &post, updatePostRequest); err != nil {
 		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to update post: "+err.Error())
 	}
 

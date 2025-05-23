@@ -1,6 +1,7 @@
 package post
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
@@ -8,11 +9,11 @@ import (
 )
 
 type postRepository interface {
-	Create(post *models.Post) error
-	GetPosts() ([]models.Post, error)
-	GetPost(id int) (models.Post, error)
-	Update(post *models.Post) error
-	Delete(post *models.Post) error
+	Create(ctx context.Context, post *models.Post) error
+	GetPosts(ctx context.Context) ([]models.Post, error)
+	GetPost(ctx context.Context, id uint) (models.Post, error)
+	Update(ctx context.Context, post *models.Post) error
+	Delete(ctx context.Context, post *models.Post) error
 }
 
 type Service struct {
@@ -23,16 +24,16 @@ func NewPostService(postRepository postRepository) Service {
 	return Service{postRepository: postRepository}
 }
 
-func (s Service) Create(post *models.Post) error {
-	if err := s.postRepository.Create(post); err != nil {
+func (s Service) Create(ctx context.Context, post *models.Post) error {
+	if err := s.postRepository.Create(ctx, post); err != nil {
 		return fmt.Errorf("create post in repository: %w", err)
 	}
 
 	return nil
 }
 
-func (s Service) GetPosts() ([]models.Post, error) {
-	posts, err := s.postRepository.GetPosts()
+func (s Service) GetPosts(ctx context.Context) ([]models.Post, error) {
+	posts, err := s.postRepository.GetPosts(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get posts from repository: %w", err)
 	}
@@ -40,8 +41,8 @@ func (s Service) GetPosts() ([]models.Post, error) {
 	return posts, nil
 }
 
-func (s Service) GetPost(id int) (models.Post, error) {
-	post, err := s.postRepository.GetPost(id)
+func (s Service) GetPost(ctx context.Context, id uint) (models.Post, error) {
+	post, err := s.postRepository.GetPost(ctx, id)
 	if err != nil {
 		return models.Post{}, fmt.Errorf("get post from repository: %w", err)
 	}
@@ -49,19 +50,19 @@ func (s Service) GetPost(id int) (models.Post, error) {
 	return post, nil
 }
 
-func (s Service) Update(post *models.Post, updatePostRequest requests.UpdatePostRequest) error {
+func (s Service) Update(ctx context.Context, post *models.Post, updatePostRequest requests.UpdatePostRequest) error {
 	post.Content = updatePostRequest.Content
 	post.Title = updatePostRequest.Title
 
-	if err := s.postRepository.Update(post); err != nil {
+	if err := s.postRepository.Update(ctx, post); err != nil {
 		return fmt.Errorf("update post in repository: %w", err)
 	}
 
 	return nil
 }
 
-func (s Service) Delete(post *models.Post) error {
-	if err := s.postRepository.Delete(post); err != nil {
+func (s Service) Delete(ctx context.Context, post *models.Post) error {
+	if err := s.postRepository.Delete(ctx, post); err != nil {
 		return fmt.Errorf("delete post in repository: %w", err)
 	}
 
