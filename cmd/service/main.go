@@ -14,8 +14,10 @@ import (
 	"github.com/nix-united/golang-echo-boilerplate/internal/db"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/routes"
+	"github.com/nix-united/golang-echo-boilerplate/internal/slogx"
 
 	"github.com/caarlos0/env/v11"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 )
@@ -54,6 +56,10 @@ func run() error {
 
 	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.Port)
 
+	if err := slogx.Init(cfg.Logger); err != nil {
+		return fmt.Errorf("init logger: %w", err)
+	}
+
 	gormDB, err := db.NewGormDB(cfg.DB)
 	if err != nil {
 		return fmt.Errorf("new db connection: %w", err)
@@ -61,7 +67,7 @@ func run() error {
 
 	app := server.NewServer(echo.New(), gormDB, &cfg)
 
-	routes.ConfigureRoutes(app)
+	routes.ConfigureRoutes(slogx.NewTraceStarter(uuid.NewV7), app)
 
 	go func() {
 		if err = app.Start(cfg.HTTP.Port); err != nil {
