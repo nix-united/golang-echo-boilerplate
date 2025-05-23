@@ -11,11 +11,13 @@ import (
 
 	"github.com/nix-united/golang-echo-boilerplate/internal/config"
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
+	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 	"github.com/nix-united/golang-echo-boilerplate/internal/responses"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/token"
+	"github.com/nix-united/golang-echo-boilerplate/internal/services/user"
 	"github.com/nix-united/golang-echo-boilerplate/tests/helpers"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -38,7 +40,9 @@ func TestWalkAuth(t *testing.T) {
 		Url:    "/login",
 	}
 	handlerFunc := func(s *server.Server, c echo.Context) error {
-		return handlers.NewAuthHandler(s).Login(c)
+		userRepository := repositories.NewUserRepository(s.DB)
+		userService := user.NewUserService(userRepository)
+		return handlers.NewAuthHandler(userService, s).Login(c)
 	}
 
 	encryptedPassword, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
@@ -135,7 +139,9 @@ func TestWalkRefresh(t *testing.T) {
 		Url:    "/refresh",
 	}
 	handlerFunc := func(s *server.Server, c echo.Context) error {
-		return handlers.NewAuthHandler(s).RefreshToken(c)
+		userRepository := repositories.NewUserRepository(s.DB)
+		userService := user.NewUserService(userRepository)
+		return handlers.NewAuthHandler(userService, s).RefreshToken(c)
 	}
 
 	var cfg config.Config
