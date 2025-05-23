@@ -93,7 +93,7 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
 	}
 
-	post, err := p.postService.GetPost(c.Request().Context(), uint(id))
+	post, err := p.postService.GetPost(c.Request().Context(), id)
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
