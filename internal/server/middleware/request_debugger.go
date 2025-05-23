@@ -26,9 +26,7 @@ func NewRequestDebugger() echo.MiddlewareFunc {
 }
 
 func (d requestDebugger) handle(next echo.HandlerFunc) echo.HandlerFunc {
-	isDebug := slog.Default().Enabled(context.Background(), slog.LevelDebug)
-
-	if !isDebug {
+	if !slog.Default().Enabled(context.Background(), slog.LevelDebug) {
 		return next
 	}
 
