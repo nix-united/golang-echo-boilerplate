@@ -10,6 +10,7 @@ import (
 	"github.com/nix-united/golang-echo-boilerplate/internal/responses"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/token"
 
+	safecast "github.com/ccoveille/go-safecast"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
@@ -82,7 +83,12 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 //	@Security		ApiKeyAuth
 //	@Router			/posts/{id} [delete]
 func (p *PostHandlers) DeletePost(c echo.Context) error {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	parsedID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
+	}
+
+	id, err := safecast.ToUint(parsedID)
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
 	}
@@ -135,7 +141,12 @@ func (p *PostHandlers) GetPosts(c echo.Context) error {
 //	@Security		ApiKeyAuth
 //	@Router			/posts/{id} [put]
 func (p *PostHandlers) UpdatePost(c echo.Context) error {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	parsedID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
+	}
+
+	id, err := safecast.ToUint(parsedID)
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
 	}
@@ -149,7 +160,7 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty")
 	}
 
-	post, err := p.postService.GetPost(c.Request().Context(), uint(id))
+	post, err := p.postService.GetPost(c.Request().Context(), id)
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
 	}
