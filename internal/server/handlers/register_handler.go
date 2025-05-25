@@ -12,6 +12,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+//go:generate go tool mockgen -source=$GOFILE -destination=register_handler_mock_test.go -package=${GOPACKAGE}_test -typed=true
+
 type userRegisterer interface {
 	GetUserByEmail(ctx context.Context, email string) (models.User, error)
 	Register(ctx context.Context, request *requests.RegisterRequest) error
@@ -39,24 +41,23 @@ func NewRegisterHandler(userRegisterer userRegisterer) *RegisterHandler {
 //	@Router			/register [post]
 func (h *RegisterHandler) Register(c echo.Context) error {
 	registerRequest := new(requests.RegisterRequest)
-
 	if err := c.Bind(registerRequest); err != nil {
-		return err
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request")
 	}
 
 	if err := registerRequest.Validate(); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty or not valid")
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty or invalid")
 	}
 
 	_, err := h.userRegisterer.GetUserByEmail(c.Request().Context(), registerRequest.Email)
 	if err == nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "User already exists")
+		return responses.ErrorResponse(c, http.StatusConflict, "User already exists")
 	} else if !errors.Is(err, models.ErrUserNotFound) {
-		return responses.ErrorResponse(c, http.StatusInternalServerError, "Server error")
+		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to check if user exists")
 	}
 
 	if err := h.userRegisterer.Register(c.Request().Context(), registerRequest); err != nil {
-		return responses.ErrorResponse(c, http.StatusInternalServerError, "Server error")
+		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to register user")
 	}
 
 	return responses.MessageResponse(c, http.StatusCreated, "User successfully created")
