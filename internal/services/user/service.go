@@ -11,6 +11,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+//go:generate go tool mockgen -source=$GOFILE -destination=service_mock_test.go -package=${GOPACKAGE}_test -typed=true
+
 type userRepository interface {
 	Create(ctx context.Context, user *models.User) error
 	GetByID(ctx context.Context, id uint) (models.User, error)
@@ -31,7 +33,7 @@ func (s *Service) Register(ctx context.Context, request *requests.RegisterReques
 		bcrypt.DefaultCost,
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("encrypt password: %w", err)
 	}
 
 	user := builders.NewUserBuilder().
