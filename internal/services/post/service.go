@@ -8,6 +8,8 @@ import (
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 )
 
+//go:generate go tool mockgen -source=$GOFILE -destination=service_mock_test.go -package=${GOPACKAGE}_test -typed=true
+
 type postRepository interface {
 	Create(ctx context.Context, post *models.Post) error
 	GetPosts(ctx context.Context) ([]models.Post, error)
@@ -20,7 +22,7 @@ type Service struct {
 	postRepository postRepository
 }
 
-func NewPostService(postRepository postRepository) Service {
+func NewService(postRepository postRepository) Service {
 	return Service{postRepository: postRepository}
 }
 
