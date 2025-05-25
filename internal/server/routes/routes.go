@@ -21,7 +21,7 @@ func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) {
 	userService := user.NewService(userRepository)
 
 	postRepository := repositories.NewPostRepository(server.DB)
-	postService := post.NewPostService(postRepository)
+	postService := post.NewService(postRepository)
 
 	postHandler := handlers.NewPostHandlers(postService)
 	authHandler := handlers.NewAuthHandler(userService, server)

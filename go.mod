@@ -3,7 +3,6 @@ module github.com/nix-united/golang-echo-boilerplate
 go 1.24.2
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/ccoveille/go-safecast v1.6.1
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
@@ -18,6 +17,7 @@ require (
 	github.com/swaggo/swag v1.16.4
 	github.com/testcontainers/testcontainers-go v0.37.0
 	github.com/testcontainers/testcontainers-go/modules/mysql v0.37.0
+	go.uber.org/mock v0.5.2
 	golang.org/x/crypto v0.38.0
 	gorm.io/driver/mysql v1.5.2
 	gorm.io/gorm v1.25.5
@@ -312,4 +312,5 @@ require (
 tool (
 	github.com/golangci/golangci-lint/cmd/golangci-lint
 	github.com/pressly/goose/v3/cmd/goose
+	go.uber.org/mock/mockgen
 )
