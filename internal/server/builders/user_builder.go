@@ -27,8 +27,8 @@ func (userBuilder *UserBuilder) SetPassword(password string) (u *UserBuilder) {
 	return userBuilder
 }
 
-func (userBuilder *UserBuilder) Build() models.User {
-	user := models.User{
+func (userBuilder *UserBuilder) Build() *models.User {
+	user := &models.User{
 		Email:    userBuilder.email,
 		Name:     userBuilder.name,
 		Password: userBuilder.password,
