@@ -63,17 +63,17 @@ func SetupApplication(ctx context.Context) (_ *url.URL, _ func(context.Context) 
 			return fmt.Errorf("get application container: %w", err)
 		}
 
-		l, err := application.Logs(ctx)
+		applicationLogs, err := application.Logs(ctx)
 		if err != nil {
 			return fmt.Errorf("get logs: %w", err)
 		}
 
-		r, err := io.ReadAll(l)
+		rawLogs, err := io.ReadAll(applicationLogs)
 		if err != nil {
 			return fmt.Errorf("read logs: %w", err)
 		}
 
-		fmt.Println(string(r))
+		fmt.Println(string(rawLogs))
 
 		if err := dockerCompose.Down(ctx); err != nil {
 			return fmt.Errorf("down docker compose: %w", err)
