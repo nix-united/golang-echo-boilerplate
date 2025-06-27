@@ -43,7 +43,7 @@ func (l requestLogger) handle(next echo.HandlerFunc) echo.HandlerFunc {
 		attrs := []any{
 			"method", c.Request().Method,
 			"status", c.Response().Status,
-			"path", c.Path(),
+			"path", c.Request().URL.String(),
 		}
 
 		if errNext != nil {

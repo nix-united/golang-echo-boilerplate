@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
 	s "github.com/nix-united/golang-echo-boilerplate/internal/server"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
@@ -13,7 +15,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
-	echoSwagger "github.com/swaggo/echo-swagger"
+	echoswagger "github.com/swaggo/echo-swagger"
 )
 
 func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) {
@@ -27,27 +29,31 @@ func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) {
 	authHandler := handlers.NewAuthHandler(userService, server)
 	registerHandler := handlers.NewRegisterHandler(userService)
 
-	server.Echo.Use(middleware.NewRequestLogger(tracer))
+	server.Echo.GET("/health", func(c echo.Context) error {
+		return c.NoContent(http.StatusOK)
+	})
+	server.Echo.GET("/swagger/*", echoswagger.WrapHandler)
 
-	server.Echo.GET("/swagger/*", echoSwagger.WrapHandler)
+	secureAPI := server.Echo.Group("", middleware.NewRequestLogger(tracer))
 
-	server.Echo.POST("/login", authHandler.Login)
-	server.Echo.POST("/register", registerHandler.Register)
-	server.Echo.POST("/refresh", authHandler.RefreshToken)
+	secureAPI.POST("/login", authHandler.Login)
+	secureAPI.POST("/register", registerHandler.Register)
+	secureAPI.POST("/refresh", authHandler.RefreshToken)
 
-	r := server.Echo.Group("", middleware.NewRequestDebugger())
+	authorizedAPI := server.Echo.Group(
+		"",
+		middleware.NewRequestLogger(tracer),
+		middleware.NewRequestDebugger(),
+		echojwt.WithConfig(echojwt.Config{
+			NewClaimsFunc: func(_ echo.Context) jwt.Claims {
+				return new(token.JwtCustomClaims)
+			},
+			SigningKey: []byte(server.Config.Auth.AccessSecret),
+		}),
+	)
 
-	// Configure middleware with the custom claims type
-	config := echojwt.Config{
-		NewClaimsFunc: func(_ echo.Context) jwt.Claims {
-			return new(token.JwtCustomClaims)
-		},
-		SigningKey: []byte(server.Config.Auth.AccessSecret),
-	}
-	r.Use(echojwt.WithConfig(config))
-
-	r.GET("/posts", postHandler.GetPosts)
-	r.POST("/posts", postHandler.CreatePost)
-	r.DELETE("/posts/:id", postHandler.DeletePost)
-	r.PUT("/posts/:id", postHandler.UpdatePost)
+	authorizedAPI.GET("/posts", postHandler.GetPosts)
+	authorizedAPI.POST("/posts", postHandler.CreatePost)
+	authorizedAPI.DELETE("/posts/:id", postHandler.DeletePost)
+	authorizedAPI.PUT("/posts/:id", postHandler.UpdatePost)
 }
