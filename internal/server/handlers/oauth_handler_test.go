@@ -4,15 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/labstack/echo/v4"
-	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
-	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"go.uber.org/mock/gomock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
+	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
+
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
 
 func newOAuthHandler(t *testing.T) (*echo.Echo, *handlers.OAuthHandler, *MockUserAuthenticator) {
@@ -79,8 +81,8 @@ func TestOAuthHandler_GoogleOAuth(t *testing.T) {
 
 		wantResponse := `{
 			  "accessToken": "access-token-123",
-        "refreshToken": "refresh-token-456",
-        "exp": 3600
+              "refreshToken": "refresh-token-456",
+              "exp": 3600
 		}`
 		fmt.Println(recorder.Body.String())
 

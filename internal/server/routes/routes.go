@@ -3,7 +3,7 @@ package routes
 import (
 	"context"
 	"fmt"
-	"github.com/coreos/go-oidc"
+
 	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
 	s "github.com/nix-united/golang-echo-boilerplate/internal/server"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
@@ -13,6 +13,7 @@ import (
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/user"
 	"github.com/nix-united/golang-echo-boilerplate/internal/slogx"
 
+	"github.com/coreos/go-oidc"
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"

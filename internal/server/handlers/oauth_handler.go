@@ -2,23 +2,25 @@ package handlers
 
 import (
 	"context"
-	"github.com/labstack/echo/v4"
+	"net/http"
+
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 	"github.com/nix-united/golang-echo-boilerplate/internal/responses"
-	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
 //go:generate go tool mockgen -source=$GOFILE -destination=oauth_handler_mock_test.go -package=${GOPACKAGE}_test -typed=true
 
-type UserAuthenticator interface {
+type userAuthenticator interface {
 	GoogleOAuth(ctx context.Context, token string) (string, string, int64, error)
 }
 
 type OAuthHandler struct {
-	userService UserAuthenticator
+	userService userAuthenticator
 }
 
-func NewOAuthHandler(userService UserAuthenticator) *OAuthHandler {
+func NewOAuthHandler(userService userAuthenticator) *OAuthHandler {
 	return &OAuthHandler{userService: userService}
 }
 

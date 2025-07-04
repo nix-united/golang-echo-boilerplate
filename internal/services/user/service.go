@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/coreos/go-oidc"
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/builders"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/token"
 
+	"github.com/coreos/go-oidc"
 	"golang.org/x/crypto/bcrypt"
 )
 
