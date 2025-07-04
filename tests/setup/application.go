@@ -2,6 +2,7 @@ package setup
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -24,6 +25,28 @@ func SetupApplication(ctx context.Context) (_ *url.URL, _ func(context.Context) 
 	// Therefore, we need to disable it by setting an environment variable.
 	if err := os.Setenv("TESTCONTAINERS_RYUK_DISABLED", "true"); err != nil {
 		return nil, nil, fmt.Errorf("set env to disable ryuk for testcontainers: %w", err)
+	}
+
+	_, err = os.Stat("../../.env")
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return nil, nil, fmt.Errorf("check if .env file exists: %w", err)
+	} else if errors.Is(err, os.ErrNotExist) {
+		testEnv, err := os.Open("../../.env.testing")
+		if err != nil {
+			return nil, nil, fmt.Errorf("open test .env: %w", err)
+		}
+		defer testEnv.Close()
+
+		newEnv, err := os.Create("../../.env")
+		if err != nil {
+			return nil, nil, fmt.Errorf("open test .env: %w", err)
+		}
+		defer newEnv.Close()
+
+		_, err = io.Copy(newEnv, testEnv)
+		if err != nil {
+			return nil, nil, fmt.Errorf("copy .env.testing to .env: %w", err)
+		}
 	}
 
 	dockerCompose, err := compose.NewDockerCompose("../../compose.yml")
