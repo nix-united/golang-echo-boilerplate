@@ -5,6 +5,7 @@ import "github.com/nix-united/golang-echo-boilerplate/internal/slogx"
 type Config struct {
 	Logger slogx.Config
 	Auth   AuthConfig
+	OAuth  OAuthConfig
 	DB     DBConfig
 	HTTP   HTTPConfig
 }
@@ -21,6 +22,10 @@ type DBConfig struct {
 type AuthConfig struct {
 	AccessSecret  string `env:"ACCESS_SECRET"`
 	RefreshSecret string `env:"REFRESH_SECRET"`
+}
+
+type OAuthConfig struct {
+	ClientID string `env:"OPEN_ID_CLIENT_ID"`
 }
 
 type HTTPConfig struct {

@@ -1,6 +1,9 @@
 package routes
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
 	s "github.com/nix-united/golang-echo-boilerplate/internal/server"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
@@ -10,21 +13,32 @@ import (
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/user"
 	"github.com/nix-united/golang-echo-boilerplate/internal/slogx"
 
+	"github.com/coreos/go-oidc"
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
-func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) {
+func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) error {
 	userRepository := repositories.NewUserRepository(server.DB)
-	userService := user.NewService(userRepository)
+
+	provider, err := oidc.NewProvider(context.Background(), "https://accounts.google.com")
+	if err != nil {
+		return fmt.Errorf("oidc.NewProvider: %w", err)
+	}
+
+	verifier := provider.Verifier(&oidc.Config{ClientID: server.Config.OAuth.ClientID})
+
+	tokenService := token.NewTokenService(server.Config)
+	userService := user.NewService(verifier, tokenService, userRepository)
 
 	postRepository := repositories.NewPostRepository(server.DB)
 	postService := post.NewService(postRepository)
 
 	postHandler := handlers.NewPostHandlers(postService)
 	authHandler := handlers.NewAuthHandler(userService, server)
+	oAuthHandler := handlers.NewOAuthHandler(userService)
 	registerHandler := handlers.NewRegisterHandler(userService)
 
 	server.Echo.Use(middleware.NewRequestLogger(tracer))
@@ -33,6 +47,7 @@ func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) {
 
 	server.Echo.POST("/login", authHandler.Login)
 	server.Echo.POST("/register", registerHandler.Register)
+	server.Echo.POST("/google-oauth", oAuthHandler.GoogleOAuth)
 	server.Echo.POST("/refresh", authHandler.RefreshToken)
 
 	r := server.Echo.Group("", middleware.NewRequestDebugger())
@@ -50,4 +65,6 @@ func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) {
 	r.POST("/posts", postHandler.CreatePost)
 	r.DELETE("/posts/:id", postHandler.DeletePost)
 	r.PUT("/posts/:id", postHandler.UpdatePost)
+
+	return nil
 }

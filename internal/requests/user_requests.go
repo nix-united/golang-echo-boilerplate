@@ -41,6 +41,16 @@ func (rr RegisterRequest) Validate() error {
 	)
 }
 
+type OAuthRequest struct {
+	Token string `json:"token" validate:"required"`
+}
+
+func (oar OAuthRequest) Validate() error {
+	return validation.ValidateStruct(&oar,
+		validation.Field(&oar.Token, validation.Required),
+	)
+}
+
 type RefreshRequest struct {
 	Token string `json:"token" validate:"required" example:"refresh_token"`
 }
