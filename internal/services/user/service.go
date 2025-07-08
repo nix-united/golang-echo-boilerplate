@@ -73,7 +73,7 @@ func (s *Service) GetUserByEmail(ctx context.Context, email string) (models.User
 	return user, nil
 }
 
-func (s *Service) GoogleOAuth(ctx context.Context, token string) (string, string, int64, error) {
+func (s *Service) GoogleOAuth(ctx context.Context, token string) (accessToken, refreshToken string, exp int64, err error) {
 	payload, err := s.idTokenVerifier.Verify(ctx, token)
 	if err != nil {
 		return "", "", 0, fmt.Errorf("verify google token: %w", err)
@@ -116,15 +116,15 @@ func (s *Service) GoogleOAuth(ctx context.Context, token string) (string, string
 		}
 	}
 
-	accessToken, i, err := s.tokenService.CreateAccessToken(&user)
+	accessToken, exp, err = s.tokenService.CreateAccessToken(&user)
 	if err != nil {
 		return "", "", 0, fmt.Errorf("create access token: %w", err)
 	}
 
-	refreshToken, err := s.tokenService.CreateRefreshToken(&user)
+	refreshToken, err = s.tokenService.CreateRefreshToken(&user)
 	if err != nil {
 		return "", "", 0, fmt.Errorf("create refresh token: %w", err)
 	}
 
-	return accessToken, refreshToken, i, nil
+	return accessToken, refreshToken, exp, nil
 }

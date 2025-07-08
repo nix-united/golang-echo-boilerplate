@@ -53,10 +53,10 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (mode
 func (r *UserRepository) CreateUserAndOAuthProvider(ctx context.Context, user *models.User, oAuthProvider *models.OAuthProviders) error {
 	tx := r.db.Begin()
 
-	commited := false
+	committed := false
 
 	defer func() {
-		if !commited {
+		if !committed {
 			tx.Rollback()
 		}
 	}()
@@ -75,7 +75,7 @@ func (r *UserRepository) CreateUserAndOAuthProvider(ctx context.Context, user *m
 		return fmt.Errorf("commit transaction: %w", err)
 	}
 
-	commited = true
+	committed = true
 
 	return nil
 }

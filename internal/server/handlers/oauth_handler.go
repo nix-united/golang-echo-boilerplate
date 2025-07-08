@@ -13,7 +13,7 @@ import (
 //go:generate go tool mockgen -source=$GOFILE -destination=oauth_handler_mock_test.go -package=${GOPACKAGE}_test -typed=true
 
 type userAuthenticator interface {
-	GoogleOAuth(ctx context.Context, token string) (string, string, int64, error)
+	GoogleOAuth(ctx context.Context, token string) (accessToken string, refreshToken string, exp int64, err error)
 }
 
 type OAuthHandler struct {
