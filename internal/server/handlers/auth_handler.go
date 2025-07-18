@@ -9,8 +9,6 @@ import (
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 	"github.com/nix-united/golang-echo-boilerplate/internal/responses"
-	s "github.com/nix-united/golang-echo-boilerplate/internal/server"
-	tokenservice "github.com/nix-united/golang-echo-boilerplate/internal/services/token"
 
 	jwtGo "github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
@@ -22,15 +20,22 @@ type userGetter interface {
 	GetUserByEmail(ctx context.Context, email string) (models.User, error)
 }
 
-type AuthHandler struct {
-	userGetter userGetter
-	server     *s.Server
+type tokenService interface {
+	CreateAccessToken(ctx context.Context, user *models.User) (string, int64, error)
+	CreateRefreshToken(ctx context.Context, user *models.User) (string, error)
 }
 
-func NewAuthHandler(userGetter userGetter, server *s.Server) *AuthHandler {
+type AuthHandler struct {
+	refreshSecret string
+	userGetter    userGetter
+	tokenService  tokenService
+}
+
+func NewAuthHandler(refreshSecret string, userGetter userGetter, tokenService tokenService) *AuthHandler {
 	return &AuthHandler{
-		server:     server,
-		userGetter: userGetter,
+		refreshSecret: refreshSecret,
+		userGetter:    userGetter,
+		tokenService:  tokenService,
 	}
 }
 
@@ -50,7 +55,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 	loginRequest := new(requests.LoginRequest)
 
 	if err := c.Bind(loginRequest); err != nil {
-		return err
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request")
 	}
 
 	if err := loginRequest.Validate(); err != nil {
@@ -68,18 +73,19 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid credentials")
 	}
 
-	tokenService := tokenservice.NewTokenService(h.server.Config)
-	accessToken, exp, err := tokenService.CreateAccessToken(&user)
+	accessToken, exp, err := h.tokenService.CreateAccessToken(c.Request().Context(), &user)
 	if err != nil {
-		return err
+		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to create access token")
 	}
-	refreshToken, err := tokenService.CreateRefreshToken(&user)
-	if err != nil {
-		return err
-	}
-	res := responses.NewLoginResponse(accessToken, refreshToken, exp)
 
-	return responses.Response(c, http.StatusOK, res)
+	refreshToken, err := h.tokenService.CreateRefreshToken(c.Request().Context(), &user)
+	if err != nil {
+		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to create refresh token")
+	}
+
+	response := responses.NewLoginResponse(accessToken, refreshToken, exp)
+
+	return responses.Response(c, http.StatusOK, response)
 }
 
 // RefreshToken godoc
@@ -97,16 +103,16 @@ func (h *AuthHandler) Login(c echo.Context) error {
 func (h *AuthHandler) RefreshToken(c echo.Context) error {
 	refreshRequest := new(requests.RefreshRequest)
 	if err := c.Bind(refreshRequest); err != nil {
-		return err
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request")
 	}
 
 	token, err := jwtGo.Parse(refreshRequest.Token, func(token *jwtGo.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwtGo.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(h.server.Config.Auth.RefreshSecret), nil
-	})
 
+		return []byte(h.refreshSecret), nil
+	})
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, err.Error())
 	}
@@ -123,17 +129,17 @@ func (h *AuthHandler) RefreshToken(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch user")
 	}
 
-	tokenService := tokenservice.NewTokenService(h.server.Config)
-	accessToken, exp, err := tokenService.CreateAccessToken(&user)
+	accessToken, exp, err := h.tokenService.CreateAccessToken(c.Request().Context(), &user)
 	if err != nil {
-		return err
+		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to create access token")
 	}
 
-	refreshToken, err := tokenService.CreateRefreshToken(&user)
+	refreshToken, err := h.tokenService.CreateRefreshToken(c.Request().Context(), &user)
 	if err != nil {
-		return err
+		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to create refresh token")
 	}
-	res := responses.NewLoginResponse(accessToken, refreshToken, exp)
 
-	return responses.Response(c, http.StatusOK, res)
+	response := responses.NewLoginResponse(accessToken, refreshToken, exp)
+
+	return responses.Response(c, http.StatusOK, response)
 }

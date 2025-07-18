@@ -23,8 +23,10 @@ func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) {
 	postRepository := repositories.NewPostRepository(server.DB)
 	postService := post.NewService(postRepository)
 
+	tokenService := token.NewTokenService(server.Config)
+
 	postHandler := handlers.NewPostHandlers(postService)
-	authHandler := handlers.NewAuthHandler(userService, server)
+	authHandler := handlers.NewAuthHandler(server.Config.Auth.RefreshSecret, userService, tokenService)
 	registerHandler := handlers.NewRegisterHandler(userService)
 
 	server.Echo.Use(middleware.NewRequestLogger(tracer))
