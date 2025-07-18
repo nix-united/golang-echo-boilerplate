@@ -5,6 +5,7 @@ import (
 	s "github.com/nix-united/golang-echo-boilerplate/internal/server"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/middleware"
+	"github.com/nix-united/golang-echo-boilerplate/internal/services/auth"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/post"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/token"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/user"
@@ -25,8 +26,10 @@ func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) {
 
 	tokenService := token.NewTokenService(server.Config)
 
+	authService := auth.NewService([]byte(server.Config.Auth.RefreshSecret), userService, tokenService)
+
 	postHandler := handlers.NewPostHandlers(postService)
-	authHandler := handlers.NewAuthHandler(server.Config.Auth.RefreshSecret, userService, tokenService)
+	authHandler := handlers.NewAuthHandler(authService)
 	registerHandler := handlers.NewRegisterHandler(userService)
 
 	server.Echo.Use(middleware.NewRequestLogger(tracer))
