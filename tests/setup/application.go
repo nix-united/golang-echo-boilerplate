@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/testcontainers/testcontainers-go/modules/compose"
-	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 const (
@@ -70,15 +69,13 @@ func SetupApplication(ctx context.Context) (_ *url.URL, _ func(context.Context) 
 			"EXPOSE_DB_PORT":   "33060",
 			"ACCESS_SECRET":    "access_secret",
 			"REFRESH_SECRET":   "refresh_secret",
-		}).
-		WaitForService(
-			applicationContainerName,
-			wait.ForAll(wait.ForHTTP("/health")).WithDeadline(10*time.Minute),
-		)
+		})
 
 	if err := dockerCompose.Up(ctx); err != nil {
 		return nil, nil, fmt.Errorf("docker compose up: %w", err)
 	}
+
+	time.Sleep(5 * time.Minute)
 
 	shutdown := func(ctx context.Context) error {
 		application, err := dockerCompose.ServiceContainer(ctx, applicationContainerName)
