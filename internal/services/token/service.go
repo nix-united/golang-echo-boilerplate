@@ -39,7 +39,7 @@ func NewTokenService(cfg *config.Config) *Service {
 	}
 }
 
-func (tokenService *Service) CreateAccessToken(ctx context.Context, user *models.User) (t string, expired int64, err error) {
+func (tokenService *Service) CreateAccessToken(_ context.Context, user *models.User) (t string, expired int64, err error) {
 	exp := time.Now().Add(time.Hour * ExpireCount)
 	claims := &JwtCustomClaims{
 		user.Name,
@@ -58,7 +58,7 @@ func (tokenService *Service) CreateAccessToken(ctx context.Context, user *models
 	return
 }
 
-func (tokenService *Service) CreateRefreshToken(ctx context.Context, user *models.User) (t string, err error) {
+func (tokenService *Service) CreateRefreshToken(_ context.Context, user *models.User) (t string, err error) {
 	claimsRefresh := &JwtCustomRefreshClaims{
 		ID: user.ID,
 		RegisteredClaims: jwt.RegisteredClaims{
