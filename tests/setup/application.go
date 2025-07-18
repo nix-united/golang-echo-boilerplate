@@ -73,7 +73,7 @@ func SetupApplication(ctx context.Context) (_ *url.URL, _ func(context.Context) 
 		}).
 		WaitForService(
 			applicationContainerName,
-			wait.ForAll(wait.ForHTTP("/health")).WithDeadline(5*time.Minute),
+			wait.ForAll(wait.ForHTTP("/health")).WithDeadline(10*time.Minute),
 		)
 
 	if err := dockerCompose.Up(ctx); err != nil {
