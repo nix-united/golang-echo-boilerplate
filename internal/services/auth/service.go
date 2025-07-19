@@ -8,8 +8,8 @@ import (
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 	"github.com/nix-united/golang-echo-boilerplate/internal/responses"
+	"github.com/nix-united/golang-echo-boilerplate/internal/services/token"
 
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -21,25 +21,20 @@ type userService interface {
 }
 
 type tokenService interface {
+	ParseRefreshToken(ctx context.Context, token string) (token.JwtCustomRefreshClaims, error)
 	CreateAccessToken(ctx context.Context, user *models.User) (string, int64, error)
 	CreateRefreshToken(ctx context.Context, user *models.User) (string, error)
 }
 
 type Service struct {
-	refreshSecret []byte
-	userService   userService
-	tokenService  tokenService
+	userService  userService
+	tokenService tokenService
 }
 
-func NewService(
-	refreshSecret []byte,
-	userService userService,
-	tokenService tokenService,
-) *Service {
+func NewService(userService userService, tokenService tokenService) *Service {
 	return &Service{
-		refreshSecret: refreshSecret,
-		userService:   userService,
-		tokenService:  tokenService,
+		userService:  userService,
+		tokenService: tokenService,
 	}
 }
 
@@ -69,28 +64,12 @@ func (s *Service) GenerateToken(ctx context.Context, request *requests.LoginRequ
 }
 
 func (s *Service) RefreshToken(ctx context.Context, request *requests.RefreshRequest) (*responses.LoginResponse, error) {
-	token, err := jwt.Parse(request.Token, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-
-		return s.refreshSecret, nil
-	})
+	claims, err := s.tokenService.ParseRefreshToken(ctx, request.Token)
 	if err != nil {
 		return nil, errors.Join(fmt.Errorf("parse token: %w", err), models.ErrInvalidAuthToken)
 	}
 
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok && !token.Valid {
-		return nil, errors.Join(errors.New("missing claims"), models.ErrInvalidAuthToken)
-	}
-
-	userID, ok := claims["id"].(float64)
-	if !ok {
-		return nil, errors.Join(errors.New("missing id claim"), models.ErrInvalidAuthToken)
-	}
-
-	user, err := s.userService.GetByID(ctx, uint(userID))
+	user, err := s.userService.GetByID(ctx, claims.ID)
 	if err != nil {
 		return nil, fmt.Errorf("get user by email: %w", err)
 	}

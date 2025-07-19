@@ -26,7 +26,7 @@ func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) {
 
 	tokenService := token.NewTokenService(server.Config)
 
-	authService := auth.NewService([]byte(server.Config.Auth.RefreshSecret), userService, tokenService)
+	authService := auth.NewService(userService, tokenService)
 
 	postHandler := handlers.NewPostHandlers(postService)
 	authHandler := handlers.NewAuthHandler(authService)

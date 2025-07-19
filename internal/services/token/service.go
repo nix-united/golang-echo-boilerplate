@@ -39,7 +39,7 @@ func NewTokenService(cfg *config.Config) *Service {
 	}
 }
 
-func (tokenService *Service) CreateAccessToken(_ context.Context, user *models.User) (t string, expired int64, err error) {
+func (s *Service) CreateAccessToken(_ context.Context, user *models.User) (t string, expired int64, err error) {
 	exp := time.Now().Add(time.Hour * ExpireCount)
 	claims := &JwtCustomClaims{
 		user.Name,
@@ -50,7 +50,7 @@ func (tokenService *Service) CreateAccessToken(_ context.Context, user *models.U
 	}
 	expired = exp.Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	t, err = token.SignedString([]byte(tokenService.config.Auth.AccessSecret))
+	t, err = token.SignedString([]byte(s.config.Auth.AccessSecret))
 	if err != nil {
 		return
 	}
@@ -58,7 +58,7 @@ func (tokenService *Service) CreateAccessToken(_ context.Context, user *models.U
 	return
 }
 
-func (tokenService *Service) CreateRefreshToken(_ context.Context, user *models.User) (t string, err error) {
+func (s *Service) CreateRefreshToken(_ context.Context, user *models.User) (t string, err error) {
 	claimsRefresh := &JwtCustomRefreshClaims{
 		ID: user.ID,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -67,9 +67,13 @@ func (tokenService *Service) CreateRefreshToken(_ context.Context, user *models.
 	}
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsRefresh)
 
-	rt, err := refreshToken.SignedString([]byte(tokenService.config.Auth.RefreshSecret))
+	rt, err := refreshToken.SignedString([]byte(s.config.Auth.RefreshSecret))
 	if err != nil {
 		return "", err
 	}
 	return rt, err
+}
+
+func (s *Service) ParseRefreshToken(ctx context.Context, token string) (JwtCustomRefreshClaims, error) {
+	return JwtCustomRefreshClaims{}, nil
 }

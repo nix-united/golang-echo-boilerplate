@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	models "github.com/nix-united/golang-echo-boilerplate/internal/models"
+	token "github.com/nix-united/golang-echo-boilerplate/internal/services/token"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -218,6 +219,45 @@ func (c *MocktokenServiceCreateRefreshTokenCall) Do(f func(context.Context, *mod
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
 func (c *MocktokenServiceCreateRefreshTokenCall) DoAndReturn(f func(context.Context, *models.User) (string, error)) *MocktokenServiceCreateRefreshTokenCall {
+	c.Call = c.Call.DoAndReturn(f)
+	return c
+}
+
+// ParseRefreshToken mocks base method.
+func (m *MocktokenService) ParseRefreshToken(ctx context.Context, arg1 string) (token.JwtCustomRefreshClaims, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParseRefreshToken", ctx, arg1)
+	ret0, _ := ret[0].(token.JwtCustomRefreshClaims)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ParseRefreshToken indicates an expected call of ParseRefreshToken.
+func (mr *MocktokenServiceMockRecorder) ParseRefreshToken(ctx, arg1 any) *MocktokenServiceParseRefreshTokenCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseRefreshToken", reflect.TypeOf((*MocktokenService)(nil).ParseRefreshToken), ctx, arg1)
+	return &MocktokenServiceParseRefreshTokenCall{Call: call}
+}
+
+// MocktokenServiceParseRefreshTokenCall wrap *gomock.Call
+type MocktokenServiceParseRefreshTokenCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c *MocktokenServiceParseRefreshTokenCall) Return(arg0 token.JwtCustomRefreshClaims, arg1 error) *MocktokenServiceParseRefreshTokenCall {
+	c.Call = c.Call.Return(arg0, arg1)
+	return c
+}
+
+// Do rewrite *gomock.Call.Do
+func (c *MocktokenServiceParseRefreshTokenCall) Do(f func(context.Context, string) (token.JwtCustomRefreshClaims, error)) *MocktokenServiceParseRefreshTokenCall {
+	c.Call = c.Call.Do(f)
+	return c
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c *MocktokenServiceParseRefreshTokenCall) DoAndReturn(f func(context.Context, string) (token.JwtCustomRefreshClaims, error)) *MocktokenServiceParseRefreshTokenCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }
