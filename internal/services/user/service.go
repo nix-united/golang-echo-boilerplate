@@ -6,7 +6,6 @@ import (
 
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
-	"github.com/nix-united/golang-echo-boilerplate/internal/server/builders"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -36,11 +35,11 @@ func (s *Service) Register(ctx context.Context, request *requests.RegisterReques
 		return fmt.Errorf("encrypt password: %w", err)
 	}
 
-	user := builders.NewUserBuilder().
-		SetEmail(request.Email).
-		SetName(request.Name).
-		SetPassword(string(encryptedPassword)).
-		Build()
+	user := &models.User{
+		Email:    request.Email,
+		Name:     request.Name,
+		Password: string(encryptedPassword),
+	}
 
 	if err := s.userRepository.Create(ctx, user); err != nil {
 		return fmt.Errorf("create user in repository: %w", err)
