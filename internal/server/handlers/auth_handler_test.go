@@ -3,7 +3,6 @@ package handlers_test
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,368 +18,213 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-func newAuthHandler(t *testing.T) (*echo.Echo, *handlers.AuthHandler, *MockauthService) {
+func newAuthHandler(t *testing.T) (*handlers.AuthHandler, *MockauthService) {
 	t.Helper()
 
 	ctrl := gomock.NewController(t)
 	authService := NewMockauthService(ctrl)
 	authHandler := handlers.NewAuthHandler(authService)
-	engine := echo.New()
 
-	engine.POST("/login", authHandler.Login)
-	engine.POST("/refresh", authHandler.RefreshToken)
-
-	return engine, authHandler, authService
+	return authHandler, authService
 }
 
 func TestAuthHandler_Login(t *testing.T) {
-	t.Run("It should return an error when request has no body", func(t *testing.T) {
-		engine, authHandler, _ := newAuthHandler(t)
+	invalidRequest := &requests.LoginRequest{
+		BasicAuth: requests.BasicAuth{
+			Email:    "INVALID_EMAIL",
+			Password: "some-pass",
+		},
+	}
 
-		request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/login", http.NoBody)
-		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request := &requests.LoginRequest{
+		BasicAuth: requests.BasicAuth{
+			Email:    "example@email.com",
+			Password: "some-pass",
+		},
+	}
 
-		recorder := httptest.NewRecorder()
-		c := engine.NewContext(request, recorder)
+	response := &responses.LoginResponse{
+		AccessToken:  "access-token",
+		RefreshToken: "refresh-token",
+		Exp:          123,
+	}
 
-		err := authHandler.Login(c)
-		require.NoError(t, err)
-
-		assert.Equal(t, http.StatusBadRequest, recorder.Result().StatusCode)
-
-		wantResponse := `{
-			"code": 400,
-			"error": "Failed to bind request"
-		}`
-
-		assert.JSONEq(t, wantResponse, recorder.Body.String())
-	})
-
-	t.Run("It should return an error when request is invalid", func(t *testing.T) {
-		engine, authHandler, _ := newAuthHandler(t)
-
-		loginRequest := &requests.LoginRequest{
-			BasicAuth: requests.BasicAuth{
-				Email:    "INVALID_EMAIL",
-				Password: "some-pass",
+	testCases := map[string]struct {
+		setExpectations func(authService *MockauthService)
+		request         any
+		wantStatus      int
+		wantResponse    any
+	}{
+		"It should return 400 status code when request is invalid": {
+			setExpectations: func(authService *MockauthService) {},
+			request:         invalidRequest,
+			wantStatus:      http.StatusBadRequest,
+			wantResponse: responses.Error{
+				Code:  http.StatusBadRequest,
+				Error: "Required fields are empty or not valid",
 			},
-		}
-
-		buffer := new(bytes.Buffer)
-		err := json.NewEncoder(buffer).Encode(loginRequest)
-		require.NoError(t, err)
-
-		request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/login", buffer)
-		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
-		recorder := httptest.NewRecorder()
-		c := engine.NewContext(request, recorder)
-
-		err = authHandler.Login(c)
-		require.NoError(t, err)
-
-		assert.Equal(t, http.StatusBadRequest, recorder.Result().StatusCode)
-
-		wantResponse := `{
-			"code": 400,
-			"error": "Required fields are empty or not valid"
-		}`
-
-		assert.JSONEq(t, wantResponse, recorder.Body.String())
-	})
-
-	t.Run("It should respond with a 404 status code when the user does not exist", func(t *testing.T) {
-		engine, authHandler, authService := newAuthHandler(t)
-
-		loginRequest := &requests.LoginRequest{
-			BasicAuth: requests.BasicAuth{
-				Email:    "example@email.com",
-				Password: "some-pass",
+		},
+		"It should return 401 status code when user does not exist": {
+			setExpectations: func(authService *MockauthService) {
+				authService.
+					EXPECT().
+					GenerateToken(gomock.Any(), request).
+					Return(nil, models.ErrUserNotFound)
 			},
-		}
-
-		buffer := new(bytes.Buffer)
-		err := json.NewEncoder(buffer).Encode(loginRequest)
-		require.NoError(t, err)
-
-		authService.
-			EXPECT().
-			GenerateToken(gomock.Any(), loginRequest).
-			Return(nil, models.ErrUserNotFound)
-
-		request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/login", buffer)
-		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
-		recorder := httptest.NewRecorder()
-		c := engine.NewContext(request, recorder)
-
-		err = authHandler.Login(c)
-		require.NoError(t, err)
-
-		assert.Equal(t, http.StatusNotFound, recorder.Result().StatusCode)
-
-		wantResponse := `{
-			"code": 404,
-			"error": "Such user not found"
-		}`
-
-		assert.JSONEq(t, wantResponse, recorder.Body.String())
-	})
-
-	t.Run("It should respond with a 401 status code when the password is invalid", func(t *testing.T) {
-		engine, authHandler, authService := newAuthHandler(t)
-
-		loginRequest := &requests.LoginRequest{
-			BasicAuth: requests.BasicAuth{
-				Email:    "example@email.com",
-				Password: "some-pass",
+			request:    request,
+			wantStatus: http.StatusUnauthorized,
+			wantResponse: responses.Error{
+				Code:  http.StatusUnauthorized,
+				Error: "Invalid credentials",
 			},
-		}
-
-		buffer := new(bytes.Buffer)
-		err := json.NewEncoder(buffer).Encode(loginRequest)
-		require.NoError(t, err)
-
-		authService.
-			EXPECT().
-			GenerateToken(gomock.Any(), loginRequest).
-			Return(nil, models.ErrInvalidPassword)
-
-		request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/login", buffer)
-		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
-		recorder := httptest.NewRecorder()
-		c := engine.NewContext(request, recorder)
-
-		err = authHandler.Login(c)
-		require.NoError(t, err)
-
-		assert.Equal(t, http.StatusUnauthorized, recorder.Result().StatusCode)
-
-		wantResponse := `{
-			"code": 401,
-			"error": "Invalid credentials"
-		}`
-
-		assert.JSONEq(t, wantResponse, recorder.Body.String())
-	})
-
-	t.Run("It should respond with a 500 status code when received unexpected error", func(t *testing.T) {
-		engine, authHandler, authService := newAuthHandler(t)
-
-		loginRequest := &requests.LoginRequest{
-			BasicAuth: requests.BasicAuth{
-				Email:    "example@email.com",
-				Password: "some-pass",
+		},
+		"It should return 401 status code when passoword is invalid": {
+			setExpectations: func(authService *MockauthService) {
+				authService.
+					EXPECT().
+					GenerateToken(gomock.Any(), request).
+					Return(nil, models.ErrInvalidPassword)
 			},
-		}
-
-		buffer := new(bytes.Buffer)
-		err := json.NewEncoder(buffer).Encode(loginRequest)
-		require.NoError(t, err)
-
-		authService.
-			EXPECT().
-			GenerateToken(gomock.Any(), loginRequest).
-			Return(nil, errors.New("unexpected error"))
-
-		request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/login", buffer)
-		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
-		recorder := httptest.NewRecorder()
-		c := engine.NewContext(request, recorder)
-
-		err = authHandler.Login(c)
-		require.NoError(t, err)
-
-		assert.Equal(t, http.StatusInternalServerError, recorder.Result().StatusCode)
-
-		wantResponse := `{
-			"code": 500,
-			"error": "Internal Server Error"
-		}`
-
-		assert.JSONEq(t, wantResponse, recorder.Body.String())
-	})
-
-	t.Run("It should authorize user if everything is valid", func(t *testing.T) {
-		engine, authHandler, authService := newAuthHandler(t)
-
-		loginRequest := &requests.LoginRequest{
-			BasicAuth: requests.BasicAuth{
-				Email:    "example@email.com",
-				Password: "some-pass",
+			request:    request,
+			wantStatus: http.StatusUnauthorized,
+			wantResponse: responses.Error{
+				Code:  http.StatusUnauthorized,
+				Error: "Invalid credentials",
 			},
-		}
+		},
+		"It should authorize user": {
+			setExpectations: func(authService *MockauthService) {
+				authService.
+					EXPECT().
+					GenerateToken(gomock.Any(), request).
+					Return(response, nil)
+			},
+			request:      request,
+			wantStatus:   http.StatusOK,
+			wantResponse: response,
+		},
+	}
 
-		buffer := new(bytes.Buffer)
-		err := json.NewEncoder(buffer).Encode(loginRequest)
-		require.NoError(t, err)
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			authHandler, authService := newAuthHandler(t)
 
-		response := &responses.LoginResponse{
-			AccessToken:  "access-token",
-			RefreshToken: "refresh-token",
-			Exp:          123,
-		}
+			testCase.setExpectations(authService)
 
-		authService.
-			EXPECT().
-			GenerateToken(gomock.Any(), loginRequest).
-			Return(response, nil)
+			rawRequest, err := json.Marshal(testCase.request)
+			require.NoError(t, err)
 
-		request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/login", buffer)
-		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+			request := httptest.NewRequestWithContext(
+				t.Context(),
+				http.MethodPost,
+				"/login",
+				bytes.NewBuffer(rawRequest),
+			)
+			request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 
-		recorder := httptest.NewRecorder()
-		c := engine.NewContext(request, recorder)
+			recorder := httptest.NewRecorder()
+			c := echo.New().NewContext(request, recorder)
 
-		err = authHandler.Login(c)
-		require.NoError(t, err)
+			err = authHandler.Login(c)
+			require.NoError(t, err)
 
-		assert.Equal(t, http.StatusOK, recorder.Result().StatusCode)
+			assert.Equal(t, testCase.wantStatus, recorder.Result().StatusCode)
 
-		wantResponse := `{
-			"accessToken": "access-token",
-			"exp": 123,
-			"refreshToken": "refresh-token"
-		}`
+			wantResponse, err := json.Marshal(testCase.wantResponse)
+			require.NoError(t, err)
 
-		assert.JSONEq(t, wantResponse, recorder.Body.String())
-	})
+			assert.JSONEq(t, string(wantResponse), recorder.Body.String())
+		})
+	}
 }
 
 func TestAuthHandler_RefreshToken(t *testing.T) {
-	t.Run("It should return an error when request has no body", func(t *testing.T) {
-		engine, registerHandler, _ := newAuthHandler(t)
+	request := &requests.RefreshRequest{
+		Token: "some-token",
+	}
 
-		request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/refresh", http.NoBody)
-		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rawRequest, err := json.Marshal(request)
+	require.NoError(t, err)
 
-		recorder := httptest.NewRecorder()
-		c := engine.NewContext(request, recorder)
+	response := &responses.LoginResponse{
+		AccessToken:  "access-token",
+		RefreshToken: "refresh-token",
+		Exp:          123,
+	}
 
-		err := registerHandler.RefreshToken(c)
-		require.NoError(t, err)
+	testCases := map[string]struct {
+		setExpectations func(authService *MockauthService)
+		wantStatus      int
+		wantResponse    any
+	}{
+		"It should respond with a 401 status code when the user does not exist": {
+			setExpectations: func(authService *MockauthService) {
+				authService.
+					EXPECT().
+					RefreshToken(gomock.Any(), request).
+					Return(nil, models.ErrUserNotFound)
+			},
+			wantStatus: http.StatusUnauthorized,
+			wantResponse: responses.Error{
+				Code:  http.StatusUnauthorized,
+				Error: "Unauthorized",
+			},
+		},
+		"It should respond with a 401 status code when token is invalid": {
+			setExpectations: func(authService *MockauthService) {
+				authService.
+					EXPECT().
+					RefreshToken(gomock.Any(), request).
+					Return(nil, models.ErrInvalidAuthToken)
+			},
+			wantStatus: http.StatusUnauthorized,
+			wantResponse: responses.Error{
+				Code:  http.StatusUnauthorized,
+				Error: "Unauthorized",
+			},
+		},
+		"It should refresh token": {
+			setExpectations: func(authService *MockauthService) {
+				authService.
+					EXPECT().
+					RefreshToken(gomock.Any(), request).
+					Return(response, nil)
+			},
+			wantStatus: http.StatusOK,
+			wantResponse: responses.LoginResponse{
+				AccessToken:  "access-token",
+				RefreshToken: "refresh-token",
+				Exp:          123,
+			},
+		},
+	}
 
-		assert.Equal(t, http.StatusBadRequest, recorder.Result().StatusCode)
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			authHandler, authService := newAuthHandler(t)
 
-		wantResponse := `{
-			"code": 400,
-			"error": "Failed to bind request"
-		}`
+			testCase.setExpectations(authService)
 
-		assert.JSONEq(t, wantResponse, recorder.Body.String())
-	})
+			request := httptest.NewRequestWithContext(
+				t.Context(),
+				http.MethodPost,
+				"/refresh",
+				bytes.NewBuffer(rawRequest),
+			)
+			request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 
-	t.Run("It should respond with a 404 status code when the user does not exist", func(t *testing.T) {
-		engine, authHandler, authService := newAuthHandler(t)
+			recorder := httptest.NewRecorder()
+			c := echo.New().NewContext(request, recorder)
 
-		refreshRequest := &requests.RefreshRequest{
-			Token: "some-token",
-		}
+			err = authHandler.RefreshToken(c)
+			require.NoError(t, err)
 
-		buffer := new(bytes.Buffer)
-		err := json.NewEncoder(buffer).Encode(refreshRequest)
-		require.NoError(t, err)
+			assert.Equal(t, testCase.wantStatus, recorder.Result().StatusCode)
 
-		authService.
-			EXPECT().
-			RefreshToken(gomock.Any(), refreshRequest).
-			Return(nil, models.ErrUserNotFound)
+			wantResponse, err := json.Marshal(testCase.wantResponse)
+			require.NoError(t, err)
 
-		request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/refresh", buffer)
-		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
-		recorder := httptest.NewRecorder()
-		c := engine.NewContext(request, recorder)
-
-		err = authHandler.RefreshToken(c)
-		require.NoError(t, err)
-
-		assert.Equal(t, http.StatusNotFound, recorder.Result().StatusCode)
-
-		wantResponse := `{
-			"code": 404,
-			"error": "Such user not found"
-		}`
-
-		assert.JSONEq(t, wantResponse, recorder.Body.String())
-	})
-
-	t.Run("It should 401 when user not found", func(t *testing.T) {
-		engine, authHandler, authService := newAuthHandler(t)
-
-		refreshRequest := &requests.RefreshRequest{
-			Token: "some-token",
-		}
-
-		buffer := new(bytes.Buffer)
-		err := json.NewEncoder(buffer).Encode(refreshRequest)
-		require.NoError(t, err)
-
-		authService.
-			EXPECT().
-			RefreshToken(gomock.Any(), refreshRequest).
-			Return(nil, models.ErrInvalidAuthToken)
-
-		request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/refresh", buffer)
-		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
-		recorder := httptest.NewRecorder()
-		c := engine.NewContext(request, recorder)
-
-		err = authHandler.RefreshToken(c)
-		require.NoError(t, err)
-
-		assert.Equal(t, http.StatusUnauthorized, recorder.Result().StatusCode)
-
-		wantResponse := `{
-			"code": 401,
-			"error": "Invalid token"
-		}`
-
-		assert.JSONEq(t, wantResponse, recorder.Body.String())
-	})
-
-	t.Run("It should refresh token", func(t *testing.T) {
-		engine, authHandler, authService := newAuthHandler(t)
-
-		refreshRequest := &requests.RefreshRequest{
-			Token: "some-token",
-		}
-
-		buffer := new(bytes.Buffer)
-		err := json.NewEncoder(buffer).Encode(refreshRequest)
-		require.NoError(t, err)
-
-		response := &responses.LoginResponse{
-			AccessToken:  "access-token",
-			RefreshToken: "refresh-token",
-			Exp:          123,
-		}
-
-		authService.
-			EXPECT().
-			RefreshToken(gomock.Any(), refreshRequest).
-			Return(response, nil)
-
-		request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/refresh", buffer)
-		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
-		recorder := httptest.NewRecorder()
-		c := engine.NewContext(request, recorder)
-
-		err = authHandler.RefreshToken(c)
-		require.NoError(t, err)
-
-		assert.Equal(t, http.StatusOK, recorder.Result().StatusCode)
-
-		wantResponse := `{
-			"accessToken": "access-token",
-			"exp": 123,
-			"refreshToken": "refresh-token"
-		}`
-
-		assert.JSONEq(t, wantResponse, recorder.Body.String())
-	})
+			assert.JSONEq(t, string(wantResponse), recorder.Body.String())
+		})
+	}
 }

@@ -51,9 +51,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 
 	response, err := h.authService.GenerateToken(c.Request().Context(), &request)
 	switch {
-	case errors.Is(err, models.ErrUserNotFound):
-		return responses.ErrorResponse(c, http.StatusNotFound, "Such user not found")
-	case errors.Is(err, models.ErrInvalidPassword):
+	case errors.Is(err, models.ErrUserNotFound), errors.Is(err, models.ErrInvalidPassword):
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid credentials")
 	case err != nil:
 		return responses.ErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
@@ -82,10 +80,8 @@ func (h *AuthHandler) RefreshToken(c echo.Context) error {
 
 	response, err := h.authService.RefreshToken(c.Request().Context(), &request)
 	switch {
-	case errors.Is(err, models.ErrUserNotFound):
-		return responses.ErrorResponse(c, http.StatusNotFound, "Such user not found")
-	case errors.Is(err, models.ErrInvalidAuthToken):
-		return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid token")
+	case errors.Is(err, models.ErrUserNotFound), errors.Is(err, models.ErrInvalidAuthToken):
+		return responses.ErrorResponse(c, http.StatusUnauthorized, "Unauthorized")
 	case err != nil:
 		return responses.ErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
 	}
