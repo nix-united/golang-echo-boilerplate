@@ -50,7 +50,7 @@ func TestUserRepository(t *testing.T) {
 		assert.Equal(t, *newUser, gotUser)
 	})
 
-	t.Run("It should returnan error if user with such email not found", func(t *testing.T) {
+	t.Run("It should return an error if user with such email not found", func(t *testing.T) {
 		_, err := userRepository.GetUserByEmail(t.Context(), "unknown_email@gmail.com")
 		assert.ErrorIs(t, err, models.ErrUserNotFound)
 	})
