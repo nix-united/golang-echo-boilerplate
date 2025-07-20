@@ -224,10 +224,10 @@ func (c *MocktokenServiceCreateRefreshTokenCall) DoAndReturn(f func(context.Cont
 }
 
 // ParseRefreshToken mocks base method.
-func (m *MocktokenService) ParseRefreshToken(ctx context.Context, arg1 string) (token.JwtCustomRefreshClaims, error) {
+func (m *MocktokenService) ParseRefreshToken(ctx context.Context, arg1 string) (*token.JwtCustomRefreshClaims, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ParseRefreshToken", ctx, arg1)
-	ret0, _ := ret[0].(token.JwtCustomRefreshClaims)
+	ret0, _ := ret[0].(*token.JwtCustomRefreshClaims)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -245,19 +245,19 @@ type MocktokenServiceParseRefreshTokenCall struct {
 }
 
 // Return rewrite *gomock.Call.Return
-func (c *MocktokenServiceParseRefreshTokenCall) Return(arg0 token.JwtCustomRefreshClaims, arg1 error) *MocktokenServiceParseRefreshTokenCall {
+func (c *MocktokenServiceParseRefreshTokenCall) Return(arg0 *token.JwtCustomRefreshClaims, arg1 error) *MocktokenServiceParseRefreshTokenCall {
 	c.Call = c.Call.Return(arg0, arg1)
 	return c
 }
 
 // Do rewrite *gomock.Call.Do
-func (c *MocktokenServiceParseRefreshTokenCall) Do(f func(context.Context, string) (token.JwtCustomRefreshClaims, error)) *MocktokenServiceParseRefreshTokenCall {
+func (c *MocktokenServiceParseRefreshTokenCall) Do(f func(context.Context, string) (*token.JwtCustomRefreshClaims, error)) *MocktokenServiceParseRefreshTokenCall {
 	c.Call = c.Call.Do(f)
 	return c
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MocktokenServiceParseRefreshTokenCall) DoAndReturn(f func(context.Context, string) (token.JwtCustomRefreshClaims, error)) *MocktokenServiceParseRefreshTokenCall {
+func (c *MocktokenServiceParseRefreshTokenCall) DoAndReturn(f func(context.Context, string) (*token.JwtCustomRefreshClaims, error)) *MocktokenServiceParseRefreshTokenCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }

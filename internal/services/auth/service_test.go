@@ -121,7 +121,7 @@ func TestService_RefreshToken(t *testing.T) {
 		Token: "token",
 	}
 
-	claims := token.JwtCustomRefreshClaims{
+	claims := &token.JwtCustomRefreshClaims{
 		ID: 1,
 	}
 
@@ -144,7 +144,7 @@ func TestService_RefreshToken(t *testing.T) {
 		mocks.tokenService.
 			EXPECT().
 			ParseRefreshToken(gomock.Any(), refreshRequest.Token).
-			Return(token.JwtCustomRefreshClaims{}, errors.New("error from token service"))
+			Return(nil, errors.New("error from token service"))
 
 		_, err := service.RefreshToken(t.Context(), refreshRequest)
 		assert.ErrorIs(t, err, models.ErrInvalidAuthToken)

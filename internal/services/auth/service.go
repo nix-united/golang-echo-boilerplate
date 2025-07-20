@@ -21,7 +21,7 @@ type userService interface {
 }
 
 type tokenService interface {
-	ParseRefreshToken(ctx context.Context, token string) (token.JwtCustomRefreshClaims, error)
+	ParseRefreshToken(ctx context.Context, token string) (*token.JwtCustomRefreshClaims, error)
 	CreateAccessToken(ctx context.Context, user *models.User) (string, int64, error)
 	CreateRefreshToken(ctx context.Context, user *models.User) (string, error)
 }

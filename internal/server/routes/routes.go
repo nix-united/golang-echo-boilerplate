@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"time"
+
 	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
 	s "github.com/nix-united/golang-echo-boilerplate/internal/server"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
@@ -24,7 +26,13 @@ func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) {
 	postRepository := repositories.NewPostRepository(server.DB)
 	postService := post.NewService(postRepository)
 
-	tokenService := token.NewTokenService(server.Config)
+	tokenService := token.NewService(
+		time.Now,
+		time.Hour,
+		time.Hour,
+		[]byte(server.Config.Auth.AccessSecret),
+		[]byte(server.Config.Auth.RefreshSecret),
+	)
 
 	authService := auth.NewService(userService, tokenService)
 
@@ -44,7 +52,7 @@ func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) {
 
 	// Configure middleware with the custom claims type
 	config := echojwt.Config{
-		NewClaimsFunc: func(_ echo.Context) jwt.Claims {
+		NewClaimsFunc: func(echo.Context) jwt.Claims {
 			return new(token.JwtCustomClaims)
 		},
 		SigningKey: []byte(server.Config.Auth.AccessSecret),
