@@ -40,9 +40,8 @@ func NewAuthHandler(authService authService) *AuthHandler {
 //	@Failure		401		{object}	responses.Error
 //	@Router			/login [post]
 func (h *AuthHandler) Login(c echo.Context) error {
-	request := new(requests.LoginRequest)
-
-	if err := c.Bind(request); err != nil {
+	var request requests.LoginRequest
+	if err := c.Bind(&request); err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request")
 	}
 
@@ -50,7 +49,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty or not valid")
 	}
 
-	response, err := h.authService.GenerateToken(c.Request().Context(), request)
+	response, err := h.authService.GenerateToken(c.Request().Context(), &request)
 	switch {
 	case errors.Is(err, models.ErrUserNotFound):
 		return responses.ErrorResponse(c, http.StatusNotFound, "Such user not found")
@@ -76,13 +75,12 @@ func (h *AuthHandler) Login(c echo.Context) error {
 //	@Failure		401		{object}	responses.Error
 //	@Router			/refresh [post]
 func (h *AuthHandler) RefreshToken(c echo.Context) error {
-	request := new(requests.RefreshRequest)
-
-	if err := c.Bind(request); err != nil {
+	var request requests.RefreshRequest
+	if err := c.Bind(&request); err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request")
 	}
 
-	response, err := h.authService.RefreshToken(c.Request().Context(), request)
+	response, err := h.authService.RefreshToken(c.Request().Context(), &request)
 	switch {
 	case errors.Is(err, models.ErrUserNotFound):
 		return responses.ErrorResponse(c, http.StatusNotFound, "Such user not found")
