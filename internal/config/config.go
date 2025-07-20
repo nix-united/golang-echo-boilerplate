@@ -2,12 +2,10 @@ package config
 
 import (
 	"time"
-
-	"github.com/nix-united/golang-echo-boilerplate/internal/slogx"
 )
 
 type Config struct {
-	Logger slogx.Config
+	Logger LogConfig
 	Auth   AuthConfig
 	DB     DBConfig
 	HTTP   HTTPConfig
@@ -33,4 +31,17 @@ type HTTPConfig struct {
 	Host       string `env:"HOST"`
 	Port       string `env:"PORT"`
 	ExposePort string `env:"EXPOSE_PORT"`
+}
+
+type LogConfig struct {
+	Application string `env:"LOG_APPLICATION"`
+
+	// File represents path to file where store logs. Used [os.Stdout] if empty.
+	File string `env:"LOG_FILE"`
+
+	// One of: "DEBUG", "INFO", "WARN", "ERROR". Default: "DEBUG".
+	Level string `env:"LOG_LEVEL" envDefault:"DEBUG"`
+
+	// Add source code position to messages.
+	AddSource bool `env:"LOG_ADD_SOURCE"`
 }

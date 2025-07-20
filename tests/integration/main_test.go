@@ -39,7 +39,7 @@ func TestMain(m *testing.M) {
 }
 
 func setupMain(ctx context.Context) (_ func(context.Context) error, err error) {
-	err = slogx.Init(slogx.Config{
+	err = slogx.Init(config.LogConfig{
 		Application: "integration-tests",
 		Level:       "DEBUG",
 		AddSource:   true,
