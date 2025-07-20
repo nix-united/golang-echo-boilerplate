@@ -19,7 +19,7 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
-func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) {
+func ConfigureRoutes(tracer *slogx.TraceStarter, server *s.Server) {
 	userRepository := repositories.NewUserRepository(server.DB)
 	userService := user.NewService(userRepository)
 
