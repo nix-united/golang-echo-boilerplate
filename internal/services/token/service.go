@@ -45,7 +45,7 @@ func NewService(
 	}
 }
 
-func (s *Service) CreateAccessToken(_ context.Context, user *models.User) (string, int64, error) {
+func (s *Service) CreateAccessToken(_ context.Context, user *models.User) (accessToken string, expires int64, err error) {
 	expiresAt := s.now().Add(s.accessTokenDuration)
 
 	claims := &JwtCustomClaims{
@@ -58,12 +58,12 @@ func (s *Service) CreateAccessToken(_ context.Context, user *models.User) (strin
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	signed, err := token.SignedString(s.accessTokenSecret)
+	accessToken, err = token.SignedString(s.accessTokenSecret)
 	if err != nil {
 		return "", 0, fmt.Errorf("sign access token: %w", err)
 	}
 
-	return signed, expiresAt.Unix(), nil
+	return accessToken, expiresAt.Unix(), nil
 }
 
 func (s *Service) CreateRefreshToken(_ context.Context, user *models.User) (string, error) {
@@ -88,14 +88,7 @@ func (s *Service) CreateRefreshToken(_ context.Context, user *models.User) (stri
 
 func (s *Service) ParseAccessToken(_ context.Context, token string) (*JwtCustomClaims, error) {
 	claims := new(JwtCustomClaims)
-	_, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (any, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
-		}
-
-		return s.accessTokenSecret, nil
-	})
-	if err != nil {
+	if err := s.parseToken(token, s.accessTokenSecret, claims); err != nil {
 		return nil, fmt.Errorf("parse token: %w", err)
 	}
 
@@ -104,16 +97,24 @@ func (s *Service) ParseAccessToken(_ context.Context, token string) (*JwtCustomC
 
 func (s *Service) ParseRefreshToken(_ context.Context, token string) (*JwtCustomRefreshClaims, error) {
 	claims := new(JwtCustomRefreshClaims)
+	if err := s.parseToken(token, s.refreshSecret, claims); err != nil {
+		return nil, fmt.Errorf("parse token: %w", err)
+	}
+
+	return claims, nil
+}
+
+func (s *Service) parseToken(token string, secret []byte, claims jwt.Claims) error {
 	_, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
 
-		return s.refreshSecret, nil
+		return secret, nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("parse token: %w", err)
+		return fmt.Errorf("parse token with claims: %w", err)
 	}
 
-	return claims, nil
+	return nil
 }
