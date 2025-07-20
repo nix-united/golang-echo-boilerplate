@@ -1,6 +1,10 @@
 package config
 
-import "github.com/nix-united/golang-echo-boilerplate/internal/slogx"
+import (
+	"time"
+
+	"github.com/nix-united/golang-echo-boilerplate/internal/slogx"
+)
 
 type Config struct {
 	Logger slogx.Config
@@ -19,8 +23,10 @@ type DBConfig struct {
 }
 
 type AuthConfig struct {
-	AccessSecret  string `env:"ACCESS_SECRET"`
-	RefreshSecret string `env:"REFRESH_SECRET"`
+	AccessTokenDuration  time.Duration `env:"ACCESS_SECRET_DURATION" envDefault:"2h"`
+	RefreshTokenDuration time.Duration `env:"REFRESH_SECRET_DURATION" envDefault:"168h"`
+	AccessSecret         string        `env:"ACCESS_SECRET"`
+	RefreshSecret        string        `env:"REFRESH_SECRET"`
 }
 
 type HTTPConfig struct {

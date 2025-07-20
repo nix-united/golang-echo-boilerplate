@@ -28,8 +28,8 @@ func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) {
 
 	tokenService := token.NewService(
 		time.Now,
-		time.Hour,
-		time.Hour,
+		server.Config.Auth.AccessTokenDuration,
+		server.Config.Auth.RefreshTokenDuration,
 		[]byte(server.Config.Auth.AccessSecret),
 		[]byte(server.Config.Auth.RefreshSecret),
 	)
