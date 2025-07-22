@@ -21,11 +21,10 @@ import (
 type requestDebugger struct{}
 
 func NewRequestDebugger() echo.MiddlewareFunc {
-	debugger := requestDebugger{}
-	return debugger.handle
+	return (&requestDebugger{}).handle
 }
 
-func (d requestDebugger) handle(next echo.HandlerFunc) echo.HandlerFunc {
+func (d *requestDebugger) handle(next echo.HandlerFunc) echo.HandlerFunc {
 	if !slog.Default().Enabled(context.Background(), slog.LevelDebug) {
 		return next
 	}
@@ -65,7 +64,7 @@ func (d requestDebugger) handle(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (d requestDebugger) getRequestBody(c echo.Context) (any, error) {
+func (d *requestDebugger) getRequestBody(c echo.Context) (any, error) {
 	if c.Request().Body == nil {
 		return nil, nil
 	}
@@ -79,14 +78,14 @@ func (d requestDebugger) getRequestBody(c echo.Context) (any, error) {
 	request.Body = io.NopCloser(bytes.NewReader(rawRequestBody))
 	c.SetRequest(request)
 
-	if strings.HasPrefix(request.Header.Get(echo.HeaderContentType), "application/json") {
+	if strings.HasPrefix(request.Header.Get(echo.HeaderContentType), echo.MIMEApplicationJSON) {
 		return json.RawMessage(rawRequestBody), nil
 	}
 
 	return string(rawRequestBody), nil
 }
 
-func (d requestDebugger) getResponseBodyGetter(c echo.Context) func(echo.Context) any {
+func (d *requestDebugger) getResponseBodyGetter(c echo.Context) func(echo.Context) any {
 	response := c.Response()
 	storer := newResponseStorer(response.Writer)
 	response.Writer = storer
@@ -97,7 +96,7 @@ func (d requestDebugger) getResponseBodyGetter(c echo.Context) func(echo.Context
 			return nil
 		}
 
-		if strings.HasPrefix(c.Response().Header().Get(echo.HeaderContentType), "application/json") {
+		if strings.HasPrefix(c.Response().Header().Get(echo.HeaderContentType), echo.MIMEApplicationJSON) {
 			return json.RawMessage(storer.storedResponse)
 		}
 

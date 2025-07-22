@@ -14,11 +14,11 @@ type PostRepository struct {
 	db *gorm.DB
 }
 
-func NewPostRepository(db *gorm.DB) PostRepository {
-	return PostRepository{db: db}
+func NewPostRepository(db *gorm.DB) *PostRepository {
+	return &PostRepository{db: db}
 }
 
-func (r PostRepository) Create(ctx context.Context, post *models.Post) error {
+func (r *PostRepository) Create(ctx context.Context, post *models.Post) error {
 	if err := r.db.WithContext(ctx).Create(post).Error; err != nil {
 		return fmt.Errorf("execute insert post query: %w", err)
 	}
@@ -26,7 +26,7 @@ func (r PostRepository) Create(ctx context.Context, post *models.Post) error {
 	return nil
 }
 
-func (r PostRepository) GetPosts(ctx context.Context) ([]models.Post, error) {
+func (r *PostRepository) GetPosts(ctx context.Context) ([]models.Post, error) {
 	var posts []models.Post
 	if err := r.db.WithContext(ctx).Find(&posts).Error; err != nil {
 		return nil, fmt.Errorf("execute select posts query: %w", err)
@@ -35,7 +35,7 @@ func (r PostRepository) GetPosts(ctx context.Context) ([]models.Post, error) {
 	return posts, nil
 }
 
-func (r PostRepository) GetPost(ctx context.Context, id uint) (models.Post, error) {
+func (r *PostRepository) GetPost(ctx context.Context, id uint) (models.Post, error) {
 	var post models.Post
 	err := r.db.WithContext(ctx).Where("id = ?", id).Take(&post).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -47,7 +47,7 @@ func (r PostRepository) GetPost(ctx context.Context, id uint) (models.Post, erro
 	return post, nil
 }
 
-func (r PostRepository) Update(ctx context.Context, post *models.Post) error {
+func (r *PostRepository) Update(ctx context.Context, post *models.Post) error {
 	if err := r.db.WithContext(ctx).Save(post).Error; err != nil {
 		return fmt.Errorf("execute update post query: %w", err)
 	}
@@ -55,7 +55,7 @@ func (r PostRepository) Update(ctx context.Context, post *models.Post) error {
 	return nil
 }
 
-func (r PostRepository) Delete(ctx context.Context, post *models.Post) error {
+func (r *PostRepository) Delete(ctx context.Context, post *models.Post) error {
 	if err := r.db.WithContext(ctx).Delete(post).Error; err != nil {
 		return fmt.Errorf("execute delete post query: %w", err)
 	}

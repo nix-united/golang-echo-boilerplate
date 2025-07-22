@@ -1,10 +1,13 @@
 package routes
 
 import (
+	"time"
+
 	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
 	s "github.com/nix-united/golang-echo-boilerplate/internal/server"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/middleware"
+	"github.com/nix-united/golang-echo-boilerplate/internal/services/auth"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/post"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/token"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/user"
@@ -16,15 +19,25 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
-func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) {
+func ConfigureRoutes(tracer *slogx.TraceStarter, server *s.Server) {
 	userRepository := repositories.NewUserRepository(server.DB)
 	userService := user.NewService(userRepository)
 
 	postRepository := repositories.NewPostRepository(server.DB)
 	postService := post.NewService(postRepository)
 
+	tokenService := token.NewService(
+		time.Now,
+		server.Config.Auth.AccessTokenDuration,
+		server.Config.Auth.RefreshTokenDuration,
+		[]byte(server.Config.Auth.AccessSecret),
+		[]byte(server.Config.Auth.RefreshSecret),
+	)
+
+	authService := auth.NewService(userService, tokenService)
+
 	postHandler := handlers.NewPostHandlers(postService)
-	authHandler := handlers.NewAuthHandler(userService, server)
+	authHandler := handlers.NewAuthHandler(authService)
 	registerHandler := handlers.NewRegisterHandler(userService)
 
 	server.Echo.Use(middleware.NewRequestLogger(tracer))
@@ -39,7 +52,7 @@ func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) {
 
 	// Configure middleware with the custom claims type
 	config := echojwt.Config{
-		NewClaimsFunc: func(_ echo.Context) jwt.Claims {
+		NewClaimsFunc: func(echo.Context) jwt.Claims {
 			return new(token.JwtCustomClaims)
 		},
 		SigningKey: []byte(server.Config.Auth.AccessSecret),

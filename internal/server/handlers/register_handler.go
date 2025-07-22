@@ -40,8 +40,8 @@ func NewRegisterHandler(userRegisterer userRegisterer) *RegisterHandler {
 //	@Failure		400		{object}	responses.Error
 //	@Router			/register [post]
 func (h *RegisterHandler) Register(c echo.Context) error {
-	registerRequest := new(requests.RegisterRequest)
-	if err := c.Bind(registerRequest); err != nil {
+	var registerRequest requests.RegisterRequest
+	if err := c.Bind(&registerRequest); err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request")
 	}
 
@@ -56,7 +56,7 @@ func (h *RegisterHandler) Register(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to check if user exists")
 	}
 
-	if err := h.userRegisterer.Register(c.Request().Context(), registerRequest); err != nil {
+	if err := h.userRegisterer.Register(c.Request().Context(), &registerRequest); err != nil {
 		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to register user")
 	}
 

@@ -1,16 +1,14 @@
 package token
 
 import (
+	"context"
+	"fmt"
 	"time"
 
-	"github.com/nix-united/golang-echo-boilerplate/internal/config"
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 
 	"github.com/golang-jwt/jwt/v5"
 )
-
-const ExpireCount = 2
-const ExpireRefreshCount = 168
 
 type JwtCustomClaims struct {
 	Name string `json:"name"`
@@ -23,52 +21,100 @@ type JwtCustomRefreshClaims struct {
 	jwt.RegisteredClaims
 }
 
-type ServiceWrapper interface {
-	CreateAccessToken(user *models.User) (accessToken string, exp int64, err error)
-	CreateRefreshToken(user *models.User) (t string, err error)
-}
-
 type Service struct {
-	config *config.Config
+	now                  func() time.Time
+	accessTokenDuration  time.Duration
+	refreshTokenDuration time.Duration
+	accessTokenSecret    []byte
+	refreshSecret        []byte
 }
 
-func NewTokenService(cfg *config.Config) *Service {
+func NewService(
+	now func() time.Time,
+	accessTokenDuration time.Duration,
+	refreshTokenDuration time.Duration,
+	accessSecret []byte,
+	refreshSecret []byte,
+) *Service {
 	return &Service{
-		config: cfg,
+		now:                  now,
+		accessTokenDuration:  accessTokenDuration,
+		refreshTokenDuration: refreshTokenDuration,
+		accessTokenSecret:    accessSecret,
+		refreshSecret:        refreshSecret,
 	}
 }
 
-func (tokenService *Service) CreateAccessToken(user *models.User) (t string, expired int64, err error) {
-	exp := time.Now().Add(time.Hour * ExpireCount)
+func (s *Service) CreateAccessToken(_ context.Context, user *models.User) (accessToken string, expires int64, err error) {
+	expiresAt := s.now().Add(s.accessTokenDuration)
+
 	claims := &JwtCustomClaims{
-		user.Name,
-		user.ID,
-		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(exp),
+		Name: user.Name,
+		ID:   user.ID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
 		},
 	}
-	expired = exp.Unix()
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	t, err = token.SignedString([]byte(tokenService.config.Auth.AccessSecret))
+
+	accessToken, err = token.SignedString(s.accessTokenSecret)
 	if err != nil {
-		return
+		return "", 0, fmt.Errorf("sign access token: %w", err)
 	}
 
-	return
+	return accessToken, expiresAt.Unix(), nil
 }
 
-func (tokenService *Service) CreateRefreshToken(user *models.User) (t string, err error) {
-	claimsRefresh := &JwtCustomRefreshClaims{
+func (s *Service) CreateRefreshToken(_ context.Context, user *models.User) (string, error) {
+	expiresAt := s.now().Add(s.refreshTokenDuration)
+
+	claims := &JwtCustomRefreshClaims{
 		ID: user.ID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * ExpireRefreshCount)),
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
 		},
 	}
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsRefresh)
 
-	rt, err := refreshToken.SignedString([]byte(tokenService.config.Auth.RefreshSecret))
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	signed, err := token.SignedString(s.refreshSecret)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("sign refresh token: %w", err)
 	}
-	return rt, err
+
+	return signed, nil
+}
+
+func (s *Service) ParseAccessToken(_ context.Context, token string) (*JwtCustomClaims, error) {
+	claims := new(JwtCustomClaims)
+	if err := s.parseToken(token, s.accessTokenSecret, claims); err != nil {
+		return nil, fmt.Errorf("parse token: %w", err)
+	}
+
+	return claims, nil
+}
+
+func (s *Service) ParseRefreshToken(_ context.Context, token string) (*JwtCustomRefreshClaims, error) {
+	claims := new(JwtCustomRefreshClaims)
+	if err := s.parseToken(token, s.refreshSecret, claims); err != nil {
+		return nil, fmt.Errorf("parse token: %w", err)
+	}
+
+	return claims, nil
+}
+
+func (s *Service) parseToken(token string, secret []byte, claims jwt.Claims) error {
+	_, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (any, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
+
+		return secret, nil
+	})
+	if err != nil {
+		return fmt.Errorf("parse token with claims: %w", err)
+	}
+
+	return nil
 }

@@ -11,6 +11,7 @@ import (
 
 	"github.com/nix-united/golang-echo-boilerplate/internal/config"
 	"github.com/nix-united/golang-echo-boilerplate/internal/db"
+	"github.com/nix-united/golang-echo-boilerplate/internal/slogx"
 	"github.com/nix-united/golang-echo-boilerplate/tests/setup"
 
 	"gorm.io/gorm"
@@ -38,6 +39,15 @@ func TestMain(m *testing.M) {
 }
 
 func setupMain(ctx context.Context) (_ func(context.Context) error, err error) {
+	err = slogx.Init(config.LogConfig{
+		Application: "integration-tests",
+		Level:       "DEBUG",
+		AddSource:   true,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("init slog: %w", err)
+	}
+
 	shutdownCallbacks := make([]func(context.Context) error, 0)
 
 	shutdown := func(ctx context.Context) error {

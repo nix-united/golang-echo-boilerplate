@@ -2,6 +2,7 @@ package handlers_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
+	"github.com/nix-united/golang-echo-boilerplate/internal/responses"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
 
 	"github.com/labstack/echo/v4"
@@ -17,156 +19,115 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func newRegisterHandler(t *testing.T) (*echo.Echo, *handlers.RegisterHandler, *MockuserRegisterer) {
-	t.Helper()
-
-	ctrl := gomock.NewController(t)
-	userRegisterer := NewMockuserRegisterer(ctrl)
-	registerHandler := handlers.NewRegisterHandler(userRegisterer)
-	engine := echo.New()
-
-	engine.POST("/register", registerHandler.Register)
-
-	return engine, registerHandler, userRegisterer
-}
-
 func TestRegisterHandler_Register(t *testing.T) {
-	t.Run("It should return an error if failed to parse request", func(t *testing.T) {
-		engine, registerHandler, _ := newRegisterHandler(t)
+	registerRequest := requests.RegisterRequest{
+		BasicAuth: requests.BasicAuth{
+			Email:    "example@email.com",
+			Password: "some-pass",
+		},
+		Name: "test name",
+	}
 
-		request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/register", http.NoBody)
-		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
-		recorder := httptest.NewRecorder()
-		c := engine.NewContext(request, recorder)
-
-		err := registerHandler.Register(c)
-		require.NoError(t, err)
-
-		assert.Equal(t, http.StatusBadRequest, recorder.Result().StatusCode)
-
-		wantResponse := `{
-			"code": 400,
-			"error": "Failed to bind request"
-		}`
-
-		assert.JSONEq(t, wantResponse, recorder.Body.String())
-	})
-
-	t.Run("It should return an error if received invalid request", func(t *testing.T) {
-		engine, registerHandler, _ := newRegisterHandler(t)
-
-		registerRequest := requests.RegisterRequest{
-			BasicAuth: requests.BasicAuth{
-				Email:    "invalid_email",
-				Password: "some-pass",
+	testCases := map[string]struct {
+		setExpectations func(userRegisterer *MockuserRegisterer)
+		request         any
+		wantStatus      int
+		wantResponse    any
+	}{
+		"It should return a 400 status code when received empty request": {
+			setExpectations: func(userRegisterer *MockuserRegisterer) {},
+			request:         map[string]any{},
+			wantStatus:      http.StatusBadRequest,
+			wantResponse: responses.Error{
+				Code:  http.StatusBadRequest,
+				Error: "Required fields are empty or invalid",
 			},
-			Name: "test name",
-		}
-
-		buffer := new(bytes.Buffer)
-		err := json.NewEncoder(buffer).Encode(registerRequest)
-		require.NoError(t, err)
-
-		request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/register", buffer)
-		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
-		recorder := httptest.NewRecorder()
-		c := engine.NewContext(request, recorder)
-
-		err = registerHandler.Register(c)
-		require.NoError(t, err)
-
-		assert.Equal(t, http.StatusBadRequest, recorder.Result().StatusCode)
-
-		wantResponse := `{
-			"code": 400,
-			"error": "Required fields are empty or invalid"
-		}`
-
-		assert.JSONEq(t, wantResponse, recorder.Body.String())
-	})
-
-	t.Run("It should return an error if user exists", func(t *testing.T) {
-		engine, registerHandler, userRegisterer := newRegisterHandler(t)
-
-		registerRequest := requests.RegisterRequest{
-			BasicAuth: requests.BasicAuth{
-				Email:    "example@email.com",
-				Password: "some-pass",
+		},
+		"It should return a 400 status code when received invalid request": {
+			setExpectations: func(userRegisterer *MockuserRegisterer) {},
+			request: requests.RegisterRequest{
+				BasicAuth: requests.BasicAuth{
+					Email:    "invalid_email",
+					Password: "some-pass",
+				},
+				Name: "test name",
 			},
-			Name: "test name",
-		}
-
-		buffer := new(bytes.Buffer)
-		err := json.NewEncoder(buffer).Encode(registerRequest)
-		require.NoError(t, err)
-
-		userRegisterer.
-			EXPECT().
-			GetUserByEmail(gomock.Any(), "example@email.com").
-			Return(models.User{Email: "example@email.com"}, nil)
-
-		request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/register", buffer)
-		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-
-		recorder := httptest.NewRecorder()
-		c := engine.NewContext(request, recorder)
-
-		err = registerHandler.Register(c)
-		require.NoError(t, err)
-
-		assert.Equal(t, http.StatusConflict, recorder.Result().StatusCode)
-
-		wantResponse := `{
-			"code": 409,
-			"error": "User already exists"
-		}`
-
-		assert.JSONEq(t, wantResponse, recorder.Body.String())
-	})
-
-	t.Run("It should register an user", func(t *testing.T) {
-		engine, registerHandler, userRegisterer := newRegisterHandler(t)
-
-		registerRequest := requests.RegisterRequest{
-			BasicAuth: requests.BasicAuth{
-				Email:    "example@email.com",
-				Password: "some-pass",
+			wantStatus: http.StatusBadRequest,
+			wantResponse: responses.Error{
+				Code:  http.StatusBadRequest,
+				Error: "Required fields are empty or invalid",
 			},
-			Name: "test name",
-		}
+		},
+		"It should return an error if user exists": {
+			setExpectations: func(userRegisterer *MockuserRegisterer) {
+				userRegisterer.
+					EXPECT().
+					GetUserByEmail(gomock.Any(), "example@email.com").
+					Return(models.User{Email: "example@email.com"}, nil)
+			},
+			request:    registerRequest,
+			wantStatus: http.StatusConflict,
+			wantResponse: responses.Error{
+				Code:  http.StatusConflict,
+				Error: "User already exists",
+			},
+		},
+		"It should register an user": {
+			setExpectations: func(userRegisterer *MockuserRegisterer) {
+				userRegisterer.
+					EXPECT().
+					GetUserByEmail(gomock.Any(), "example@email.com").
+					Return(models.User{}, models.ErrUserNotFound)
 
-		buffer := new(bytes.Buffer)
-		err := json.NewEncoder(buffer).Encode(registerRequest)
-		require.NoError(t, err)
+				userRegisterer.
+					EXPECT().
+					Register(gomock.Any(), gomock.Any()).
+					DoAndReturn(func(_ context.Context, gotRegisterRequest *requests.RegisterRequest) error {
+						assert.Equal(t, &registerRequest, gotRegisterRequest)
 
-		userRegisterer.
-			EXPECT().
-			GetUserByEmail(gomock.Any(), "example@email.com").
-			Return(models.User{}, models.ErrUserNotFound)
+						return nil
+					})
+			},
+			request:    registerRequest,
+			wantStatus: http.StatusCreated,
+			wantResponse: responses.Data{
+				Code:    http.StatusCreated,
+				Message: "User successfully created",
+			},
+		},
+	}
 
-		userRegisterer.
-			EXPECT().
-			Register(gomock.Any(), &registerRequest).
-			Return(nil)
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			userRegisterer := NewMockuserRegisterer(ctrl)
+			registerHandler := handlers.NewRegisterHandler(userRegisterer)
 
-		request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/register", buffer)
-		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+			testCase.setExpectations(userRegisterer)
 
-		recorder := httptest.NewRecorder()
-		c := engine.NewContext(request, recorder)
+			rawRequest, err := json.Marshal(testCase.request)
+			require.NoError(t, err)
 
-		err = registerHandler.Register(c)
-		require.NoError(t, err)
+			request := httptest.NewRequestWithContext(
+				t.Context(),
+				http.MethodPost,
+				"/register",
+				bytes.NewBuffer(rawRequest),
+			)
+			request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 
-		assert.Equal(t, http.StatusCreated, recorder.Result().StatusCode)
+			recorder := httptest.NewRecorder()
+			c := echo.New().NewContext(request, recorder)
 
-		wantResponse := `{
-			"code": 201,
-			"message": "User successfully created"
-		}`
+			err = registerHandler.Register(c)
+			require.NoError(t, err)
 
-		assert.JSONEq(t, wantResponse, recorder.Body.String())
-	})
+			assert.Equal(t, testCase.wantStatus, recorder.Result().StatusCode)
+
+			wantResponse, err := json.Marshal(testCase.wantResponse)
+			require.NoError(t, err)
+
+			assert.JSONEq(t, string(wantResponse), recorder.Body.String())
+		})
+	}
 }
