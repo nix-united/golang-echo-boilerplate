@@ -3,11 +3,14 @@ package routes
 import (
 	"context"
 	"fmt"
+	"github.com/nix-united/golang-echo-boilerplate/internal/services/oauth"
+	"time"
 
 	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
 	s "github.com/nix-united/golang-echo-boilerplate/internal/server"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/middleware"
+	"github.com/nix-united/golang-echo-boilerplate/internal/services/auth"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/post"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/token"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/user"
@@ -20,8 +23,12 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
-func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) error {
+func ConfigureRoutes(tracer *slogx.TraceStarter, server *s.Server) error {
 	userRepository := repositories.NewUserRepository(server.DB)
+	userService := user.NewService(userRepository)
+
+	postRepository := repositories.NewPostRepository(server.DB)
+	postService := post.NewService(postRepository)
 
 	provider, err := oidc.NewProvider(context.Background(), "https://accounts.google.com")
 	if err != nil {
@@ -30,15 +37,19 @@ func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) error {
 
 	verifier := provider.Verifier(&oidc.Config{ClientID: server.Config.OAuth.ClientID})
 
-	tokenService := token.NewTokenService(server.Config)
-	userService := user.NewService(verifier, tokenService, userRepository)
+	tokenService := token.NewService(
+		time.Now,
+		server.Config.Auth.AccessTokenDuration,
+		server.Config.Auth.RefreshTokenDuration,
+		[]byte(server.Config.Auth.AccessSecret),
+		[]byte(server.Config.Auth.RefreshSecret),
+	)
 
-	postRepository := repositories.NewPostRepository(server.DB)
-	postService := post.NewService(postRepository)
-
+	authService := auth.NewService(userService, tokenService)
+	oAuthService := oauth.NewService(verifier, tokenService, userService)
 	postHandler := handlers.NewPostHandlers(postService)
-	authHandler := handlers.NewAuthHandler(userService, server)
-	oAuthHandler := handlers.NewOAuthHandler(userService)
+	authHandler := handlers.NewAuthHandler(authService)
+	oAuthHandler := handlers.NewOAuthHandler(oAuthService)
 	registerHandler := handlers.NewRegisterHandler(userService)
 
 	server.Echo.Use(middleware.NewRequestLogger(tracer))
@@ -54,7 +65,7 @@ func ConfigureRoutes(tracer slogx.TraceStarter, server *s.Server) error {
 
 	// Configure middleware with the custom claims type
 	config := echojwt.Config{
-		NewClaimsFunc: func(_ echo.Context) jwt.Claims {
+		NewClaimsFunc: func(echo.Context) jwt.Claims {
 			return new(token.JwtCustomClaims)
 		},
 		SigningKey: []byte(server.Config.Auth.AccessSecret),

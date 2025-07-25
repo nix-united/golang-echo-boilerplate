@@ -10,7 +10,9 @@ import (
 )
 
 func NewGormDB(cfg config.DBConfig) (*gorm.DB, error) {
-	db, err := gorm.Open(mysql.Open(dsn(cfg)), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn(cfg)), &gorm.Config{
+		Logger: newLoggerAdapter(),
+	})
 	if err != nil {
 		return nil, fmt.Errorf("open db connection: %w", err)
 	}

@@ -19,12 +19,11 @@ type requestLogger struct {
 }
 
 func NewRequestLogger(tracer tracer) echo.MiddlewareFunc {
-	middleware := requestLogger{tracer: tracer}
-	return middleware.handle
+	return (&requestLogger{tracer: tracer}).handle
 }
 
 // handle creates trace and logs request information.
-func (l requestLogger) handle(next echo.HandlerFunc) echo.HandlerFunc {
+func (l *requestLogger) handle(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx, err := l.tracer.Start(c.Request().Context())
 		if err != nil {

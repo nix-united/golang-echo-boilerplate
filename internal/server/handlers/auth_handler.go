@@ -3,35 +3,28 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 	"github.com/nix-united/golang-echo-boilerplate/internal/responses"
-	s "github.com/nix-united/golang-echo-boilerplate/internal/server"
-	tokenservice "github.com/nix-united/golang-echo-boilerplate/internal/services/token"
 
-	jwtGo "github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
-	"golang.org/x/crypto/bcrypt"
 )
 
-type userGetter interface {
-	GetByID(ctx context.Context, id uint) (models.User, error)
-	GetUserByEmail(ctx context.Context, email string) (models.User, error)
+//go:generate go tool mockgen -source=$GOFILE -destination=auth_handler_mock_test.go -package=${GOPACKAGE}_test -typed=true
+
+type authService interface {
+	GenerateToken(ctx context.Context, request *requests.LoginRequest) (*responses.LoginResponse, error)
+	RefreshToken(ctx context.Context, request *requests.RefreshRequest) (*responses.LoginResponse, error)
 }
 
 type AuthHandler struct {
-	userGetter userGetter
-	server     *s.Server
+	authService authService
 }
 
-func NewAuthHandler(userGetter userGetter, server *s.Server) *AuthHandler {
-	return &AuthHandler{
-		server:     server,
-		userGetter: userGetter,
-	}
+func NewAuthHandler(authService authService) *AuthHandler {
+	return &AuthHandler{authService: authService}
 }
 
 // Login godoc
@@ -47,39 +40,24 @@ func NewAuthHandler(userGetter userGetter, server *s.Server) *AuthHandler {
 //	@Failure		401		{object}	responses.Error
 //	@Router			/login [post]
 func (h *AuthHandler) Login(c echo.Context) error {
-	loginRequest := new(requests.LoginRequest)
-
-	if err := c.Bind(loginRequest); err != nil {
-		return err
+	var request requests.LoginRequest
+	if err := c.Bind(&request); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request")
 	}
 
-	if err := loginRequest.Validate(); err != nil {
+	if err := request.Validate(); err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty or not valid")
 	}
 
-	user, err := h.userGetter.GetUserByEmail(c.Request().Context(), loginRequest.Email)
-	if errors.Is(err, models.ErrUserNotFound) {
-		return responses.ErrorResponse(c, http.StatusNotFound, "User with such email not found")
-	} else if err != nil {
-		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch user")
-	}
-
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password)); err != nil {
+	response, err := h.authService.GenerateToken(c.Request().Context(), &request)
+	switch {
+	case errors.Is(err, models.ErrUserNotFound), errors.Is(err, models.ErrInvalidPassword):
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid credentials")
+	case err != nil:
+		return responses.ErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
 	}
 
-	tokenService := tokenservice.NewTokenService(h.server.Config)
-	accessToken, exp, err := tokenService.CreateAccessToken(&user)
-	if err != nil {
-		return err
-	}
-	refreshToken, err := tokenService.CreateRefreshToken(&user)
-	if err != nil {
-		return err
-	}
-	res := responses.NewLoginResponse(accessToken, refreshToken, exp)
-
-	return responses.Response(c, http.StatusOK, res)
+	return responses.Response(c, http.StatusOK, response)
 }
 
 // RefreshToken godoc
@@ -95,45 +73,18 @@ func (h *AuthHandler) Login(c echo.Context) error {
 //	@Failure		401		{object}	responses.Error
 //	@Router			/refresh [post]
 func (h *AuthHandler) RefreshToken(c echo.Context) error {
-	refreshRequest := new(requests.RefreshRequest)
-	if err := c.Bind(refreshRequest); err != nil {
-		return err
+	var request requests.RefreshRequest
+	if err := c.Bind(&request); err != nil {
+		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request")
 	}
 
-	token, err := jwtGo.Parse(refreshRequest.Token, func(token *jwtGo.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwtGo.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(h.server.Config.Auth.RefreshSecret), nil
-	})
-
-	if err != nil {
-		return responses.ErrorResponse(c, http.StatusUnauthorized, err.Error())
+	response, err := h.authService.RefreshToken(c.Request().Context(), &request)
+	switch {
+	case errors.Is(err, models.ErrUserNotFound), errors.Is(err, models.ErrInvalidAuthToken):
+		return responses.ErrorResponse(c, http.StatusUnauthorized, "Unauthorized")
+	case err != nil:
+		return responses.ErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
 	}
 
-	claims, ok := token.Claims.(jwtGo.MapClaims)
-	if !ok && !token.Valid {
-		return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid token")
-	}
-
-	user, err := h.userGetter.GetByID(c.Request().Context(), uint(claims["id"].(float64)))
-	if errors.Is(err, models.ErrUserNotFound) {
-		return responses.ErrorResponse(c, http.StatusNotFound, "User with such email not found")
-	} else if err != nil {
-		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to fetch user")
-	}
-
-	tokenService := tokenservice.NewTokenService(h.server.Config)
-	accessToken, exp, err := tokenService.CreateAccessToken(&user)
-	if err != nil {
-		return err
-	}
-
-	refreshToken, err := tokenService.CreateRefreshToken(&user)
-	if err != nil {
-		return err
-	}
-	res := responses.NewLoginResponse(accessToken, refreshToken, exp)
-
-	return responses.Response(c, http.StatusOK, res)
+	return responses.Response(c, http.StatusOK, response)
 }

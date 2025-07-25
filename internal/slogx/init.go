@@ -5,22 +5,11 @@ import (
 	"io"
 	"log/slog"
 	"os"
+
+	"github.com/nix-united/golang-echo-boilerplate/internal/config"
 )
 
-type Config struct {
-	Application string `env:"LOG_APPLICATION"`
-
-	// File represents path to file where store logs. Used [os.Stdout] if empty.
-	File string `env:"LOG_FILE"`
-
-	// One of: "DEBUG", "INFO", "WARN", "ERROR". Default: "DEBUG".
-	Level string `env:"LOG_LEVEL"`
-
-	// Add source code position to messages.
-	AddSource bool `env:"LOG_ADD_SOURCE"`
-}
-
-func Init(config Config) (err error) {
+func Init(config config.LogConfig) (err error) {
 	writer := io.Writer(os.Stdout)
 	if config.File != "" {
 		const permission = 0o644
