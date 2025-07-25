@@ -3,7 +3,6 @@ package routes
 import (
 	"context"
 	"fmt"
-	"github.com/nix-united/golang-echo-boilerplate/internal/services/oauth"
 	"time"
 
 	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
@@ -11,6 +10,7 @@ import (
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/middleware"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/auth"
+	"github.com/nix-united/golang-echo-boilerplate/internal/services/oauth"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/post"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/token"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/user"
