@@ -3,7 +3,6 @@ package handlers_test
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -84,7 +83,6 @@ func TestOAuthHandler_GoogleOAuth(t *testing.T) {
               "refreshToken": "refresh-token-456",
               "exp": 3600
 		}`
-		fmt.Println(recorder.Body.String())
 
 		assert.JSONEq(t, wantResponse, recorder.Body.String())
 	})

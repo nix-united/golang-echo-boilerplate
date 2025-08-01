@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/coreos/go-oidc"
-
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
+
+	"github.com/coreos/go-oidc"
 )
 
 type Service struct {

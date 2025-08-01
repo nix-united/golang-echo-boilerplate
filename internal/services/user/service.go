@@ -6,6 +6,7 @@ import (
 
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
