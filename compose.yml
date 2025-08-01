@@ -8,11 +8,12 @@ services:
     volumes:
       - ./:/app/
     depends_on:
-      - echo_mysql
+      echo_mysql:
+        condition: service_healthy
     env_file:
       - .env
     environment:
-      - DB_CONNECTION=${DB_USER}:${DB_PASSWORD}@tcp(echo_mysql:${DB_PORT})/${DB_NAME}
+      - DB_CONNECTION=${DB_USER}:${DB_PASSWORD}@tcp(${DB_HOST}:${DB_PORT})/${DB_NAME}
       - WAIT_HOSTS=${DB_HOST}:${DB_PORT}
       - WAIT_BEFORE_HOSTS=15
       - WAIT_SLEEP_INTERVAL=3
@@ -20,7 +21,7 @@ services:
       - echo-demo-stack
 
   echo_mysql:
-    image: mysql:8.0
+    image: mysql:8.4.5
     container_name: echo_db
     ports:
       - ${EXPOSE_DB_PORT}:${DB_PORT}
@@ -34,6 +35,8 @@ services:
       - database_mysql:/var/lib/mysql
     networks:
       - echo-demo-stack
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
 
 volumes:
   database_mysql:

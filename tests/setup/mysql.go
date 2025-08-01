@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	mysqlImage    = "mysql:9.3.0"
+	mysqlImage    = "mysql:8.4.5"
 	mysqlDatabase = "db_name"
 	mysqlUsername = "username"
 	mysqlPassword = "password"
@@ -38,10 +38,7 @@ func SetupMySQL(ctx context.Context) (_ MySQLConfig, _ func(ctx context.Context)
 		mysql.WithPassword(mysqlPassword),
 		testcontainers.WithWaitStrategyAndDeadline(
 			time.Minute,
-			wait.ForLog(fmt.Sprintf(
-				"/usr/sbin/mysqld: ready for connections. Version: '9.3.0'  socket: '/var/run/mysqld/mysqld.sock'  port: %s  MySQL Community Server - GPL.",
-				mysqlPort,
-			)),
+			wait.ForLog("X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /var/run/mysqld/mysqlx.sock"),
 		),
 	)
 	if err != nil {
