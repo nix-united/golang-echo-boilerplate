@@ -79,6 +79,44 @@ func (c *MockuserRepositoryCreateCall) DoAndReturn(f func(context.Context, *mode
 	return c
 }
 
+// CreateUserAndOAuthProvider mocks base method.
+func (m *MockuserRepository) CreateUserAndOAuthProvider(ctx context.Context, user *models.User, oauthProvider *models.OAuthProviders) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUserAndOAuthProvider", ctx, user, oauthProvider)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateUserAndOAuthProvider indicates an expected call of CreateUserAndOAuthProvider.
+func (mr *MockuserRepositoryMockRecorder) CreateUserAndOAuthProvider(ctx, user, oauthProvider any) *MockuserRepositoryCreateUserAndOAuthProviderCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserAndOAuthProvider", reflect.TypeOf((*MockuserRepository)(nil).CreateUserAndOAuthProvider), ctx, user, oauthProvider)
+	return &MockuserRepositoryCreateUserAndOAuthProviderCall{Call: call}
+}
+
+// MockuserRepositoryCreateUserAndOAuthProviderCall wrap *gomock.Call
+type MockuserRepositoryCreateUserAndOAuthProviderCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c *MockuserRepositoryCreateUserAndOAuthProviderCall) Return(arg0 error) *MockuserRepositoryCreateUserAndOAuthProviderCall {
+	c.Call = c.Call.Return(arg0)
+	return c
+}
+
+// Do rewrite *gomock.Call.Do
+func (c *MockuserRepositoryCreateUserAndOAuthProviderCall) Do(f func(context.Context, *models.User, *models.OAuthProviders) error) *MockuserRepositoryCreateUserAndOAuthProviderCall {
+	c.Call = c.Call.Do(f)
+	return c
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c *MockuserRepositoryCreateUserAndOAuthProviderCall) DoAndReturn(f func(context.Context, *models.User, *models.OAuthProviders) error) *MockuserRepositoryCreateUserAndOAuthProviderCall {
+	c.Call = c.Call.DoAndReturn(f)
+	return c
+}
+
 // GetByID mocks base method.
 func (m *MockuserRepository) GetByID(ctx context.Context, id uint) (models.User, error) {
 	m.ctrl.T.Helper()

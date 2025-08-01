@@ -49,3 +49,33 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (mode
 
 	return user, nil
 }
+
+func (r *UserRepository) CreateUserAndOAuthProvider(ctx context.Context, user *models.User, oAuthProvider *models.OAuthProviders) error {
+	tx := r.db.Begin()
+
+	committed := false
+
+	defer func() {
+		if !committed {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.WithContext(ctx).Create(user).Error; err != nil {
+		return fmt.Errorf("insert user (tx): %w", err)
+	}
+
+	oAuthProvider.UserID = user.ID
+
+	if err := tx.WithContext(ctx).Create(oAuthProvider).Error; err != nil {
+		return fmt.Errorf("insert oauthprovider (tx): %w", err)
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	committed = true
+
+	return nil
+}

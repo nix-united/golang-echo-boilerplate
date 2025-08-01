@@ -7,6 +7,7 @@ import (
 type Config struct {
 	Logger LogConfig
 	Auth   AuthConfig
+	OAuth  OAuthConfig
 	DB     DBConfig
 	HTTP   HTTPConfig
 }
@@ -25,6 +26,10 @@ type AuthConfig struct {
 	RefreshTokenDuration time.Duration `env:"REFRESH_SECRET_DURATION" envDefault:"168h"`
 	AccessSecret         string        `env:"ACCESS_SECRET"`
 	RefreshSecret        string        `env:"REFRESH_SECRET"`
+}
+
+type OAuthConfig struct {
+	ClientID string `env:"OPEN_ID_CLIENT_ID"`
 }
 
 type HTTPConfig struct {

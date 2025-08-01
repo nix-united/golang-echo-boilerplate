@@ -67,7 +67,10 @@ func run() error {
 
 	app := server.NewServer(echo.New(), gormDB, &cfg)
 
-	routes.ConfigureRoutes(slogx.NewTraceStarter(uuid.NewV7), app)
+	err = routes.ConfigureRoutes(slogx.NewTraceStarter(uuid.NewV7), app)
+	if err != nil {
+		return fmt.Errorf("configure routes: %w", err)
+	}
 
 	go func() {
 		if err = app.Start(cfg.HTTP.Port); err != nil {
