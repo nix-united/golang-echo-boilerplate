@@ -28,7 +28,7 @@ lint:
   allow_failure: true
 
 migrations:
-  image: golang:1.21.4-alpine3.18
+  image: golang:1.25.1-alpine3.18
   services:
     - mysql:5.7
   tags:
