@@ -7,7 +7,7 @@ import (
 
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 
-	"github.com/coreos/go-oidc"
+	"github.com/coreos/go-oidc/v3/oidc"
 )
 
 type Service struct {
