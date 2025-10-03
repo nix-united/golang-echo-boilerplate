@@ -1,10 +1,11 @@
 module github.com/nix-united/golang-echo-boilerplate
 
-go 1.24.4
+go 1.25.1
 
 require (
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/ccoveille/go-safecast v1.6.1
+	github.com/coreos/go-oidc v2.3.0+incompatible
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
@@ -72,7 +73,6 @@ require (
 	github.com/coder/websocket v1.8.13 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/platforms v0.2.1 // indirect
-	github.com/coreos/go-oidc v2.3.0+incompatible // indirect
 	github.com/cpuguy83/dockercfg v0.3.2 // indirect
 	github.com/curioswitch/go-reassign v0.3.0 // indirect
 	github.com/daixiang0/gci v0.13.5 // indirect
