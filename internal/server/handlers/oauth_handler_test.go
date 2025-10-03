@@ -46,7 +46,7 @@ func TestOAuthHandler_GoogleOAuth(t *testing.T) {
 
 		wantResponse := `{
 			"code": 400,
-			"error": "Failed to bind request"
+			"error": "Required fields are empty or invalid"
 		}`
 
 		assert.JSONEq(t, wantResponse, recorder.Body.String())
