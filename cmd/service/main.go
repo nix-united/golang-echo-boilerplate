@@ -24,7 +24,7 @@ import (
 	"github.com/nix-united/golang-echo-boilerplate/internal/slogx"
 
 	"github.com/caarlos0/env/v11"
-	"github.com/coreos/go-oidc"
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
