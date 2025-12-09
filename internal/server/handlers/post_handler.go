@@ -119,7 +119,7 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
 	}
 
-	id, err := safecast.ToUint(parsedID)
+	id, err := safecast.Convert[uint](parsedID)
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
 	}
@@ -173,7 +173,7 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
 	}
 
-	id, err := safecast.ToUint(parsedID)
+	id, err := safecast.Convert[uint](parsedID)
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
 	}
