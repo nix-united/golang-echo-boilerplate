@@ -24,14 +24,14 @@ func TestMain(m *testing.M) {
 
 	shutdown, err := setupMain(ctx)
 	if err != nil {
-		slog.ErrorContext(ctx, "Failed to setup integration tests", "err", err.Error())
+		slog.ErrorContext(ctx, "Failed to setup integration tests", "err", err)
 		os.Exit(1)
 	}
 
 	code := m.Run()
 
 	if err := shutdown(ctx); err != nil {
-		slog.ErrorContext(ctx, "Failed to shutdown integration tests", "err", err.Error())
+		slog.ErrorContext(ctx, "Failed to shutdown integration tests", "err", err)
 		os.Exit(1)
 	}
 
@@ -73,7 +73,14 @@ func setupMain(ctx context.Context) (_ func(context.Context) error, err error) {
 		}
 	}()
 
-	mysqlConfig, mysqlShutdown, err := setup.SetupMySQL(ctx)
+	network, networkShutdown, err := setup.SetupNetwork(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("setup network: %w", err)
+	}
+
+	shutdownCallbacks = append(shutdownCallbacks, networkShutdown)
+
+	mysqlConfig, mysqlShutdown, err := setup.SetupMySQL(ctx, []string{network})
 	if err != nil {
 		return nil, fmt.Errorf("setup mysql: %w", err)
 	}
