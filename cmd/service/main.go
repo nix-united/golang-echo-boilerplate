@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -9,12 +10,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/nix-united/golang-echo-boilerplate/docs"
 	"github.com/nix-united/golang-echo-boilerplate/internal/config"
 	"github.com/nix-united/golang-echo-boilerplate/internal/db"
 	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
+	"github.com/nix-united/golang-echo-boilerplate/internal/server/middleware"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/routes"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/auth"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/oauth"
@@ -26,7 +29,6 @@ import (
 	"github.com/caarlos0/env/v11"
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -55,7 +57,7 @@ func main() {
 }
 
 func run() error {
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load(); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("load env file: %w", err)
 	}
 
@@ -69,8 +71,6 @@ func run() error {
 	if err := slogx.Init(cfg.Logger); err != nil {
 		return fmt.Errorf("init logger: %w", err)
 	}
-
-	traceStarter := slogx.NewTraceStarter(uuid.NewV7)
 
 	gormDB, err := db.NewGormDB(cfg.DB)
 	if err != nil {
@@ -116,13 +116,14 @@ func run() error {
 
 	echoJWTMiddleware := echojwt.WithConfig(echoJWTConfig)
 
-	engine := echo.New()
-	err = routes.ConfigureRoutes(traceStarter, engine, routes.Handlers{
-		PostHandler:       postHandler,
-		AuthHandler:       authHandler,
-		OAuthHandler:      oAuthHandler,
-		RegisterHandler:   registerHandler,
-		EchoJWTMiddleware: echoJWTMiddleware,
+	engine := routes.ConfigureRoutes(routes.Handlers{
+		PostHandler:               postHandler,
+		AuthHandler:               authHandler,
+		OAuthHandler:              oAuthHandler,
+		RegisterHandler:           registerHandler,
+		EchoJWTMiddleware:         echoJWTMiddleware,
+		RequestLoggerMiddleware:   middleware.NewRequestLogger(slogx.NewTraceStarter(uuid.NewV7)),
+		RequestDebuggerMiddleware: middleware.NewRequestDebugger(),
 	})
 	if err != nil {
 		return fmt.Errorf("configure routes: %w", err)

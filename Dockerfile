@@ -7,6 +7,8 @@ ARG DB_CONNECTION
 # Git is required for fetching the dependencies.
 RUN apk update && apk add --no-cache git
 
+COPY . /app
+
 # Set the current working directory inside the container.
 WORKDIR /app
 
@@ -20,6 +22,6 @@ RUN chmod +x /wait
 CMD ["sh", "-c", "\
   swag init -g cmd/service/main.go && \
   /wait && \
-  go tool goose -dir './migrations' mysql ${DB_CONNECTION} up && \
+  go tool goose -dir './migrations' mysql \"${DB_USER}:${DB_PASSWORD}@tcp(${DB_HOST}:${DB_PORT})/${DB_NAME}\" up && \
   CompileDaemon --build='go build cmd/service/main.go' --command='./main' --color \
 "]
