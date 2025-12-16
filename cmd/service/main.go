@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/nix-united/golang-echo-boilerplate/docs"
 	"github.com/nix-united/golang-echo-boilerplate/internal/config"
 	"github.com/nix-united/golang-echo-boilerplate/internal/db"
@@ -27,7 +29,6 @@ import (
 	"github.com/caarlos0/env/v11"
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -56,7 +57,7 @@ func main() {
 }
 
 func run() error {
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load(); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("load env file: %w", err)
 	}
 
@@ -70,8 +71,6 @@ func run() error {
 	if err := slogx.Init(cfg.Logger); err != nil {
 		return fmt.Errorf("init logger: %w", err)
 	}
-
-	traceStarter := slogx.NewTraceStarter(uuid.NewV7)
 
 	gormDB, err := db.NewGormDB(cfg.DB)
 	if err != nil {
@@ -123,7 +122,7 @@ func run() error {
 		OAuthHandler:              oAuthHandler,
 		RegisterHandler:           registerHandler,
 		EchoJWTMiddleware:         echoJWTMiddleware,
-		RequestLoggerMiddleware:   middleware.NewRequestLogger(traceStarter),
+		RequestLoggerMiddleware:   middleware.NewRequestLogger(slogx.NewTraceStarter(uuid.NewV7)),
 		RequestDebuggerMiddleware: middleware.NewRequestDebugger(),
 	})
 	if err != nil {

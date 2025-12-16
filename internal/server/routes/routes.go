@@ -32,13 +32,13 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 		return c.NoContent(http.StatusOK)
 	})
 
-	api := engine.Group("/", handlers.RequestLoggerMiddleware)
+	api := engine.Group("", handlers.RequestLoggerMiddleware)
 
 	// Private API routes initialization.
 	//
 	// These endpoints are used primarily for authentication/authorization and may carry sensitive data.
 	// Do NOT log request or response bodies; doing so could expose client information.
-	privateAPI := api.Group("/")
+	privateAPI := api.Group("")
 
 	privateAPI.POST("/login", handlers.AuthHandler.Login)
 	privateAPI.POST("/register", handlers.RegisterHandler.Register)
@@ -49,7 +49,7 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 	//
 	// These endpoints implement the core application logic and require authentication
 	// before they can be accessed.
-	authorizedAPI := api.Group("/", handlers.RequestDebuggerMiddleware, handlers.EchoJWTMiddleware)
+	authorizedAPI := api.Group("", handlers.RequestDebuggerMiddleware, handlers.EchoJWTMiddleware)
 
 	authorizedAPI.POST("/posts", handlers.PostHandler.CreatePost)
 	authorizedAPI.GET("/posts", handlers.PostHandler.GetPosts)
