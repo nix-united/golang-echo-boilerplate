@@ -15,6 +15,7 @@ import (
 	"github.com/nix-united/golang-echo-boilerplate/internal/repositories"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/handlers"
+	"github.com/nix-united/golang-echo-boilerplate/internal/server/middleware"
 	"github.com/nix-united/golang-echo-boilerplate/internal/server/routes"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/auth"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/oauth"
@@ -116,13 +117,14 @@ func run() error {
 
 	echoJWTMiddleware := echojwt.WithConfig(echoJWTConfig)
 
-	engine := echo.New()
-	err = routes.ConfigureRoutes(traceStarter, engine, routes.Handlers{
-		PostHandler:       postHandler,
-		AuthHandler:       authHandler,
-		OAuthHandler:      oAuthHandler,
-		RegisterHandler:   registerHandler,
-		EchoJWTMiddleware: echoJWTMiddleware,
+	engine := routes.ConfigureRoutes(routes.Handlers{
+		PostHandler:               postHandler,
+		AuthHandler:               authHandler,
+		OAuthHandler:              oAuthHandler,
+		RegisterHandler:           registerHandler,
+		EchoJWTMiddleware:         echoJWTMiddleware,
+		RequestLoggerMiddleware:   middleware.NewRequestLogger(traceStarter),
+		RequestDebuggerMiddleware: middleware.NewRequestDebugger(),
 	})
 	if err != nil {
 		return fmt.Errorf("configure routes: %w", err)
