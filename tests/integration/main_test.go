@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"os"
 	"slices"
 	"testing"
@@ -17,7 +18,10 @@ import (
 	"gorm.io/gorm"
 )
 
-var gormDB *gorm.DB
+var (
+	gormDB         *gorm.DB
+	applicationURL *url.URL
+)
 
 func TestMain(m *testing.M) {
 	ctx := context.Background()
@@ -114,6 +118,15 @@ func setupMain(ctx context.Context) (_ func(context.Context) error, err error) {
 
 		return nil
 	})
+
+	applicationConfig, shutdownApplication, err := setup.SetupApplication(ctx, []string{network}, mysqlConfig)
+	if err != nil {
+		return nil, fmt.Errorf("setup application: %w", err)
+	}
+
+	shutdownCallbacks = append(shutdownCallbacks, shutdownApplication)
+
+	applicationURL = applicationConfig.URL
 
 	return shutdown, nil
 }
