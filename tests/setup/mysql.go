@@ -12,24 +12,28 @@ import (
 )
 
 const (
-	mysqlImage    = "mysql:9.3.0"
-	mysqlDatabase = "db_name"
-	mysqlUsername = "username"
-	mysqlPassword = "password"
-	mysqlPort     = "3306"
-	mysqlHost     = "localhost"
+	mysqlImage         = "mysql:9.3.0"
+	mysqlDatabase      = "db_name"
+	mysqlUsername      = "username"
+	mysqlPassword      = "password"
+	mysqlPort          = "3306"
+	mysqlHost          = "localhost"
+	mysqlContainerName = "golang_echo_boilerplate_mysql_db"
 )
 
 type MySQLConfig struct {
-	User        string
-	Password    string
-	Host        string
-	ExposedPort string
-	LocalPort   string
-	Name        string
+	User          string
+	Password      string
+	Host          string
+	ExposedPort   string
+	LocalPort     string
+	Name          string
+	ContainerName string
 }
 
-func SetupMySQL(ctx context.Context) (_ MySQLConfig, _ func(ctx context.Context) error, err error) {
+func SetupMySQL(ctx context.Context, networks []string) (MySQLConfig, func(ctx context.Context) error, error) {
+	containerLogsConsumer := newContainerLogsConsumer(mysqlContainerName)
+
 	container, err := mysql.Run(
 		ctx,
 		mysqlImage,
@@ -38,13 +42,21 @@ func SetupMySQL(ctx context.Context) (_ MySQLConfig, _ func(ctx context.Context)
 		mysql.WithPassword(mysqlPassword),
 		testcontainers.WithWaitStrategyAndDeadline(
 			time.Minute,
-			wait.ForLog(fmt.Sprintf(
-				"/usr/sbin/mysqld: ready for connections. Version: '9.3.0'  socket: '/var/run/mysqld/mysqld.sock'  port: %s  MySQL Community Server - GPL.",
-				mysqlPort,
-			)),
+			wait.ForLog("X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /var/run/mysqld/mysqlx.sock"),
 		),
+		testcontainers.CustomizeRequest(testcontainers.GenericContainerRequest{
+			ContainerRequest: testcontainers.ContainerRequest{
+				Name:     mysqlContainerName,
+				Networks: networks,
+				LogConsumerCfg: &testcontainers.LogConsumerConfig{
+					Consumers: []testcontainers.LogConsumer{containerLogsConsumer},
+				},
+			},
+		}),
 	)
 	if err != nil {
+		// Print logs for container bootstrap failures, such as condition wait timeouts.
+		containerLogsConsumer.Print()
 		return MySQLConfig{}, nil, fmt.Errorf("run mysql container: %w", err)
 	}
 
@@ -53,9 +65,13 @@ func SetupMySQL(ctx context.Context) (_ MySQLConfig, _ func(ctx context.Context)
 			return fmt.Errorf("terminate mysql container: %w", err)
 		}
 
+		// Print container logs after tests complete during shutdown.
+		containerLogsConsumer.Print()
+
 		return nil
 	}
 
+	// This defer function exists to shutdown the container if any error occurs in next steps.
 	defer func() {
 		if err == nil {
 			return
@@ -72,12 +88,13 @@ func SetupMySQL(ctx context.Context) (_ MySQLConfig, _ func(ctx context.Context)
 	}
 
 	config := MySQLConfig{
-		User:        mysqlUsername,
-		Password:    mysqlPassword,
-		Host:        mysqlHost,
-		ExposedPort: port.Port(),
-		LocalPort:   mysqlPort,
-		Name:        mysqlDatabase,
+		User:          mysqlUsername,
+		Password:      mysqlPassword,
+		Host:          mysqlHost,
+		ExposedPort:   port.Port(),
+		LocalPort:     mysqlPort,
+		Name:          mysqlDatabase,
+		ContainerName: mysqlContainerName,
 	}
 
 	return config, shutdown, nil
