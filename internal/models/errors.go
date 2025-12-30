@@ -8,4 +8,6 @@ var (
 	ErrInvalidAuthToken = errors.New("invalid authorization jwt token")
 
 	ErrPostNotFound = errors.New("post not found")
+
+	ErrForbidden = errors.New("operation forbidden")
 )

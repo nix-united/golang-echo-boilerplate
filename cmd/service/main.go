@@ -28,10 +28,7 @@ import (
 
 	"github.com/caarlos0/env/v11"
 	"github.com/coreos/go-oidc/v3/oidc"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
-	echojwt "github.com/labstack/echo-jwt/v4"
-	"github.com/labstack/echo/v4"
 )
 
 const shutdownTimeout = 20 * time.Second
@@ -106,24 +103,18 @@ func run() error {
 	oAuthHandler := handlers.NewOAuthHandler(oAuthService)
 	registerHandler := handlers.NewRegisterHandler(userService)
 
-	// Configure middleware with the custom claims type
-	echoJWTConfig := echojwt.Config{
-		NewClaimsFunc: func(echo.Context) jwt.Claims {
-			return new(token.JwtCustomClaims)
-		},
-		SigningKey: []byte(cfg.Auth.AccessSecret),
-	}
-
-	echoJWTMiddleware := echojwt.WithConfig(echoJWTConfig)
+	authMiddleware := middleware.NewAuthMiddleware(cfg.Auth.AccessSecret)
+	reguestLoggerMiddleware := middleware.NewRequestLogger(slogx.NewTraceStarter(uuid.NewV7))
+	requestDebuggerMiddleware := middleware.NewRequestDebugger()
 
 	engine := routes.ConfigureRoutes(routes.Handlers{
 		PostHandler:               postHandler,
 		AuthHandler:               authHandler,
 		OAuthHandler:              oAuthHandler,
 		RegisterHandler:           registerHandler,
-		EchoJWTMiddleware:         echoJWTMiddleware,
-		RequestLoggerMiddleware:   middleware.NewRequestLogger(slogx.NewTraceStarter(uuid.NewV7)),
-		RequestDebuggerMiddleware: middleware.NewRequestDebugger(),
+		AuthMiddleware:            authMiddleware,
+		RequestLoggerMiddleware:   reguestLoggerMiddleware,
+		RequestDebuggerMiddleware: requestDebuggerMiddleware,
 	})
 	if err != nil {
 		return fmt.Errorf("configure routes: %w", err)

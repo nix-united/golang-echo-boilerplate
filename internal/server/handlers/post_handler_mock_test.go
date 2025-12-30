@@ -13,8 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
+	domain "github.com/nix-united/golang-echo-boilerplate/internal/domain"
 	models "github.com/nix-united/golang-echo-boilerplate/internal/models"
-	requests "github.com/nix-united/golang-echo-boilerplate/internal/requests"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -80,40 +80,40 @@ func (c *MockpostServiceCreateCall) DoAndReturn(f func(context.Context, *models.
 	return c
 }
 
-// Delete mocks base method.
-func (m *MockpostService) Delete(ctx context.Context, post *models.Post) error {
+// DeleteByUser mocks base method.
+func (m *MockpostService) DeleteByUser(ctx context.Context, request domain.DeletePostRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, post)
+	ret := m.ctrl.Call(m, "DeleteByUser", ctx, request)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Delete indicates an expected call of Delete.
-func (mr *MockpostServiceMockRecorder) Delete(ctx, post any) *MockpostServiceDeleteCall {
+// DeleteByUser indicates an expected call of DeleteByUser.
+func (mr *MockpostServiceMockRecorder) DeleteByUser(ctx, request any) *MockpostServiceDeleteByUserCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockpostService)(nil).Delete), ctx, post)
-	return &MockpostServiceDeleteCall{Call: call}
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByUser", reflect.TypeOf((*MockpostService)(nil).DeleteByUser), ctx, request)
+	return &MockpostServiceDeleteByUserCall{Call: call}
 }
 
-// MockpostServiceDeleteCall wrap *gomock.Call
-type MockpostServiceDeleteCall struct {
+// MockpostServiceDeleteByUserCall wrap *gomock.Call
+type MockpostServiceDeleteByUserCall struct {
 	*gomock.Call
 }
 
 // Return rewrite *gomock.Call.Return
-func (c *MockpostServiceDeleteCall) Return(arg0 error) *MockpostServiceDeleteCall {
+func (c *MockpostServiceDeleteByUserCall) Return(arg0 error) *MockpostServiceDeleteByUserCall {
 	c.Call = c.Call.Return(arg0)
 	return c
 }
 
 // Do rewrite *gomock.Call.Do
-func (c *MockpostServiceDeleteCall) Do(f func(context.Context, *models.Post) error) *MockpostServiceDeleteCall {
+func (c *MockpostServiceDeleteByUserCall) Do(f func(context.Context, domain.DeletePostRequest) error) *MockpostServiceDeleteByUserCall {
 	c.Call = c.Call.Do(f)
 	return c
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MockpostServiceDeleteCall) DoAndReturn(f func(context.Context, *models.Post) error) *MockpostServiceDeleteCall {
+func (c *MockpostServiceDeleteByUserCall) DoAndReturn(f func(context.Context, domain.DeletePostRequest) error) *MockpostServiceDeleteByUserCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }
@@ -196,40 +196,41 @@ func (c *MockpostServiceGetPostsCall) DoAndReturn(f func(context.Context) ([]mod
 	return c
 }
 
-// Update mocks base method.
-func (m *MockpostService) Update(ctx context.Context, post *models.Post, updatePostRequest requests.UpdatePostRequest) error {
+// UpdateByUser mocks base method.
+func (m *MockpostService) UpdateByUser(ctx context.Context, request domain.UpdatePostRequest) (*models.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, post, updatePostRequest)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "UpdateByUser", ctx, request)
+	ret0, _ := ret[0].(*models.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// Update indicates an expected call of Update.
-func (mr *MockpostServiceMockRecorder) Update(ctx, post, updatePostRequest any) *MockpostServiceUpdateCall {
+// UpdateByUser indicates an expected call of UpdateByUser.
+func (mr *MockpostServiceMockRecorder) UpdateByUser(ctx, request any) *MockpostServiceUpdateByUserCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockpostService)(nil).Update), ctx, post, updatePostRequest)
-	return &MockpostServiceUpdateCall{Call: call}
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateByUser", reflect.TypeOf((*MockpostService)(nil).UpdateByUser), ctx, request)
+	return &MockpostServiceUpdateByUserCall{Call: call}
 }
 
-// MockpostServiceUpdateCall wrap *gomock.Call
-type MockpostServiceUpdateCall struct {
+// MockpostServiceUpdateByUserCall wrap *gomock.Call
+type MockpostServiceUpdateByUserCall struct {
 	*gomock.Call
 }
 
 // Return rewrite *gomock.Call.Return
-func (c *MockpostServiceUpdateCall) Return(arg0 error) *MockpostServiceUpdateCall {
-	c.Call = c.Call.Return(arg0)
+func (c *MockpostServiceUpdateByUserCall) Return(arg0 *models.Post, arg1 error) *MockpostServiceUpdateByUserCall {
+	c.Call = c.Call.Return(arg0, arg1)
 	return c
 }
 
 // Do rewrite *gomock.Call.Do
-func (c *MockpostServiceUpdateCall) Do(f func(context.Context, *models.Post, requests.UpdatePostRequest) error) *MockpostServiceUpdateCall {
+func (c *MockpostServiceUpdateByUserCall) Do(f func(context.Context, domain.UpdatePostRequest) (*models.Post, error)) *MockpostServiceUpdateByUserCall {
 	c.Call = c.Call.Do(f)
 	return c
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MockpostServiceUpdateCall) DoAndReturn(f func(context.Context, *models.Post, requests.UpdatePostRequest) error) *MockpostServiceUpdateCall {
+func (c *MockpostServiceUpdateByUserCall) DoAndReturn(f func(context.Context, domain.UpdatePostRequest) (*models.Post, error)) *MockpostServiceUpdateByUserCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }

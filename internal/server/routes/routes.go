@@ -15,7 +15,7 @@ type Handlers struct {
 	OAuthHandler    *handlers.OAuthHandler
 	RegisterHandler *handlers.RegisterHandler
 
-	EchoJWTMiddleware         echo.MiddlewareFunc
+	AuthMiddleware            echo.MiddlewareFunc
 	RequestLoggerMiddleware   echo.MiddlewareFunc
 	RequestDebuggerMiddleware echo.MiddlewareFunc
 }
@@ -49,7 +49,7 @@ func ConfigureRoutes(handlers Handlers) *echo.Echo {
 	//
 	// These endpoints implement the core application logic and require authentication
 	// before they can be accessed.
-	authorizedAPI := api.Group("", handlers.RequestDebuggerMiddleware, handlers.EchoJWTMiddleware)
+	authorizedAPI := api.Group("", handlers.RequestDebuggerMiddleware, handlers.AuthMiddleware)
 
 	authorizedAPI.POST("/posts", handlers.PostHandler.CreatePost)
 	authorizedAPI.GET("/posts", handlers.PostHandler.GetPosts)
