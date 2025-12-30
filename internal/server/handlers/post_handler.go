@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/nix-united/golang-echo-boilerplate/internal/domain"
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
 	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 	"github.com/nix-united/golang-echo-boilerplate/internal/responses"
@@ -20,7 +21,7 @@ type postService interface {
 	Create(ctx context.Context, post *models.Post) error
 	GetPosts(ctx context.Context) ([]models.Post, error)
 	GetPost(ctx context.Context, id uint) (models.Post, error)
-	Update(ctx context.Context, post *models.Post, updatePostRequest requests.UpdatePostRequest) error
+	UpdateByUser(ctx context.Context, request domain.UpdatePostRequest) (*models.Post, error)
 	Delete(ctx context.Context, post *models.Post) error
 }
 
@@ -114,12 +115,12 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusUnauthorized, "Unauthorized")
 	}
 
-	parsedID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	parsedPostID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
 	}
 
-	id, err := safecast.Convert[uint](parsedID)
+	postID, err := safecast.Convert[uint](parsedPostID)
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
 	}
@@ -133,19 +134,22 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty")
 	}
 
-	post, err := p.postService.GetPost(c.Request().Context(), id)
-	if errors.Is(err, models.ErrPostNotFound) {
-		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
-	} else if err != nil {
-		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to find post: "+err.Error())
-	}
+	_, err = p.postService.UpdateByUser(c.Request().Context(), domain.UpdatePostRequest{
+		UserID:  auth.ID,
+		PostID:  postID,
+		Title:   updatePostRequest.Title,
+		Content: updatePostRequest.Content,
+	})
+	if err != nil {
+		switch {
+		case errors.Is(err, models.ErrPostNotFound):
+			return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
+		case errors.Is(err, models.ErrForbidden):
+			return responses.ErrorResponse(c, http.StatusForbidden, "Forbidden")
+		default:
+			return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to update post: "+err.Error())
 
-	if post.UserID != auth.ID {
-		return responses.ErrorResponse(c, http.StatusForbidden, "Forbidden")
-	}
-
-	if err := p.postService.Update(c.Request().Context(), &post, updatePostRequest); err != nil {
-		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to update post: "+err.Error())
+		}
 	}
 
 	return responses.MessageResponse(c, http.StatusOK, "Post successfully updated")

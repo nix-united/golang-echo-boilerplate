@@ -13,8 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
+	domain "github.com/nix-united/golang-echo-boilerplate/internal/domain"
 	models "github.com/nix-united/golang-echo-boilerplate/internal/models"
-	requests "github.com/nix-united/golang-echo-boilerplate/internal/requests"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -196,40 +196,41 @@ func (c *MockpostServiceGetPostsCall) DoAndReturn(f func(context.Context) ([]mod
 	return c
 }
 
-// Update mocks base method.
-func (m *MockpostService) Update(ctx context.Context, post *models.Post, updatePostRequest requests.UpdatePostRequest) error {
+// UpdateByUser mocks base method.
+func (m *MockpostService) UpdateByUser(ctx context.Context, request domain.UpdatePostRequest) (*models.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, post, updatePostRequest)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "UpdateByUser", ctx, request)
+	ret0, _ := ret[0].(*models.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// Update indicates an expected call of Update.
-func (mr *MockpostServiceMockRecorder) Update(ctx, post, updatePostRequest any) *MockpostServiceUpdateCall {
+// UpdateByUser indicates an expected call of UpdateByUser.
+func (mr *MockpostServiceMockRecorder) UpdateByUser(ctx, request any) *MockpostServiceUpdateByUserCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockpostService)(nil).Update), ctx, post, updatePostRequest)
-	return &MockpostServiceUpdateCall{Call: call}
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateByUser", reflect.TypeOf((*MockpostService)(nil).UpdateByUser), ctx, request)
+	return &MockpostServiceUpdateByUserCall{Call: call}
 }
 
-// MockpostServiceUpdateCall wrap *gomock.Call
-type MockpostServiceUpdateCall struct {
+// MockpostServiceUpdateByUserCall wrap *gomock.Call
+type MockpostServiceUpdateByUserCall struct {
 	*gomock.Call
 }
 
 // Return rewrite *gomock.Call.Return
-func (c *MockpostServiceUpdateCall) Return(arg0 error) *MockpostServiceUpdateCall {
-	c.Call = c.Call.Return(arg0)
+func (c *MockpostServiceUpdateByUserCall) Return(arg0 *models.Post, arg1 error) *MockpostServiceUpdateByUserCall {
+	c.Call = c.Call.Return(arg0, arg1)
 	return c
 }
 
 // Do rewrite *gomock.Call.Do
-func (c *MockpostServiceUpdateCall) Do(f func(context.Context, *models.Post, requests.UpdatePostRequest) error) *MockpostServiceUpdateCall {
+func (c *MockpostServiceUpdateByUserCall) Do(f func(context.Context, domain.UpdatePostRequest) (*models.Post, error)) *MockpostServiceUpdateByUserCall {
 	c.Call = c.Call.Do(f)
 	return c
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MockpostServiceUpdateCall) DoAndReturn(f func(context.Context, *models.Post, requests.UpdatePostRequest) error) *MockpostServiceUpdateCall {
+func (c *MockpostServiceUpdateByUserCall) DoAndReturn(f func(context.Context, domain.UpdatePostRequest) (*models.Post, error)) *MockpostServiceUpdateByUserCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }
