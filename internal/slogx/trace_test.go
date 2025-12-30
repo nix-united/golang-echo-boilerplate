@@ -13,8 +13,8 @@ import (
 )
 
 type testTrace struct {
-	Trace string `json:"trace"`
-	Index int64  `json:"index"`
+	TraceID string `json:"trace_id"`
+	SpanID  int64  `json:"span_id"`
 }
 
 type testLog struct {
@@ -50,16 +50,16 @@ func TestTrace(t *testing.T) {
 			Level: "INFO",
 			Msg:   "First message with context",
 			Trace: testTrace{
-				Trace: "11111111-1111-1111-1111-111111111111",
-				Index: 1,
+				TraceID: "11111111-1111-1111-1111-111111111111",
+				SpanID:  1,
 			},
 		},
 		{
 			Level: "INFO",
 			Msg:   "Second message with context",
 			Trace: testTrace{
-				Trace: "11111111-1111-1111-1111-111111111111",
-				Index: 2,
+				TraceID: "11111111-1111-1111-1111-111111111111",
+				SpanID:  2,
 			},
 		},
 		{
