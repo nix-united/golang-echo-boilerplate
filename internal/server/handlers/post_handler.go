@@ -22,7 +22,7 @@ type postService interface {
 	GetPosts(ctx context.Context) ([]models.Post, error)
 	GetPost(ctx context.Context, id uint) (models.Post, error)
 	UpdateByUser(ctx context.Context, request domain.UpdatePostRequest) (*models.Post, error)
-	Delete(ctx context.Context, post *models.Post) error
+	DeleteByUser(ctx context.Context, request domain.DeletePostRequest) error
 }
 
 type PostHandlers struct {
@@ -148,7 +148,6 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 			return responses.ErrorResponse(c, http.StatusForbidden, "Forbidden")
 		default:
 			return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to update post: "+err.Error())
-
 		}
 	}
 
@@ -177,24 +176,24 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
 	}
 
-	id, err := safecast.Convert[uint](parsedID)
+	postID, err := safecast.Convert[uint](parsedID)
 	if err != nil {
 		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
 	}
 
-	post, err := p.postService.GetPost(c.Request().Context(), id)
-	if errors.Is(err, models.ErrPostNotFound) {
-		return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
-	} else if err != nil {
-		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to find post: "+err.Error())
-	}
-
-	if post.UserID != auth.ID {
-		return responses.ErrorResponse(c, http.StatusForbidden, "Forbidden")
-	}
-
-	if err := p.postService.Delete(c.Request().Context(), &post); err != nil {
-		return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to delete post: "+err.Error())
+	err = p.postService.DeleteByUser(c.Request().Context(), domain.DeletePostRequest{
+		UserID: auth.ID,
+		PostID: postID,
+	})
+	if err != nil {
+		switch {
+		case errors.Is(err, models.ErrPostNotFound):
+			return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
+		case errors.Is(err, models.ErrForbidden):
+			return responses.ErrorResponse(c, http.StatusForbidden, "Forbidden")
+		default:
+			return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to delete post: "+err.Error())
+		}
 	}
 
 	return responses.MessageResponse(c, http.StatusNoContent, "Post deleted successfully")

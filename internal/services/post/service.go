@@ -52,11 +52,15 @@ func (s *Service) GetPost(ctx context.Context, id uint) (models.Post, error) {
 	return post, nil
 }
 
-// UpdateByUser checks if user has access to update a provided post and updates it.
+// UpdateByUser checks if user has rights to update a provided post and updates it.
 func (s *Service) UpdateByUser(ctx context.Context, request domain.UpdatePostRequest) (*models.Post, error) {
 	post, err := s.postRepository.GetPost(ctx, request.PostID)
 	if err != nil {
 		return nil, fmt.Errorf("get stored post from repository: %w", err)
+	}
+
+	if post.UserID != request.UserID {
+		return nil, models.ErrForbidden
 	}
 
 	post.Title = request.Title
@@ -69,8 +73,18 @@ func (s *Service) UpdateByUser(ctx context.Context, request domain.UpdatePostReq
 	return &post, nil
 }
 
-func (s *Service) Delete(ctx context.Context, post *models.Post) error {
-	if err := s.postRepository.Delete(ctx, post); err != nil {
+// DeleteByUser checks if user has rights to delete a post and deletes it.
+func (s *Service) DeleteByUser(ctx context.Context, request domain.DeletePostRequest) error {
+	post, err := s.postRepository.GetPost(ctx, request.PostID)
+	if err != nil {
+		return fmt.Errorf("get stored post from repository: %w", err)
+	}
+
+	if post.UserID != request.UserID {
+		return models.ErrForbidden
+	}
+
+	if err := s.postRepository.Delete(ctx, &post); err != nil {
 		return fmt.Errorf("delete post in repository: %w", err)
 	}
 

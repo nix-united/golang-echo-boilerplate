@@ -119,8 +119,9 @@ func TestService_UpdateByUser(t *testing.T) {
 	assert.Equal(t, wantPost, newPost)
 }
 
-func TestService_Delete(t *testing.T) {
+func TestService_DeleteByUser(t *testing.T) {
 	wantPost := &models.Post{
+		Model:   gorm.Model{ID: 222},
 		Title:   "new title",
 		Content: "new content",
 		UserID:  111,
@@ -132,9 +133,17 @@ func TestService_Delete(t *testing.T) {
 
 	postRepository.
 		EXPECT().
+		GetPost(gomock.Any(), wantPost.ID).
+		Return(*wantPost, nil)
+
+	postRepository.
+		EXPECT().
 		Delete(gomock.Any(), wantPost).
 		Return(nil)
 
-	err := postService.Delete(t.Context(), wantPost)
+	err := postService.DeleteByUser(t.Context(), domain.DeletePostRequest{
+		UserID: wantPost.UserID,
+		PostID: wantPost.ID,
+	})
 	require.NoError(t, err)
 }

@@ -326,15 +326,6 @@ func TestPostHandler_DeletePost(t *testing.T) {
 		UserID:  postOwnerID,
 	}
 
-	postWithDifferentUser := models.Post{
-		Model: gorm.Model{
-			ID: 100,
-		},
-		Title:   "post-title",
-		Content: "post-content",
-		UserID:  201,
-	}
-
 	testCases := map[string]struct {
 		setExpectations func(postService *MockpostService)
 		wantStatus      int
@@ -344,8 +335,11 @@ func TestPostHandler_DeletePost(t *testing.T) {
 			setExpectations: func(postService *MockpostService) {
 				postService.
 					EXPECT().
-					GetPost(gomock.Any(), post.ID).
-					Return(models.Post{}, models.ErrPostNotFound)
+					DeleteByUser(gomock.Any(), domain.DeletePostRequest{
+						UserID: postOwnerID,
+						PostID: post.ID,
+					}).
+					Return(models.ErrPostNotFound)
 			},
 			wantStatus: http.StatusNotFound,
 			wantResponse: responses.Error{
@@ -357,8 +351,11 @@ func TestPostHandler_DeletePost(t *testing.T) {
 			setExpectations: func(postService *MockpostService) {
 				postService.
 					EXPECT().
-					GetPost(gomock.Any(), post.ID).
-					Return(postWithDifferentUser, nil)
+					DeleteByUser(gomock.Any(), domain.DeletePostRequest{
+						UserID: postOwnerID,
+						PostID: post.ID,
+					}).
+					Return(models.ErrForbidden)
 			},
 			wantStatus: http.StatusForbidden,
 			wantResponse: responses.Error{
@@ -370,12 +367,10 @@ func TestPostHandler_DeletePost(t *testing.T) {
 			setExpectations: func(postService *MockpostService) {
 				postService.
 					EXPECT().
-					GetPost(gomock.Any(), post.ID).
-					Return(post, nil)
-
-				postService.
-					EXPECT().
-					Delete(gomock.Any(), &post).
+					DeleteByUser(gomock.Any(), domain.DeletePostRequest{
+						UserID: postOwnerID,
+						PostID: post.ID,
+					}).
 					Return(nil)
 			},
 			wantStatus: http.StatusNoContent,
