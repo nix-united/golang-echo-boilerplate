@@ -16,11 +16,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func newOAuthHandler(t *testing.T) (*echo.Echo, *handlers.OAuthHandler, *MockUserAuthenticator) {
+func newOAuthHandler(t *testing.T) (*echo.Echo, *handlers.OAuthHandler, *MockuserAuthenticator) {
 	t.Helper()
 
 	ctrl := gomock.NewController(t)
-	userAuthenticator := NewMockUserAuthenticator(ctrl)
+	userAuthenticator := NewMockuserAuthenticator(ctrl)
 	oAuthHandler := handlers.NewOAuthHandler(userAuthenticator)
 	engine := echo.New()
 

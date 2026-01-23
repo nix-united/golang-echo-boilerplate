@@ -16,32 +16,32 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockUserAuthenticator is a mock of UserAuthenticator interface.
-type MockUserAuthenticator struct {
+// MockuserAuthenticator is a mock of userAuthenticator interface.
+type MockuserAuthenticator struct {
 	ctrl     *gomock.Controller
-	recorder *MockUserAuthenticatorMockRecorder
+	recorder *MockuserAuthenticatorMockRecorder
 	isgomock struct{}
 }
 
-// MockUserAuthenticatorMockRecorder is the mock recorder for MockUserAuthenticator.
-type MockUserAuthenticatorMockRecorder struct {
-	mock *MockUserAuthenticator
+// MockuserAuthenticatorMockRecorder is the mock recorder for MockuserAuthenticator.
+type MockuserAuthenticatorMockRecorder struct {
+	mock *MockuserAuthenticator
 }
 
-// NewMockUserAuthenticator creates a new mock instance.
-func NewMockUserAuthenticator(ctrl *gomock.Controller) *MockUserAuthenticator {
-	mock := &MockUserAuthenticator{ctrl: ctrl}
-	mock.recorder = &MockUserAuthenticatorMockRecorder{mock}
+// NewMockuserAuthenticator creates a new mock instance.
+func NewMockuserAuthenticator(ctrl *gomock.Controller) *MockuserAuthenticator {
+	mock := &MockuserAuthenticator{ctrl: ctrl}
+	mock.recorder = &MockuserAuthenticatorMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockUserAuthenticator) EXPECT() *MockUserAuthenticatorMockRecorder {
+func (m *MockuserAuthenticator) EXPECT() *MockuserAuthenticatorMockRecorder {
 	return m.recorder
 }
 
 // GoogleOAuth mocks base method.
-func (m *MockUserAuthenticator) GoogleOAuth(ctx context.Context, token string) (string, string, int64, error) {
+func (m *MockuserAuthenticator) GoogleOAuth(ctx context.Context, token string) (string, string, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GoogleOAuth", ctx, token)
 	ret0, _ := ret[0].(string)
@@ -52,31 +52,31 @@ func (m *MockUserAuthenticator) GoogleOAuth(ctx context.Context, token string) (
 }
 
 // GoogleOAuth indicates an expected call of GoogleOAuth.
-func (mr *MockUserAuthenticatorMockRecorder) GoogleOAuth(ctx, token any) *MockUserAuthenticatorGoogleOAuthCall {
+func (mr *MockuserAuthenticatorMockRecorder) GoogleOAuth(ctx, token any) *MockuserAuthenticatorGoogleOAuthCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GoogleOAuth", reflect.TypeOf((*MockUserAuthenticator)(nil).GoogleOAuth), ctx, token)
-	return &MockUserAuthenticatorGoogleOAuthCall{Call: call}
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GoogleOAuth", reflect.TypeOf((*MockuserAuthenticator)(nil).GoogleOAuth), ctx, token)
+	return &MockuserAuthenticatorGoogleOAuthCall{Call: call}
 }
 
-// MockUserAuthenticatorGoogleOAuthCall wrap *gomock.Call
-type MockUserAuthenticatorGoogleOAuthCall struct {
+// MockuserAuthenticatorGoogleOAuthCall wrap *gomock.Call
+type MockuserAuthenticatorGoogleOAuthCall struct {
 	*gomock.Call
 }
 
 // Return rewrite *gomock.Call.Return
-func (c *MockUserAuthenticatorGoogleOAuthCall) Return(arg0, arg1 string, arg2 int64, arg3 error) *MockUserAuthenticatorGoogleOAuthCall {
-	c.Call = c.Call.Return(arg0, arg1, arg2, arg3)
+func (c *MockuserAuthenticatorGoogleOAuthCall) Return(accessToken, refreshToken string, exp int64, err error) *MockuserAuthenticatorGoogleOAuthCall {
+	c.Call = c.Call.Return(accessToken, refreshToken, exp, err)
 	return c
 }
 
 // Do rewrite *gomock.Call.Do
-func (c *MockUserAuthenticatorGoogleOAuthCall) Do(f func(context.Context, string) (string, string, int64, error)) *MockUserAuthenticatorGoogleOAuthCall {
+func (c *MockuserAuthenticatorGoogleOAuthCall) Do(f func(context.Context, string) (string, string, int64, error)) *MockuserAuthenticatorGoogleOAuthCall {
 	c.Call = c.Call.Do(f)
 	return c
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MockUserAuthenticatorGoogleOAuthCall) DoAndReturn(f func(context.Context, string) (string, string, int64, error)) *MockUserAuthenticatorGoogleOAuthCall {
+func (c *MockuserAuthenticatorGoogleOAuthCall) DoAndReturn(f func(context.Context, string) (string, string, int64, error)) *MockuserAuthenticatorGoogleOAuthCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }

@@ -10,8 +10,15 @@ import (
 )
 
 type trace struct {
-	trace string
-	index *atomic.Int64
+	// traceID represents a common UUID that share logs during request processing.
+	traceID string
+
+	// spanID represents a number of a log within a span.
+	spanID *atomic.Int64
+
+	// baggage represents an additional information that log messages shares.
+	// For example, it could be a user ID.
+	baggage map[string]any
 }
 
 type TraceStarter struct {
@@ -28,7 +35,11 @@ func (s *TraceStarter) Start(ctx context.Context) (context.Context, error) {
 		return nil, fmt.Errorf("new trace id: %w", err)
 	}
 
-	return withTrace(ctx, trace{trace: traceID.String(), index: &atomic.Int64{}}), nil
+	return contextWithTrace(ctx, trace{
+		traceID: traceID.String(),
+		spanID:  &atomic.Int64{},
+		baggage: make(map[string]any),
+	}), nil
 }
 
 var _ slog.Handler = (*traceHandler)(nil)
@@ -73,20 +84,42 @@ func (h *traceHandler) addAttrs(ctx context.Context, record slog.Record) slog.Re
 		return record
 	}
 
-	record.AddAttrs(slog.Group("trace", slog.String("trace", t.trace), slog.Int64("index", t.index.Add(1))))
+	attrs := []any{
+		slog.String("trace_id", t.traceID),
+		slog.Int64("span_id", t.spanID.Add(1)),
+	}
+
+	for key, value := range t.baggage {
+		attrs = append(attrs, slog.Any(key, value))
+	}
+
+	record.AddAttrs(slog.Group("trace", attrs...))
 
 	return record
 }
 
-type traceKeyType int8
+type traceKey struct{}
 
-var traceKey traceKeyType = 1
-
-func withTrace(ctx context.Context, trace trace) context.Context {
-	return context.WithValue(ctx, traceKey, trace)
+func contextWithTrace(ctx context.Context, trace trace) context.Context {
+	return context.WithValue(ctx, traceKey{}, trace)
 }
 
 func traceFromContext(ctx context.Context) (trace, bool) {
-	trace, ok := ctx.Value(traceKey).(trace)
+	trace, ok := ctx.Value(traceKey{}).(trace)
 	return trace, ok
+}
+
+// ContextWithBaggage appends [key] field with [value] to all log messages.
+func ContextWithBaggage(ctx context.Context, key string, value any) context.Context {
+	t, ok := traceFromContext(ctx)
+	if !ok {
+		return ctx
+	}
+	t.baggage[key] = value
+	return contextWithTrace(ctx, t)
+}
+
+// ContextWithUserID appends user_id field to all log messages.
+func ContextWithUserID(ctx context.Context, userID uint) context.Context {
+	return ContextWithBaggage(ctx, "user_id", userID)
 }

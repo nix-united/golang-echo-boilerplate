@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/nix-united/golang-echo-boilerplate/internal/domain"
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
-	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 )
 
 //go:generate go tool mockgen -source=$GOFILE -destination=service_mock_test.go -package=${GOPACKAGE}_test -typed=true
@@ -52,19 +52,39 @@ func (s *Service) GetPost(ctx context.Context, id uint) (models.Post, error) {
 	return post, nil
 }
 
-func (s *Service) Update(ctx context.Context, post *models.Post, updatePostRequest requests.UpdatePostRequest) error {
-	post.Content = updatePostRequest.Content
-	post.Title = updatePostRequest.Title
-
-	if err := s.postRepository.Update(ctx, post); err != nil {
-		return fmt.Errorf("update post in repository: %w", err)
+// UpdateByUser checks if user has rights to update a provided post and updates it.
+func (s *Service) UpdateByUser(ctx context.Context, request domain.UpdatePostRequest) (*models.Post, error) {
+	post, err := s.postRepository.GetPost(ctx, request.PostID)
+	if err != nil {
+		return nil, fmt.Errorf("get stored post from repository: %w", err)
 	}
 
-	return nil
+	if post.UserID != request.UserID {
+		return nil, models.ErrForbidden
+	}
+
+	post.Title = request.Title
+	post.Content = request.Content
+
+	if err := s.postRepository.Update(ctx, &post); err != nil {
+		return nil, fmt.Errorf("update post in repository: %w", err)
+	}
+
+	return &post, nil
 }
 
-func (s *Service) Delete(ctx context.Context, post *models.Post) error {
-	if err := s.postRepository.Delete(ctx, post); err != nil {
+// DeleteByUser checks if user has rights to delete a post and deletes it.
+func (s *Service) DeleteByUser(ctx context.Context, request domain.DeletePostRequest) error {
+	post, err := s.postRepository.GetPost(ctx, request.PostID)
+	if err != nil {
+		return fmt.Errorf("get stored post from repository: %w", err)
+	}
+
+	if post.UserID != request.UserID {
+		return models.ErrForbidden
+	}
+
+	if err := s.postRepository.Delete(ctx, &post); err != nil {
 		return fmt.Errorf("delete post in repository: %w", err)
 	}
 

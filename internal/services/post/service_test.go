@@ -3,9 +3,10 @@ package post_test
 import (
 	"testing"
 
+	"github.com/nix-united/golang-echo-boilerplate/internal/domain"
 	"github.com/nix-united/golang-echo-boilerplate/internal/models"
-	"github.com/nix-united/golang-echo-boilerplate/internal/requests"
 	"github.com/nix-united/golang-echo-boilerplate/internal/services/post"
+	"gorm.io/gorm"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -76,41 +77,51 @@ func TestService_GetPost(t *testing.T) {
 	assert.Equal(t, wantPost, gotPost)
 }
 
-func TestService_Update(t *testing.T) {
-	oldPost := &models.Post{
+func TestService_UpdateByUser(t *testing.T) {
+	oldPost := models.Post{
+		Model:   gorm.Model{ID: 222},
 		Title:   "title",
 		Content: "conent",
 		UserID:  111,
 	}
 
 	wantPost := &models.Post{
+		Model:   gorm.Model{ID: 222},
 		Title:   "new title",
 		Content: "new content",
 		UserID:  111,
 	}
 
-	request := requests.UpdatePostRequest{
-		BasicPost: requests.BasicPost{
-			Title:   "new title",
-			Content: "new content",
-		},
+	request := domain.UpdatePostRequest{
+		UserID:  111,
+		PostID:  222,
+		Title:   "new title",
+		Content: "new content",
 	}
 
 	ctrl := gomock.NewController(t)
 	postRepository := NewMockpostRepository(ctrl)
 	postService := post.NewService(postRepository)
+
+	postRepository.
+		EXPECT().
+		GetPost(gomock.Any(), request.PostID).
+		Return(oldPost, nil)
 
 	postRepository.
 		EXPECT().
 		Update(gomock.Any(), wantPost).
 		Return(nil)
 
-	err := postService.Update(t.Context(), oldPost, request)
+	newPost, err := postService.UpdateByUser(t.Context(), request)
 	require.NoError(t, err)
+
+	assert.Equal(t, wantPost, newPost)
 }
 
-func TestService_Delete(t *testing.T) {
+func TestService_DeleteByUser(t *testing.T) {
 	wantPost := &models.Post{
+		Model:   gorm.Model{ID: 222},
 		Title:   "new title",
 		Content: "new content",
 		UserID:  111,
@@ -122,9 +133,17 @@ func TestService_Delete(t *testing.T) {
 
 	postRepository.
 		EXPECT().
+		GetPost(gomock.Any(), wantPost.ID).
+		Return(*wantPost, nil)
+
+	postRepository.
+		EXPECT().
 		Delete(gomock.Any(), wantPost).
 		Return(nil)
 
-	err := postService.Delete(t.Context(), wantPost)
+	err := postService.DeleteByUser(t.Context(), domain.DeletePostRequest{
+		UserID: wantPost.UserID,
+		PostID: wantPost.ID,
+	})
 	require.NoError(t, err)
 }
