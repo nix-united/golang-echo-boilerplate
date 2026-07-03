@@ -72,7 +72,7 @@ func TestPostHandler_CreatePost(t *testing.T) {
 			setExpectations: func(postService *MockpostService) {},
 			request:         invalidRequest,
 			wantStatus:      http.StatusBadRequest,
-			wantResponse: responses.Error{
+			wantResponse: responses.ErrorResponse{
 				Code:  http.StatusBadRequest,
 				Error: "Required fields are empty",
 			},
@@ -90,8 +90,7 @@ func TestPostHandler_CreatePost(t *testing.T) {
 			},
 			request:    request,
 			wantStatus: http.StatusCreated,
-			wantResponse: responses.Data{
-				Code:    http.StatusCreated,
+			wantResponse: responses.MessageResponse{
 				Message: "Post successfully created",
 			},
 		},
@@ -231,7 +230,7 @@ func TestPostHandler_UpdatePost(t *testing.T) {
 					Return(nil, models.ErrPostNotFound)
 			},
 			wantStatus: http.StatusNotFound,
-			wantResponse: responses.Error{
+			wantResponse: responses.ErrorResponse{
 				Code:  http.StatusNotFound,
 				Error: "Post not found",
 			},
@@ -249,7 +248,7 @@ func TestPostHandler_UpdatePost(t *testing.T) {
 					Return(nil, models.ErrForbidden)
 			},
 			wantStatus: http.StatusForbidden,
-			wantResponse: responses.Error{
+			wantResponse: responses.ErrorResponse{
 				Code:  http.StatusForbidden,
 				Error: "Forbidden",
 			},
@@ -267,8 +266,7 @@ func TestPostHandler_UpdatePost(t *testing.T) {
 					Return(&post, nil)
 			},
 			wantStatus: http.StatusOK,
-			wantResponse: responses.Data{
-				Code:    http.StatusOK,
+			wantResponse: responses.MessageResponse{
 				Message: "Post successfully updated",
 			},
 		},
@@ -342,7 +340,7 @@ func TestPostHandler_DeletePost(t *testing.T) {
 					Return(models.ErrPostNotFound)
 			},
 			wantStatus: http.StatusNotFound,
-			wantResponse: responses.Error{
+			wantResponse: responses.ErrorResponse{
 				Code:  http.StatusNotFound,
 				Error: "Post not found",
 			},
@@ -358,7 +356,7 @@ func TestPostHandler_DeletePost(t *testing.T) {
 					Return(models.ErrForbidden)
 			},
 			wantStatus: http.StatusForbidden,
-			wantResponse: responses.Error{
+			wantResponse: responses.ErrorResponse{
 				Code:  http.StatusForbidden,
 				Error: "Forbidden",
 			},
@@ -373,11 +371,8 @@ func TestPostHandler_DeletePost(t *testing.T) {
 					}).
 					Return(nil)
 			},
-			wantStatus: http.StatusNoContent,
-			wantResponse: responses.Data{
-				Code:    http.StatusNoContent,
-				Message: "Post deleted successfully",
-			},
+			wantStatus:   http.StatusNoContent,
+			wantResponse: nil,
 		},
 	}
 
@@ -406,6 +401,11 @@ func TestPostHandler_DeletePost(t *testing.T) {
 			require.NoError(t, err)
 
 			assert.Equal(t, testCase.wantStatus, recorder.Result().StatusCode)
+
+			if testCase.wantResponse == nil {
+				assert.Empty(t, recorder.Body.String())
+				return
+			}
 
 			wantResponse, err := json.Marshal(testCase.wantResponse)
 			require.NoError(t, err)

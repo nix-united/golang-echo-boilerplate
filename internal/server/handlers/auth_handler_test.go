@@ -59,7 +59,7 @@ func TestAuthHandler_Login(t *testing.T) {
 			setExpectations: func(authService *MockauthService) {},
 			request:         invalidRequest,
 			wantStatus:      http.StatusBadRequest,
-			wantResponse: responses.Error{
+			wantResponse: responses.ErrorResponse{
 				Code:  http.StatusBadRequest,
 				Error: "Required fields are empty or not valid",
 			},
@@ -73,7 +73,7 @@ func TestAuthHandler_Login(t *testing.T) {
 			},
 			request:    request,
 			wantStatus: http.StatusUnauthorized,
-			wantResponse: responses.Error{
+			wantResponse: responses.ErrorResponse{
 				Code:  http.StatusUnauthorized,
 				Error: "Invalid credentials",
 			},
@@ -87,7 +87,7 @@ func TestAuthHandler_Login(t *testing.T) {
 			},
 			request:    request,
 			wantStatus: http.StatusUnauthorized,
-			wantResponse: responses.Error{
+			wantResponse: responses.ErrorResponse{
 				Code:  http.StatusUnauthorized,
 				Error: "Invalid credentials",
 			},
@@ -165,7 +165,7 @@ func TestAuthHandler_RefreshToken(t *testing.T) {
 					Return(nil, models.ErrUserNotFound)
 			},
 			wantStatus: http.StatusUnauthorized,
-			wantResponse: responses.Error{
+			wantResponse: responses.ErrorResponse{
 				Code:  http.StatusUnauthorized,
 				Error: "Unauthorized",
 			},
@@ -178,7 +178,7 @@ func TestAuthHandler_RefreshToken(t *testing.T) {
 					Return(nil, models.ErrInvalidAuthToken)
 			},
 			wantStatus: http.StatusUnauthorized,
-			wantResponse: responses.Error{
+			wantResponse: responses.ErrorResponse{
 				Code:  http.StatusUnauthorized,
 				Error: "Unauthorized",
 			},

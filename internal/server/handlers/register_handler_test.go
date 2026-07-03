@@ -38,7 +38,7 @@ func TestRegisterHandler_Register(t *testing.T) {
 			setExpectations: func(userRegisterer *MockuserRegisterer) {},
 			request:         map[string]any{},
 			wantStatus:      http.StatusBadRequest,
-			wantResponse: responses.Error{
+			wantResponse: responses.ErrorResponse{
 				Code:  http.StatusBadRequest,
 				Error: "Required fields are empty or invalid",
 			},
@@ -53,7 +53,7 @@ func TestRegisterHandler_Register(t *testing.T) {
 				Name: "test name",
 			},
 			wantStatus: http.StatusBadRequest,
-			wantResponse: responses.Error{
+			wantResponse: responses.ErrorResponse{
 				Code:  http.StatusBadRequest,
 				Error: "Required fields are empty or invalid",
 			},
@@ -67,7 +67,7 @@ func TestRegisterHandler_Register(t *testing.T) {
 			},
 			request:    registerRequest,
 			wantStatus: http.StatusConflict,
-			wantResponse: responses.Error{
+			wantResponse: responses.ErrorResponse{
 				Code:  http.StatusConflict,
 				Error: "User already exists",
 			},
@@ -90,8 +90,7 @@ func TestRegisterHandler_Register(t *testing.T) {
 			},
 			request:    registerRequest,
 			wantStatus: http.StatusCreated,
-			wantResponse: responses.Data{
-				Code:    http.StatusCreated,
+			wantResponse: responses.MessageResponse{
 				Message: "User successfully created",
 			},
 		},
