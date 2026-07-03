@@ -17,7 +17,6 @@ const (
 	mysqlUsername      = "username"
 	mysqlPassword      = "password"
 	mysqlPort          = "3306"
-	mysqlHost          = "localhost"
 	mysqlContainerName = "golang_echo_boilerplate_mysql_db"
 )
 
@@ -82,6 +81,11 @@ func SetupMySQL(ctx context.Context, networks []string) (MySQLConfig, func(ctx c
 		}
 	}()
 
+	host, err := container.Host(ctx)
+	if err != nil {
+		return MySQLConfig{}, nil, fmt.Errorf("get mysql container host: %w", err)
+	}
+
 	port, err := container.MappedPort(ctx, mysqlPort+"/tcp")
 	if err != nil {
 		return MySQLConfig{}, nil, fmt.Errorf("get mysql exposed port: %w", err)
@@ -90,7 +94,7 @@ func SetupMySQL(ctx context.Context, networks []string) (MySQLConfig, func(ctx c
 	config := MySQLConfig{
 		User:          mysqlUsername,
 		Password:      mysqlPassword,
-		Host:          mysqlHost,
+		Host:          host,
 		ExposedPort:   port.Port(),
 		LocalPort:     mysqlPort,
 		Name:          mysqlDatabase,

@@ -1,103 +1,45 @@
-image: docker:stable
+include:
+  - template: Security/Secret-Detection.gitlab-ci.yml
 
-variables:
-  DOCKER_DRIVER: overlay2
-  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  DOCKER_TLS_CERTDIR: ""
-  MYSQL_DATABASE: test
-  MYSQL_ROOT_PASSWORD: db_password
-
-services:
-  - docker:dind
+image: golang:1.25.5
 
 stages:
-  - migrations
+  - lint
   - test
-  - build
-  - deploy
+  - security
 
 lint:
-  image: golangci/golangci-lint:v1.59.1
-  stage: test
+  stage: lint
   before_script:
-    - cp .env.testing.gitlab-ci .env.testing
-    - go install -v github.com/swaggo/swag/cmd/swag@v1.8.10
-    - swag init -g cmd/main.go
+    - go install github.com/swaggo/swag/cmd/swag@v1.16.4
+    - swag init -g cmd/service/main.go
   script:
-    - golangci-lint run
+    - go tool golangci-lint run
   allow_failure: true
 
-migrations:
-  image: golang:1.25.1-alpine3.18
-  services:
-    - mysql:5.7
-  tags:
-    - dind
-    - docker
-  stage: migrations
-  before_script:
-    - apk add --no-cache --update git build-base openssh-client
-    - cp .env.testing.gitlab-ci .env
-    - go install -v github.com/swaggo/swag/cmd/swag@v1.8.10
-    - $GOPATH/bin/swag init -g cmd/main.go
-  script:
-    - go get -v ./...
-    - go run migrations/entry.go --env-path=./ --verbose
-    - go run migrations/entry.go --rollback --env-path=./ --verbose
-
-test:
-  image: golang:1.20.1-alpine3.17
-  services:
-    - mysql:5.7
-  tags:
-    - dind
-    - docker
+unit-tests:
   stage: test
-  before_script:
-    - apk add --no-cache --update git build-base openssh-client
-    - cp .env.testing.gitlab-ci .env.testing
-    - go install -v github.com/swaggo/swag/cmd/swag@v1.8.10
-    - swag init -g cmd/main.go
-  script:
-    - go get -v ./...
-    - go test -v ./...
-
-build:
   tags:
-    - dind
     - docker
-  stage: build
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  services:
+    - docker:dind
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - go install github.com/swaggo/swag/cmd/swag@v1.16.4
+    - swag init -g cmd/service/main.go
   script:
-    - cp deploy/Dockerfile .
-    - docker build
-      --build-arg WEB_PRIVATE_KEY="$WEB_PRIVATE_KEY"
-      --build-arg GIT_DOMAIN=$CI_SERVER_HOST
-      -t $CI_REGISTRY_IMAGE:staging .
-    - docker push $CI_REGISTRY_IMAGE:staging
+    - go test -race -v ./...
 
-deploy staging:
-  image: golang:1.20.1-alpine3.17
-  environment:
-    name: staging
-  when: manual
-  tags:
-    - dind
-    - docker
-  stage: deploy
+secret_detection:
+  stage: security
+
+govulncheck:
+  stage: security
   before_script:
-    - apk add --update openssh-client bash
-    - mkdir -p ~/.ssh
-    - echo "$STAGING_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - eval "$(ssh-agent -s)"
-    - ssh-add ~/.ssh/id_rsa
-    - ssh-keyscan -p 221 -H $STAGING_IP >> ~/.ssh/known_hosts
+    - go install github.com/swaggo/swag/cmd/swag@v1.16.4
+    - swag init -g cmd/service/main.go
+    - go install golang.org/x/vuln/cmd/govulncheck@v1.1.4
   script:
-    - ssh dev@${STAGING_IP} -p 221 "mkdir -p ${PROJECT_PATH}"
-    - scp -P 221 -r ${STAGING_ENV} dev@${STAGING_IP}:${PROJECT_PATH}/.env
-    - scp -P 221 -r ./deploy/compose.yml dev@${STAGING_IP}:${PROJECT_PATH}/compose.yml
-    - ssh dev@$STAGING_IP -p 221 "docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY};
-      docker pull ${CI_REGISTRY}/${CI_PROJECT_PATH}:staging;
-      docker compose -f ${PROJECT_PATH}/compose.yml up -d"
+    - govulncheck -C . -format text ./...
