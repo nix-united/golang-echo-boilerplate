@@ -37,27 +37,27 @@ func NewAuthHandler(authService authService) *AuthHandler {
 //	@Produce		json
 //	@Param			params	body		requests.LoginRequest	true	"User's credentials"
 //	@Success		200		{object}	responses.LoginResponse
-//	@Failure		401		{object}	responses.Error
+//	@Failure		401		{object}	responses.ErrorResponse
 //	@Router			/login [post]
 func (h *AuthHandler) Login(c echo.Context) error {
 	var request requests.LoginRequest
 	if err := c.Bind(&request); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request")
+		return c.JSON(http.StatusBadRequest, responses.NewErrorResponse("Failed to bind request", http.StatusBadRequest))
 	}
 
 	if err := request.Validate(); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty or not valid")
+		return c.JSON(http.StatusBadRequest, responses.NewErrorResponse("Required fields are empty or not valid", http.StatusBadRequest))
 	}
 
 	response, err := h.authService.GenerateToken(c.Request().Context(), &request)
 	switch {
 	case errors.Is(err, models.ErrUserNotFound), errors.Is(err, models.ErrInvalidPassword):
-		return responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid credentials")
+		return c.JSON(http.StatusUnauthorized, responses.NewErrorResponse("Invalid credentials", http.StatusUnauthorized))
 	case err != nil:
-		return responses.ErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
+		return c.JSON(http.StatusInternalServerError, responses.NewErrorResponse("Internal Server Error", http.StatusInternalServerError))
 	}
 
-	return responses.Response(c, http.StatusOK, response)
+	return c.JSON(http.StatusOK, response)
 }
 
 // RefreshToken godoc
@@ -70,21 +70,21 @@ func (h *AuthHandler) Login(c echo.Context) error {
 //	@Produce		json
 //	@Param			params	body		requests.RefreshRequest	true	"Refresh token"
 //	@Success		200		{object}	responses.LoginResponse
-//	@Failure		401		{object}	responses.Error
+//	@Failure		401		{object}	responses.ErrorResponse
 //	@Router			/refresh [post]
 func (h *AuthHandler) RefreshToken(c echo.Context) error {
 	var request requests.RefreshRequest
 	if err := c.Bind(&request); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request")
+		return c.JSON(http.StatusBadRequest, responses.NewErrorResponse("Failed to bind request", http.StatusBadRequest))
 	}
 
 	response, err := h.authService.RefreshToken(c.Request().Context(), &request)
 	switch {
 	case errors.Is(err, models.ErrUserNotFound), errors.Is(err, models.ErrInvalidAuthToken):
-		return responses.ErrorResponse(c, http.StatusUnauthorized, "Unauthorized")
+		return c.JSON(http.StatusUnauthorized, responses.NewErrorResponse("Unauthorized", http.StatusUnauthorized))
 	case err != nil:
-		return responses.ErrorResponse(c, http.StatusInternalServerError, "Internal Server Error")
+		return c.JSON(http.StatusInternalServerError, responses.NewErrorResponse("Internal Server Error", http.StatusInternalServerError))
 	}
 
-	return responses.Response(c, http.StatusOK, response)
+	return c.JSON(http.StatusOK, response)
 }

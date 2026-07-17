@@ -42,23 +42,23 @@ func NewPostHandlers(postService postService) *PostHandlers {
 //	@Accept			json
 //	@Produce		json
 //	@Param			params	body		requests.CreatePostRequest	true	"Post title and content"
-//	@Success		201		{object}	responses.Data
-//	@Failure		400		{object}	responses.Error
+//	@Success		201		{object}	responses.MessageResponse
+//	@Failure		400		{object}	responses.ErrorResponse
 //	@Security		ApiKeyAuth
 //	@Router			/posts [post]
 func (p *PostHandlers) CreatePost(c echo.Context) error {
 	authClaims, err := getAuthClaims(c)
 	if err != nil {
-		return responses.ErrorResponse(c, http.StatusUnauthorized, "Unauthorized")
+		return c.JSON(http.StatusUnauthorized, responses.NewErrorResponse("Unauthorized", http.StatusUnauthorized))
 	}
 
 	var createPostRequest requests.CreatePostRequest
 	if err := c.Bind(&createPostRequest); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request: "+err.Error())
+		return c.JSON(http.StatusBadRequest, responses.NewErrorResponse("Failed to bind request: "+err.Error(), http.StatusBadRequest))
 	}
 
 	if err := createPostRequest.Validate(); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty")
+		return c.JSON(http.StatusBadRequest, responses.NewErrorResponse("Required fields are empty", http.StatusBadRequest))
 	}
 
 	post := &models.Post{
@@ -68,10 +68,10 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 	}
 
 	if err := p.postService.Create(c.Request().Context(), post); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to create post: "+err.Error())
+		return c.JSON(http.StatusBadRequest, responses.NewErrorResponse("Failed to create post: "+err.Error(), http.StatusBadRequest))
 	}
 
-	return responses.MessageResponse(c, http.StatusCreated, "Post successfully created")
+	return c.JSON(http.StatusCreated, responses.NewMessageResponse("Post successfully created"))
 }
 
 // GetPosts godoc
@@ -87,11 +87,11 @@ func (p *PostHandlers) CreatePost(c echo.Context) error {
 func (p *PostHandlers) GetPosts(c echo.Context) error {
 	posts, err := p.postService.GetPosts(c.Request().Context())
 	if err != nil {
-		return responses.ErrorResponse(c, http.StatusNotFound, "Failed to get all posts: "+err.Error())
+		return c.JSON(http.StatusNotFound, responses.NewErrorResponse("Failed to get all posts: "+err.Error(), http.StatusNotFound))
 	}
 
 	response := responses.NewPostResponse(posts)
-	return responses.Response(c, http.StatusOK, response)
+	return c.JSON(http.StatusOK, response)
 }
 
 // UpdatePost godoc
@@ -104,34 +104,34 @@ func (p *PostHandlers) GetPosts(c echo.Context) error {
 //	@Produce		json
 //	@Param			id		path		int							true	"Post ID"
 //	@Param			params	body		requests.UpdatePostRequest	true	"Post title and content"
-//	@Success		200		{object}	responses.Data
-//	@Failure		400		{object}	responses.Error
-//	@Failure		404		{object}	responses.Error
+//	@Success		200		{object}	responses.MessageResponse
+//	@Failure		400		{object}	responses.ErrorResponse
+//	@Failure		404		{object}	responses.ErrorResponse
 //	@Security		ApiKeyAuth
 //	@Router			/posts/{id} [put]
 func (p *PostHandlers) UpdatePost(c echo.Context) error {
 	auth, err := getAuthClaims(c)
 	if err != nil {
-		return responses.ErrorResponse(c, http.StatusUnauthorized, "Unauthorized")
+		return c.JSON(http.StatusUnauthorized, responses.NewErrorResponse("Unauthorized", http.StatusUnauthorized))
 	}
 
 	parsedPostID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
+		return c.JSON(http.StatusBadRequest, responses.NewErrorResponse("Failed to parse post id: "+err.Error(), http.StatusBadRequest))
 	}
 
 	postID, err := safecast.Convert[uint](parsedPostID)
 	if err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
+		return c.JSON(http.StatusBadRequest, responses.NewErrorResponse("Failed to parse post id: "+err.Error(), http.StatusBadRequest))
 	}
 
 	var updatePostRequest requests.UpdatePostRequest
 	if err := c.Bind(&updatePostRequest); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request: "+err.Error())
+		return c.JSON(http.StatusBadRequest, responses.NewErrorResponse("Failed to bind request: "+err.Error(), http.StatusBadRequest))
 	}
 
 	if err := updatePostRequest.Validate(); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty")
+		return c.JSON(http.StatusBadRequest, responses.NewErrorResponse("Required fields are empty", http.StatusBadRequest))
 	}
 
 	_, err = p.postService.UpdateByUser(c.Request().Context(), domain.UpdatePostRequest{
@@ -143,15 +143,16 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 	if err != nil {
 		switch {
 		case errors.Is(err, models.ErrPostNotFound):
-			return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
+			return c.JSON(http.StatusNotFound, responses.NewErrorResponse("Post not found", http.StatusNotFound))
 		case errors.Is(err, models.ErrForbidden):
-			return responses.ErrorResponse(c, http.StatusForbidden, "Forbidden")
+			return c.JSON(http.StatusForbidden, responses.NewErrorResponse("Forbidden", http.StatusForbidden))
 		default:
-			return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to update post: "+err.Error())
+			errorResponse := responses.NewErrorResponse("Failed to update post: "+err.Error(), http.StatusInternalServerError)
+			return c.JSON(http.StatusInternalServerError, errorResponse)
 		}
 	}
 
-	return responses.MessageResponse(c, http.StatusOK, "Post successfully updated")
+	return c.JSON(http.StatusOK, responses.NewMessageResponse("Post successfully updated"))
 }
 
 // DeletePost godoc
@@ -161,24 +162,24 @@ func (p *PostHandlers) UpdatePost(c echo.Context) error {
 //	@ID				posts-delete
 //	@Tags			Posts Actions
 //	@Param			id	path		int	true	"Post ID"
-//	@Success		204	{object}	responses.Data
-//	@Failure		404	{object}	responses.Error
+//	@Success		204	"No Content"
+//	@Failure		404	{object}	responses.ErrorResponse
 //	@Security		ApiKeyAuth
 //	@Router			/posts/{id} [delete]
 func (p *PostHandlers) DeletePost(c echo.Context) error {
 	auth, err := getAuthClaims(c)
 	if err != nil {
-		return responses.ErrorResponse(c, http.StatusUnauthorized, "Unauthorized")
+		return c.JSON(http.StatusUnauthorized, responses.NewErrorResponse("Unauthorized", http.StatusUnauthorized))
 	}
 
 	parsedID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
+		return c.JSON(http.StatusBadRequest, responses.NewErrorResponse("Failed to parse post id: "+err.Error(), http.StatusBadRequest))
 	}
 
 	postID, err := safecast.Convert[uint](parsedID)
 	if err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to parse post id: "+err.Error())
+		return c.JSON(http.StatusBadRequest, responses.NewErrorResponse("Failed to parse post id: "+err.Error(), http.StatusBadRequest))
 	}
 
 	err = p.postService.DeleteByUser(c.Request().Context(), domain.DeletePostRequest{
@@ -188,13 +189,14 @@ func (p *PostHandlers) DeletePost(c echo.Context) error {
 	if err != nil {
 		switch {
 		case errors.Is(err, models.ErrPostNotFound):
-			return responses.ErrorResponse(c, http.StatusNotFound, "Post not found")
+			return c.JSON(http.StatusNotFound, responses.NewErrorResponse("Post not found", http.StatusNotFound))
 		case errors.Is(err, models.ErrForbidden):
-			return responses.ErrorResponse(c, http.StatusForbidden, "Forbidden")
+			return c.JSON(http.StatusForbidden, responses.NewErrorResponse("Forbidden", http.StatusForbidden))
 		default:
-			return responses.ErrorResponse(c, http.StatusInternalServerError, "Failed to delete post: "+err.Error())
+			errorResponse := responses.NewErrorResponse("Failed to delete post: "+err.Error(), http.StatusInternalServerError)
+			return c.JSON(http.StatusInternalServerError, errorResponse)
 		}
 	}
 
-	return responses.MessageResponse(c, http.StatusNoContent, "Post deleted successfully")
+	return c.NoContent(http.StatusNoContent)
 }
