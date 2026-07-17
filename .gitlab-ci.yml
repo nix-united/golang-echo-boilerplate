@@ -19,6 +19,14 @@ lint:
 
 unit-tests:
   stage: test
+  before_script:
+    - go install github.com/swaggo/swag/cmd/swag@v1.16.4
+    - swag init -g cmd/service/main.go
+  script:
+    - go test -race -v $(go list ./... | grep -v /tests/)
+
+integration-tests:
+  stage: test
   tags:
     - docker
   variables:
@@ -26,11 +34,8 @@ unit-tests:
     DOCKER_TLS_CERTDIR: ""
   services:
     - docker:dind
-  before_script:
-    - go install github.com/swaggo/swag/cmd/swag@v1.16.4
-    - swag init -g cmd/service/main.go
   script:
-    - go test -race -v ./...
+    - go test -v ./tests/integration/...
 
 secret_detection:
   stage: security
