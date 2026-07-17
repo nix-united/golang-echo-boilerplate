@@ -47,9 +47,9 @@ DROP TABLE posts;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
-DROP TABLE users;
+DROP TABLE o_auth_providers;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
-DROP TABLE o_auth_providers;
+DROP TABLE users;
 -- +goose StatementEnd
