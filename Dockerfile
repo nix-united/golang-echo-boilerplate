@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM golang:1.25.5-alpine3.23 AS builder
+FROM golang:1.25.12-alpine3.23 AS builder
 
 ARG DB_CONNECTION
 

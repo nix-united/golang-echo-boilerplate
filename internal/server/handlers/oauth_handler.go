@@ -34,24 +34,25 @@ func NewOAuthHandler(userService userAuthenticator) *OAuthHandler {
 //	@Produce		json
 //	@Param			params	body		requests.OAuthRequest	true	"Google Token"
 //	@Success		200		{object}	responses.LoginResponse
-//	@Failure		401		{object}	responses.Error
+//	@Failure		401		{object}	responses.ErrorResponse
 //	@Router			/google-oauth [post]
 func (oa *OAuthHandler) GoogleOAuth(c echo.Context) error {
 	var oAuthRequest requests.OAuthRequest
 
 	if err := c.Bind(&oAuthRequest); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to bind request")
+		return c.JSON(http.StatusBadRequest, responses.NewErrorResponse("Failed to bind request", http.StatusBadRequest))
 	}
 
 	if err := oAuthRequest.Validate(); err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Required fields are empty or invalid")
+		return c.JSON(http.StatusBadRequest, responses.NewErrorResponse("Required fields are empty or invalid", http.StatusBadRequest))
 	}
 
 	accessToken, refreshToken, exp, err := oa.userService.GoogleOAuth(c.Request().Context(), oAuthRequest.Token)
 	if err != nil {
-		return responses.ErrorResponse(c, http.StatusBadRequest, "Failed to authenticate with Google: "+err.Error())
+		errorResponse := responses.NewErrorResponse("Failed to authenticate with Google: "+err.Error(), http.StatusBadRequest)
+		return c.JSON(http.StatusBadRequest, errorResponse)
 	}
 
 	res := responses.NewLoginResponse(accessToken, refreshToken, exp)
-	return responses.Response(c, http.StatusOK, res)
+	return c.JSON(http.StatusOK, res)
 }
