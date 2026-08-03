@@ -43,8 +43,21 @@ jobs:
         run: |
           go install github.com/swaggo/swag/cmd/swag@0b9e347c196710ea155a147782bf51707a600c2c # https://github.com/swaggo/swag/releases/tag/v1.16.4
           swag init -g cmd/service/main.go
-      - name: Run tests
-        run: go test -race ./...
+      - name: Run unit tests
+        run: go test -race $(go list ./... | grep -v /tests/)
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: "**/go.sum"
+      - name: Run integration tests
+        run: go test -v ./tests/integration/...
 
   detect-secrets:
     name: Detect Secrets
